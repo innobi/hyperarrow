@@ -19,7 +19,7 @@
 set -e
 
 export ARROW_BUILD_DIR=/build/arrow
-export EXAMPLE_BUILD_DIR=/build/example
+export EXAMPLE_BUILD_DIR=/build/hyperarrow
 
 echo
 echo "=="

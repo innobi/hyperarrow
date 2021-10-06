@@ -18,10 +18,5 @@
 
 set -ex
 
-mkdir -p $EXAMPLE_BUILD_DIR
-pushd $EXAMPLE_BUILD_DIR
-
-cmake .
+cmake /build/hyperarrow
 make
-
-popd
