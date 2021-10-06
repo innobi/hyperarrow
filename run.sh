@@ -19,6 +19,7 @@
 set -e
 
 export ARROW_BUILD_DIR=/build/arrow
+export HYPER_BUILD_DIR=/build/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_24.0.0.13394.r37498cf6
 export EXAMPLE_BUILD_DIR=/build/hyperarrow
 
 echo
@@ -28,6 +29,12 @@ echo "=="
 echo
 
 ./build_arrow.sh
+
+echo
+echo "=="
+echo "== Building Hyper library"
+echo "=="
+echo
 
 echo
 echo "=="
