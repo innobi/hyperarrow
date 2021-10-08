@@ -15,12 +15,13 @@ RUN apt-get update -y -q && \
 WORKDIR /build
 RUN git clone https://github.com/apache/arrow.git
 
-RUN wget --no-verbose https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_24.0.0.13394.r37498cf6.zip
-RUN unzip tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_24.0.0.13394.r37498cf6.zip
+ARG tableau_version=tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_24.0.0.13394.r37498cf6
+RUN wget --no-verbose https://downloads.tableau.com/tssoftware/$tableau_version.zip
+RUN unzip $tableau_version.zip
+RUN mv $tableau_version tableauhyperapi
 
 WORKDIR hyperarrow
 COPY . .
-RUN ls
 RUN chmod 755 ./run.sh
 RUN chmod 755 ./build_arrow.sh
 RUN chmod 755 ./build_example.sh
