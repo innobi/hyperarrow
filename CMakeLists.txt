@@ -23,6 +23,10 @@ option(ARROW_LINK_SHARED "Link to the Arrow shared library" ON)
 
 find_package(Arrow REQUIRED)
 
+if (NOT DEFINED CMAKE_PREFIX_PATH)
+  set(CMAKE_PREFIX_PATH "/build/tableauhyperapi/share/cmake" CACHE PATH "Cmake prefix path" FORCE)
+endif ()
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Release)
 
