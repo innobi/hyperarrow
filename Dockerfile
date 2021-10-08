@@ -24,4 +24,6 @@ RUN ls
 RUN chmod 755 ./run.sh
 RUN chmod 755 ./build_arrow.sh
 RUN chmod 755 ./build_example.sh
+RUN ./build_arrow.sh
+RUN ./build_example.sh
 RUN ./run.sh

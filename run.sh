@@ -16,33 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
-
-export ARROW_BUILD_DIR=/build/arrow
-export HYPER_BUILD_DIR=/build/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_24.0.0.13394.r37498cf6
-export EXAMPLE_BUILD_DIR=/build/hyperarrow
-
-echo
-echo "=="
-echo "== Building Arrow C++ library"
-echo "=="
-echo
-
-./build_arrow.sh
-
-echo
-echo "=="
-echo "== Building Hyper library"
-echo "=="
-echo
-
-echo
-echo "=="
-echo "== Building example project using Arrow C++ library"
-echo "=="
-echo
-
-./build_example.sh
 
 echo
 echo "=="
@@ -50,4 +23,5 @@ echo "== Running example project"
 echo "=="
 echo
 
+export EXAMPLE_BUILD_DIR=/build/hyperarrow
 ${EXAMPLE_BUILD_DIR}/arrow_example

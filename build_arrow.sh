@@ -17,6 +17,16 @@
 # under the License.
 
 set -ex
+set -e
+
+export ARROW_BUILD_DIR=/build/arrow
+export HYPER_BUILD_DIR=/build/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_24.0.0.13394.r37498cf6
+
+echo
+echo "=="
+echo "== Building Arrow C++ library"
+echo "=="
+echo
 
 NPROC=$(nproc)
 

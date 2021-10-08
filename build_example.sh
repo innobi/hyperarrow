@@ -18,5 +18,12 @@
 
 set -ex
 
-cmake /build/hyperarrow
+echo
+echo "=="
+echo "== Building example project using Arrow C++ library"
+echo "=="
+echo
+
+export EXAMPLE_BUILD_DIR=/build/hyperarrow
+cmake $EXAMPLE_BUILD_DIR
 make
