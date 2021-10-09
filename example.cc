@@ -50,7 +50,6 @@ namespace {
 	    
 	    for (auto i = 0; i < array->length(); i++) {
 	      inserter.addRow(array->Value(i));
-	      inserter.execute();
 	      /*
 	      if (array->IsValid(i)) {
 		std::cerr << array->Value(i) << std::endl;      
@@ -59,7 +58,19 @@ namespace {
 	      }
 	      */
 	    }
+	    inserter.execute();	    
 	  }
+
+         std::unordered_set<hyperapi::TableName> tableNames = catalog.getTableNames("Extract");
+         std::cout << "Tables available in " << pathToDatabase << " in the Extract schema are: ";
+         for (auto& tableName : tableNames)
+            std::cout << tableName.toString() << "\t";
+         std::cout << std::endl;
+
+         // Number of rows in the "Extract"."Extract" table.
+         // `executeScalarQuery` is for executing a query that returns exactly one row with one column.
+         int64_t rowCount = connection.executeScalarQuery<int64_t>("SELECT COUNT(*) FROM " + extractTable.getTableName().toString());
+         std::cout << "The number of rows in table " << extractTable.getTableName() << " is " << rowCount << "." << std::endl;	  
 	}
       }
   }

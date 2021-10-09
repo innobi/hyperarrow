@@ -4,12 +4,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
       build-essential \
+      ca-certificates \      
       cmake \
       git \
-      wget \
-      unzip \
-      ca-certificates \
-      pkg-config && \
+      pkg-config \
+      unzip \      
+      wget && \
     apt-get clean && rm -rf /var/lib/apt/lists*
 
 WORKDIR /build
@@ -22,10 +22,11 @@ RUN mv $tableau_version tableauhyperapi
 RUN rm $tableau_version.zip
 
 WORKDIR hyperarrow
-COPY . .
 RUN chmod 755 ./build_arrow.sh
-RUN chmod 755 ./build_example.sh
-RUN chmod 755 ./run.sh
 RUN ./build_arrow.sh
+
+COPY . .
+RUN chmod 755 ./build_example.sh
 RUN ./build_example.sh
+RUN chmod 755 ./run.sh
 RUN ./run.sh
