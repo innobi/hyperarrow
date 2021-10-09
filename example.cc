@@ -50,6 +50,7 @@ namespace {
 	    
 	    for (auto i = 0; i < array->length(); i++) {
 	      inserter.addRow(array->Value(i));
+	      inserter.execute();
 	      /*
 	      if (array->IsValid(i)) {
 		std::cerr << array->Value(i) << std::endl;      
