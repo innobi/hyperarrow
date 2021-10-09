@@ -17,6 +17,7 @@
 
 #include <iostream>
 
+#include <arrow/builder.h>
 #include <arrow/csv/api.h>
 #include <arrow/io/api.h>
 #include <arrow/ipc/api.h>
@@ -28,6 +29,22 @@
 using arrow::Status;
 
 namespace {
+
+  std::shared_ptr<arrow::Array> BuildData() {
+    arrow::Int64Builder builder;
+    builder.Resize(8);
+    std::vector<bool> validity = {true, true, true, false, true, true, true, true};
+    std::vector<int64_t> values = {1, 2, 3, 0, 5, 6, 7, 8};
+    builder.AppendValues(values, validity);
+
+    std::shared_ptr<arrow::Array> array;
+    arrow::Status st = builder.Finish(&array);
+    if (!st.ok()) {
+      // handle error here
+    }
+
+    return array;
+  }  
 
 Status RunMain(int argc, char** argv) {
   const char* csv_filename = "test.csv";
@@ -45,17 +62,20 @@ Status RunMain(int argc, char** argv) {
                                     arrow::csv::ConvertOptions::Defaults()));
   ARROW_ASSIGN_OR_RAISE(auto table, csv_reader->Read());
 
-  std::cerr << "* Read table:" << std::endl;
-  ARROW_RETURN_NOT_OK(arrow::PrettyPrint(*table, {}, &std::cerr));
+  std::cerr << "* Generating data:" << std::endl;
+  std::shared_ptr<arrow::Array> array = BuildData();
 
-  std::cerr << "* Writing table into Arrow IPC file '" << arrow_filename << "'" << std::endl;
-  ARROW_ASSIGN_OR_RAISE(auto output_file,
-                        arrow::io::FileOutputStream::Open(arrow_filename));
-  ARROW_ASSIGN_OR_RAISE(auto batch_writer,
-                        arrow::ipc::MakeFileWriter(output_file,
-                                                   table->schema()));
-  ARROW_RETURN_NOT_OK(batch_writer->WriteTable(*table));
-  ARROW_RETURN_NOT_OK(batch_writer->Close());
+  std::cerr << "Here is the data:" << std::endl;
+  for (auto i = 0; i < array->length(); i++) {
+    if (array->IsValid(i)) {
+      std::cerr << *(array->GetScalar(i)) << std::endl;      
+    } else {
+      std::cerr << "Null Value!" << std::endl;
+    }
+
+  }
+
+  //std::cerr << "* Writing table into Arrow Hyper file '" << arrow_filename << "'" << std::endl;
 
   return Status::OK();
 }
