@@ -30,14 +30,14 @@ using arrow::Status;
 
 namespace {
 
-  std::shared_ptr<arrow::Array> BuildData() {
+  std::shared_ptr<arrow::Int64Array> BuildData() {
     arrow::Int64Builder builder;
     builder.Resize(8);
     std::vector<bool> validity = {true, true, true, false, true, true, true, true};
     std::vector<int64_t> values = {1, 2, 3, 0, 5, 6, 7, 8};
     builder.AppendValues(values, validity);
 
-    std::shared_ptr<arrow::Array> array;
+    std::shared_ptr<arrow::Int64Array> array;
     arrow::Status st = builder.Finish(&array);
     if (!st.ok()) {
       // handle error here
@@ -63,12 +63,12 @@ Status RunMain(int argc, char** argv) {
   ARROW_ASSIGN_OR_RAISE(auto table, csv_reader->Read());
 
   std::cerr << "* Generating data:" << std::endl;
-  std::shared_ptr<arrow::Array> array = BuildData();
+  std::shared_ptr<arrow::Int64Array> array = BuildData();
 
   std::cerr << "Here is the data:" << std::endl;
   for (auto i = 0; i < array->length(); i++) {
     if (array->IsValid(i)) {
-      std::cerr << *(array->GetScalar(i)) << std::endl;      
+      std::cerr << array->Value(i) << std::endl;      
     } else {
       std::cerr << "Null Value!" << std::endl;
     }
