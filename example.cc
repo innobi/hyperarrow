@@ -60,37 +60,11 @@ namespace {
 	    }
 	    inserter.execute();	    
 	  }
-
-         std::unordered_set<hyperapi::TableName> tableNames = catalog.getTableNames("Extract");
-         std::cout << "Tables available in " << pathToDatabase << " in the Extract schema are: ";
-         for (auto& tableName : tableNames)
-            std::cout << tableName.toString() << "\t";
-         std::cout << std::endl;
-
-         // Number of rows in the "Extract"."Extract" table.
-         // `executeScalarQuery` is for executing a query that returns exactly one row with one column.
-         int64_t rowCount = connection.executeScalarQuery<int64_t>("SELECT COUNT(*) FROM " + extractTable.getTableName().toString());
-         std::cout << "The number of rows in table " << extractTable.getTableName() << " is " << rowCount << "." << std::endl;	  
 	}
       }
   }
 
 Status RunMain(int argc, char** argv) {
-  const char* csv_filename = "test.csv";
-  const char* arrow_filename = "test.arrow";
-
-  std::cerr << "* Reading CSV file '" << csv_filename << "' into table" << std::endl;
-  ARROW_ASSIGN_OR_RAISE(auto input_file,
-                        arrow::io::ReadableFile::Open(csv_filename));
-  ARROW_ASSIGN_OR_RAISE(
-      auto csv_reader,
-      arrow::csv::TableReader::Make(arrow::io::default_io_context(),
-                                    input_file,
-                                    arrow::csv::ReadOptions::Defaults(),
-                                    arrow::csv::ParseOptions::Defaults(),
-                                    arrow::csv::ConvertOptions::Defaults()));
-  ARROW_ASSIGN_OR_RAISE(auto table, csv_reader->Read());
-
   std::cerr << "* Generating data:" << std::endl;
   std::shared_ptr<arrow::Int64Array> array = BuildData();
 
