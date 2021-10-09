@@ -26,6 +26,7 @@ find_package(Arrow REQUIRED)
 if (NOT DEFINED CMAKE_PREFIX_PATH)
   set(CMAKE_PREFIX_PATH "/build/tableauhyperapi/share/cmake" CACHE PATH "Cmake prefix path" FORCE)
 endif ()
+find_package(tableauhyperapi-cxx REQUIRED CONFIG)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Release)
@@ -34,6 +35,7 @@ message(STATUS "Arrow version: ${ARROW_VERSION}")
 message(STATUS "Arrow SO version: ${ARROW_FULL_SO_VERSION}")
 
 add_executable(arrow_example example.cc)
+target_link_libraries(arrow_example PRIVATE Tableau::tableauhyperapi-cxx)
 
 if (ARROW_LINK_SHARED)
   target_link_libraries(arrow_example PRIVATE arrow_shared)

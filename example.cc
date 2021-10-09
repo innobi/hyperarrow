@@ -1,22 +1,6 @@
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  The ASF licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
-
 #include <iostream>
 
+#include <hyperapi/hyperapi.hpp>
 #include <arrow/builder.h>
 #include <arrow/csv/api.h>
 #include <arrow/io/api.h>
@@ -44,7 +28,40 @@ namespace {
     }
 
     return array;
-  }  
+  }
+  
+  static void insertArrayIntoHyperTable(std::shared_ptr<arrow::Int64Array> array) {
+    const std::string pathToDatabase = "example.hyper";
+      {
+	hyperapi::HyperProcess hyper(hyperapi::Telemetry::DoNotSendUsageDataToTableau);
+	{
+	  hyperapi::Connection connection(hyper.getEndpoint(), pathToDatabase, hyperapi::CreateMode::CreateAndReplace);
+	  const hyperapi::Catalog& catalog = connection.getCatalog();
+
+	  static const hyperapi::TableDefinition extractTable{
+	    {"Extract", "Extract"},
+	    {hyperapi::TableDefinition::Column{"A Number", hyperapi::SqlType::bigInt(), hyperapi::Nullability::NotNullable}}
+	  };
+
+	  catalog.createSchema("Extract");
+	  catalog.createTable(extractTable);
+	  {
+	    hyperapi::Inserter inserter(connection, extractTable);
+	    
+	    for (auto i = 0; i < array->length(); i++) {
+	      inserter.addRow(array->Value(i));
+	      /*
+	      if (array->IsValid(i)) {
+		std::cerr << array->Value(i) << std::endl;      
+	      } else {
+		std::cerr << "Null Value!" << std::endl;
+	      }
+	      */
+	    }
+	  }
+	}
+      }
+  }
 
 Status RunMain(int argc, char** argv) {
   const char* csv_filename = "test.csv";
@@ -65,17 +82,9 @@ Status RunMain(int argc, char** argv) {
   std::cerr << "* Generating data:" << std::endl;
   std::shared_ptr<arrow::Int64Array> array = BuildData();
 
-  std::cerr << "Here is the data:" << std::endl;
-  for (auto i = 0; i < array->length(); i++) {
-    if (array->IsValid(i)) {
-      std::cerr << array->Value(i) << std::endl;      
-    } else {
-      std::cerr << "Null Value!" << std::endl;
-    }
-
-  }
-
-  //std::cerr << "* Writing table into Arrow Hyper file '" << arrow_filename << "'" << std::endl;
+  std::cerr << "* Creating Hyper File:" << std::endl;
+  insertArrayIntoHyperTable(array);
+  std::cerr << "* Hyper File Created Successfullly!" << std::endl;
 
   return Status::OK();
 }
