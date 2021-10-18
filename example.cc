@@ -49,10 +49,14 @@ namespace {
   static const hyperapi::TableDefinition createDefinitionFromSchema(std::shared_ptr<arrow::Table> table) {
     const std::shared_ptr<arrow::Schema> schema = table->schema();
     hyperapi::TableDefinition tableDef = hyperapi::TableDefinition({"Extract", "Extract"});
-    for (const arrow::Field field : schema->fields ) {
+    for (const std::shared_ptr<arrow::Field> field : schema->fields() ) {
+      // TODO: without these conversions can easily get an error like
+      // error: no matching function for call to 'hyperapi::TableDefinition::Column::Column(const string&, hyperapi::SqlType, bool)'
+      hyperapi::Name name = hyperapi::Name{field->name()};
+      hyperapi::Nullability nullable = field->nullable() ? hyperapi::Nullability::Nullable : hyperapi::Nullability::NotNullable;
       // TODO: make a separate method to map arrow Fields to
       // Hyper column definitions
-      hyperapi::TabbleDefinition::Column col = hyperapi::Column(field.name(), hyperapi::SqlType::bigInt(), field.nullable());
+      hyperapi::TableDefinition::Column col = hyperapi::TableDefinition::Column(name, hyperapi::SqlType::bigInt(), nullable);
       tableDef.addColumn(col);
     }
 
