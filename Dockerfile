@@ -8,6 +8,7 @@ RUN apt-get update -y -q && \
       cmake \
       git \
       pkg-config \
+      python3-pip \
       unzip \      
       wget && \
     apt-get clean && rm -rf /var/lib/apt/lists*
