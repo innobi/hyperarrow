@@ -34,7 +34,7 @@ set(CMAKE_BUILD_TYPE Release)
 message(STATUS "Arrow version: ${ARROW_VERSION}")
 message(STATUS "Arrow SO version: ${ARROW_FULL_SO_VERSION}")
 
-add_executable(arrow_example example.cc)
+add_executable(arrow_example src/example.cc)
 target_link_libraries(arrow_example PRIVATE Tableau::tableauhyperapi-cxx)
 
 if (ARROW_LINK_SHARED)

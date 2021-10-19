@@ -27,7 +27,8 @@ COPY build_arrow.sh .
 RUN chmod 755 ./build_arrow.sh
 RUN ./build_arrow.sh
 
-COPY CMakeLists.txt example.cc build_example.sh ./
+COPY CMakeLists.txt  build_example.sh ./
+COPY src ./src/
 RUN chmod 755 ./build_example.sh
 RUN ./build_example.sh
 
