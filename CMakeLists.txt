@@ -14,6 +14,7 @@ find_package(tableauhyperapi-cxx REQUIRED CONFIG)
 set(HYPERARROW_SRC_DIR ${CMAKE_CURRENT_BINARY_DIR}/src/hyperarrow)
 set(SOURCES
   ${HYPERARROW_SRC_DIR}/types.cc
+  ${HYPERARROW_SRC_DIR}/writer.cc
   ${HYPERARROW_SRC_DIR}/hyperarrow.cc
   )
   
