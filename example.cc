@@ -61,16 +61,14 @@ namespace {
       hyperapi::Nullability nullable = field->nullable() ? hyperapi::Nullability::Nullable : hyperapi::Nullability::NotNullable;
       hyperapi::SqlType type = arrowTypeToSqlType(field->type());
       
-      // TODO: make a separate method to map arrow Fields to
-      // Hyper column definitions
       hyperapi::TableDefinition::Column col = hyperapi::TableDefinition::Column(name, type, nullable);
       tableDef.addColumn(col);
     }
 
     return tableDef;
   }
-  
-  static void insertTableIntoHyper(std::shared_ptr<arrow::Table> table) {
+
+  static void insertTableIntoHyper(const std::shared_ptr<arrow::Table> table) {
     const std::string pathToDatabase = "example.hyper";
       {
 	hyperapi::HyperProcess hyper(hyperapi::Telemetry::DoNotSendUsageDataToTableau);
@@ -83,9 +81,13 @@ namespace {
 	  catalog.createTable(extractTable);
 	  {
 	    hyperapi::Inserter inserter{connection, extractTable};
-
-	    // TODO: replace with table values
-	    inserter.addRow(1, 2, 3);
+	    for (int64_t i = 0; i < table->num_rows(); i++) {
+	      for (int64_t j = 0; j < table->num_columns(); j++) {
+		auto array = std::static_pointer_cast<arrow::Int64Array>(table->column(j)->chunk(0));
+		inserter.add(array->Value(i));
+	      }
+	      inserter.endRow();
+	    }
 	    //for (auto i = 0; i < array->length(); i++) {
 	    //  inserter.addRow(array->Value(i));
 	      /*
