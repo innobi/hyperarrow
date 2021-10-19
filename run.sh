@@ -24,4 +24,4 @@ echo "=="
 echo
 
 export EXAMPLE_BUILD_DIR=/build/hyperarrow
-${EXAMPLE_BUILD_DIR}/arrow_example
+${EXAMPLE_BUILD_DIR}/hyperarrow

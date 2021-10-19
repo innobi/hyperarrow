@@ -2,13 +2,9 @@
 
 #include <hyperapi/hyperapi.hpp>
 #include <arrow/builder.h>
-#include <arrow/csv/api.h>
-#include <arrow/io/api.h>
-#include <arrow/ipc/api.h>
-#include <arrow/pretty_print.h>
-#include <arrow/result.h>
-#include <arrow/status.h>
 #include <arrow/table.h>
+
+#include "types.h"
 
 using arrow::Status;
 
@@ -48,11 +44,6 @@ namespace {
     ABORT_ON_FAILURE(builder.Finish(&array_c));
     return arrow::Table::Make(schema, {array_a, array_b, array_c});
   }
-
-  static hyperapi::SqlType arrowTypeToSqlType(const std::shared_ptr<arrow::DataType> arrowType) {
-    if (arrowType == arrow::int64())
-      return hyperapi::SqlType::bigInt();
-  }
     
   static const hyperapi::TableDefinition createDefinitionFromSchema(std::shared_ptr<arrow::Table> table) {
     const std::shared_ptr<arrow::Schema> schema = table->schema();
@@ -62,7 +53,7 @@ namespace {
       // error: no matching function for call to 'hyperapi::TableDefinition::Column::Column(const string&, hyperapi::SqlType, bool)'
       hyperapi::Name name = hyperapi::Name{field->name()};
       hyperapi::Nullability nullable = field->nullable() ? hyperapi::Nullability::Nullable : hyperapi::Nullability::NotNullable;
-      hyperapi::SqlType type = arrowTypeToSqlType(field->type());
+      hyperapi::SqlType type = hyperarrow::arrowTypeToSqlType(field->type());
       
       hyperapi::TableDefinition::Column col = hyperapi::TableDefinition::Column(name, type, nullable);
       tableDef.addColumn(col);

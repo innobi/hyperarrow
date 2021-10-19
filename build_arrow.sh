@@ -32,9 +32,7 @@ NPROC=$(nproc)
 mkdir -p $ARROW_BUILD_DIR
 pushd $ARROW_BUILD_DIR
 
-# Enable the CSV reader as it's used by the example third-party build
 cmake /build/arrow/cpp \
-    -DARROW_CSV=ON \
     -DARROW_JEMALLOC=OFF \
     $ARROW_CMAKE_OPTIONS
 
