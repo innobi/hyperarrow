@@ -40,12 +40,12 @@ namespace hyperarrow {
 	      for (int64_t j = 0; j < table->num_columns(); j++) {
 		// TODO: templating could likely help a ton here
 		const std::shared_ptr<arrow::DataType> type = table->field(j)->type();
-		if (type == arrow::int64()) {
-		  auto array = std::static_pointer_cast<arrow::Int64Array>(table->column(j)->chunk(0));
+		if (type == arrow::int16()) {
+		  auto array = std::static_pointer_cast<arrow::Int16Array>(table->column(j)->chunk(0));
 		  if (array->IsValid(i)) {
 		    inserter.add(array->Value(i));		  
 		  } else {
-		    inserter.add(hyperapi::optional<int64_t>());
+		    inserter.add(hyperapi::optional<int16_t>());
 		  }
 		} else if (type == arrow::int32()) {
 		  auto array = std::static_pointer_cast<arrow::Int32Array>(table->column(j)->chunk(0));
@@ -53,6 +53,14 @@ namespace hyperarrow {
 		    inserter.add(array->Value(i));		  
 		  } else {
 		    inserter.add(hyperapi::optional<int32_t>());
+		  }
+		}
+		else if (type == arrow::int64()) {
+		  auto array = std::static_pointer_cast<arrow::Int64Array>(table->column(j)->chunk(0));
+		  if (array->IsValid(i)) {
+		    inserter.add(array->Value(i));		  
+		  } else {
+		    inserter.add(hyperapi::optional<int64_t>());
 		  }		  
 		}
 	      }

@@ -24,7 +24,7 @@ namespace {
     auto schema =
       arrow::schema({
 	  arrow::field("a", arrow::int64()),
-	  arrow::field("b", arrow::int64()),
+	  arrow::field("b", arrow::int32()),
 	  arrow::field("c", arrow::int64())
 	});
 
