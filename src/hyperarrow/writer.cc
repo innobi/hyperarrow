@@ -22,7 +22,7 @@ namespace hyperarrow {
 
     return tableDef;
   }
-  
+
   void arrowTableToHyper(const std::shared_ptr<arrow::Table> table, const std::string path) {
     const std::string pathToDatabase = "example.hyper";
       {
@@ -38,11 +38,22 @@ namespace hyperarrow {
 	    hyperapi::Inserter inserter{connection, extractTable};
 	    for (int64_t i = 0; i < table->num_rows(); i++) {
 	      for (int64_t j = 0; j < table->num_columns(); j++) {
-		auto array = std::static_pointer_cast<arrow::Int64Array>(table->column(j)->chunk(0));
-		if (array->IsValid(i)) {
-		  inserter.add(array->Value(i));		  
-		} else {
-		  inserter.add(hyperapi::optional<int64_t>());
+		// TODO: templating could likely help a ton here
+		const std::shared_ptr<arrow::DataType> type = table->field(j)->type();
+		if (type == arrow::int64()) {
+		  auto array = std::static_pointer_cast<arrow::Int64Array>(table->column(j)->chunk(0));
+		  if (array->IsValid(i)) {
+		    inserter.add(array->Value(i));		  
+		  } else {
+		    inserter.add(hyperapi::optional<int64_t>());
+		  }
+		} else if (type == arrow::int32()) {
+		  auto array = std::static_pointer_cast<arrow::Int32Array>(table->column(j)->chunk(0));
+		  if (array->IsValid(i)) {
+		    inserter.add(array->Value(i));		  
+		  } else {
+		    inserter.add(hyperapi::optional<int32_t>());
+		  }		  
 		}
 	      }
 	      inserter.endRow();
@@ -51,6 +62,5 @@ namespace hyperarrow {
 	  }
 	}
       }
-    
   }
 }
