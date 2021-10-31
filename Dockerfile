@@ -7,6 +7,7 @@ RUN apt-get update -y -q && \
       ca-certificates \      
       cmake \
       git \
+      lldb \
       pkg-config \
       python3-pip \
       unzip \      

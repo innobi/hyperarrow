@@ -33,8 +33,8 @@ mkdir -p $ARROW_BUILD_DIR
 pushd $ARROW_BUILD_DIR
 
 cmake /build/arrow/cpp \
-    -DARROW_JEMALLOC=OFF \
-    $ARROW_CMAKE_OPTIONS
+      -DARROW_JEMALLOC=OFF \
+      -DCMAKE_BUILD_TYPE=Debug
 
 make -j$NPROC
 make install
