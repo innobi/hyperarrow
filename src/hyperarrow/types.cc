@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "types.h"
 
 namespace hyperarrow {
@@ -21,5 +23,7 @@ namespace hyperarrow {
     } else if (arrowType == arrow::date64()) {
       return hyperapi::SqlType::date();
     }
+
+    throw std::runtime_error(std::string("Type not supported or not yet implemented: ") + typeid(arrowType).name());
   }
 }
