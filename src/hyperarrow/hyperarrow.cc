@@ -74,7 +74,7 @@ namespace {
     ABORT_ON_FAILURE(doublebuilder.AppendNull());
     ABORT_ON_FAILURE(doublebuilder.Finish(&array_f));
 
-    ABORT_ON_FAILURE(boolbuilder.AppendValues({true, false, true, false, true, false, true, false, true, false}));
+    ABORT_ON_FAILURE(boolbuilder.AppendValues(std::vector<bool>{true, false, true, false, true, false, true, false, true, false}));
     ABORT_ON_FAILURE(boolbuilder.AppendNull());
     ABORT_ON_FAILURE(boolbuilder.Finish(&array_g));
 
