@@ -38,12 +38,14 @@ namespace {
     arrow::FloatBuilder floatbuilder(pool);
     arrow::DoubleBuilder doublebuilder(pool);
     arrow::BooleanBuilder boolbuilder(pool);
+    arrow::StringBuilder stringbuilder(pool);
     std::shared_ptr<arrow::Array> array_a;
     std::shared_ptr<arrow::Array> array_b;
     std::shared_ptr<arrow::Array> array_c;
     std::shared_ptr<arrow::Array> array_d;
     std::shared_ptr<arrow::Array> array_e;
     std::shared_ptr<arrow::Array> array_f;
+    std::shared_ptr<arrow::Array> array_g;
     
     ABORT_ON_FAILURE(int16builder.AppendValues({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
     ABORT_ON_FAILURE(int16builder.AppendNull());
@@ -69,13 +71,18 @@ namespace {
     ABORT_ON_FAILURE(boolbuilder.AppendNull());
     ABORT_ON_FAILURE(boolbuilder.Finish(&array_f));
 
+    ABORT_ON_FAILURE(stringbuilder.AppendValues({"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}));
+    ABORT_ON_FAILURE(stringbuilder.AppendNull());
+    ABORT_ON_FAILURE(stringbuilder.Finish(&array_g));
+
     return arrow::Table::Make(schema, {
 	array_a,
 	array_b,
 	array_c,
 	array_d,
 	array_e,
-	array_f});
+	array_f,
+	array_g});
   }
 
   Status RunMain(int argc, char** argv) {
