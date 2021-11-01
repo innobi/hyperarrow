@@ -8,8 +8,6 @@ namespace hyperarrow {
       return  hyperapi::SqlType::integer();
     } else if (arrowType == arrow::int64()) {
       return hyperapi::SqlType::bigInt();
-    } else if (arrowType == arrow::float16()) {
-      return hyperapi::SqlType::doublePrecision();      
     } else if (arrowType == arrow::float32()) {
       return hyperapi::SqlType::doublePrecision();
     } else if (arrowType == arrow::float64()) {
