@@ -3,7 +3,9 @@
 
 #include <hyperapi/hyperapi.hpp>
 #include <arrow/builder.h>
+#include <arrow/compute/api.h>
 #include <arrow/table.h>
+
 
 namespace hyperarrow {
   static const hyperapi::TableDefinition createDefinitionFromSchema(std::shared_ptr<arrow::Table> table) {
@@ -89,6 +91,31 @@ namespace hyperarrow {
 		    inserter.add(array->Value(i));		  
 		  } else {
 		    inserter.add(hyperapi::optional<bool>());
+		  }
+		} else if (type == arrow::date32()) {
+		  auto array = std::static_pointer_cast<arrow::NumericArray<arrow::Date32Type>>(table->column(j)->chunk(0));
+		  if (array->IsValid(i)) {
+		    auto datum = array->Value(i);
+		    arrow::Result<arrow::Datum> year = arrow::compute::Year(datum);
+		    arrow::Result<arrow::Datum> month = arrow::compute::Month(datum);
+		    arrow::Result<arrow::Datum> day = arrow::compute::Day(datum);
+		    if (!year.ok()) {
+		      // TODO: build arrow with logging support
+		      // arrow::ARROW_LOG(arrow::ERROR) << year.status();
+		    }
+		    if (!month.ok()) {
+		      // TODO: build arrow with logging support
+		      //arrow::ARROW_LOG(arrow::ERROR) << month.status();
+		    }
+		    if (!day.ok()) {
+		      // TODO: build arrow with logging support
+		      // arrow::ARROW_LOG(arrow::ERROR) << day.status();
+		    }
+		    // TODO: make sure the above exit ???
+		    inserter.add(hyperapi::Date(year.ValueOrDie(), month.ValueOrDie(), day.ValueOrDie()));
+		  } else {
+		    inserter.add(hyperapi::optional<hyperapi::Date>());
+		  }
 		  }
 		} 
 	      }

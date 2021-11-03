@@ -34,6 +34,7 @@ pushd $ARROW_BUILD_DIR
 
 cmake /build/arrow/cpp \
       -DARROW_JEMALLOC=OFF \
+      -DARROW_COMPUTE=ON \
       -DCMAKE_BUILD_TYPE=Debug
 
 make -j$NPROC
