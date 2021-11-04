@@ -24,7 +24,7 @@ std::shared_ptr<arrow::Table> createTable() {
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
        arrow::field("c", arrow::int64()), arrow::field("d", arrow::float32()),
        arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
-       arrow::field("g", arrow::date32())});
+       arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8())});
 
   arrow::MemoryPool* pool = arrow::default_memory_pool();
   arrow::Int16Builder int16builder(pool);
@@ -75,15 +75,13 @@ std::shared_ptr<arrow::Table> createTable() {
   ABORT_ON_FAILURE(date32builder.AppendNull());
   ABORT_ON_FAILURE(date32builder.Finish(&array_g));
 
-  /*
   ABORT_ON_FAILURE(stringbuilder.AppendValues(
       {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}));
   ABORT_ON_FAILURE(stringbuilder.AppendNull());
   ABORT_ON_FAILURE(stringbuilder.Finish(&array_h));
-  */  
 
   return arrow::Table::Make(schema, {array_a, array_b, array_c, array_d,
-                                     array_e, array_f, array_g});
+                                     array_e, array_f, array_g, array_h});
 }
 
 Status RunMain(int argc, char** argv) {
