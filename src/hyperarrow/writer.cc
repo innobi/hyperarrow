@@ -158,7 +158,7 @@ namespace hyperarrow {
 		    inserter.add(hyperapi::optional<bool>());
 		  }
 		} else if (type == arrow::date32()) {
-		  auto array = std::static_pointer_cast<arrow::NumericArray<arrow::Date32Type>>(table->column(j)->chunk(0));
+		  auto array = std::static_pointer_cast<arrow::Date32Array>(table->column(j)->chunk(0));
 		  if (array->IsValid(i)) {
 		    int64_t year, month, day;
 		    auto search = dateComponents.find(j);
