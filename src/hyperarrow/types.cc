@@ -21,8 +21,6 @@ hyperapi::SqlType arrowTypeToSqlType(
     return hyperapi::SqlType::text();
   } else if (arrowType == arrow::date32()) {
     return hyperapi::SqlType::date();
-  } else if (arrowType == arrow::date64()) {
-    return hyperapi::SqlType::date();
   }
 
   throw std::runtime_error(

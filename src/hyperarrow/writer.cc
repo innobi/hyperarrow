@@ -154,14 +154,6 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
               } else {
                 inserter.add(hyperapi::optional<int64_t>());
               }
-            } else if (type == arrow::float16()) {
-              auto array = std::static_pointer_cast<arrow::HalfFloatArray>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->Value(i));
-              } else {
-                inserter.add(hyperapi::optional<double_t>());
-              }
             } else if (type == arrow::float32()) {
               auto array = std::static_pointer_cast<arrow::FloatArray>(
                   table->column(j)->chunk(0));
