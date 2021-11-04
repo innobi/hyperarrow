@@ -1,8 +1,8 @@
-#include <iostream>
-
-#include <hyperapi/hyperapi.hpp>
 #include <arrow/builder.h>
 #include <arrow/table.h>
+
+#include <hyperapi/hyperapi.hpp>
+#include <iostream>
 
 #include "writer.h"
 
@@ -17,84 +17,77 @@ using arrow::Status;
     }                                              \
   } while (0);
 
-
 namespace {
 
-  std::shared_ptr<arrow::Table> createTable() {
-    auto schema =
-      arrow::schema({
-	  arrow::field("a", arrow::int64()),
-	  arrow::field("b", arrow::int32()),
-	  arrow::field("c", arrow::int64()),
-	  arrow::field("e", arrow::float32()),
-	  arrow::field("f", arrow::float64()),
-	  arrow::field("g", arrow::boolean())
-	});
+std::shared_ptr<arrow::Table> createTable() {
+  auto schema = arrow::schema(
+      {arrow::field("a", arrow::int64()), arrow::field("b", arrow::int32()),
+       arrow::field("c", arrow::int64()), arrow::field("e", arrow::float32()),
+       arrow::field("f", arrow::float64()),
+       arrow::field("g", arrow::boolean())});
 
-    arrow::MemoryPool *pool = arrow::default_memory_pool();
-    arrow::Int16Builder int16builder(pool);
-    arrow::Int32Builder int32builder(pool);
-    arrow::Int64Builder int64builder(pool);
-    arrow::FloatBuilder floatbuilder(pool);
-    arrow::DoubleBuilder doublebuilder(pool);
-    arrow::BooleanBuilder boolbuilder(pool);
-    arrow::StringBuilder stringbuilder(pool);
-    std::shared_ptr<arrow::Array> array_a;
-    std::shared_ptr<arrow::Array> array_b;
-    std::shared_ptr<arrow::Array> array_c;
-    std::shared_ptr<arrow::Array> array_d;
-    std::shared_ptr<arrow::Array> array_e;
-    std::shared_ptr<arrow::Array> array_f;
-    std::shared_ptr<arrow::Array> array_g;
-    
-    ABORT_ON_FAILURE(int16builder.AppendValues({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
-    ABORT_ON_FAILURE(int16builder.AppendNull());
-    ABORT_ON_FAILURE(int16builder.Finish(&array_a));
+  arrow::MemoryPool* pool = arrow::default_memory_pool();
+  arrow::Int16Builder int16builder(pool);
+  arrow::Int32Builder int32builder(pool);
+  arrow::Int64Builder int64builder(pool);
+  arrow::FloatBuilder floatbuilder(pool);
+  arrow::DoubleBuilder doublebuilder(pool);
+  arrow::BooleanBuilder boolbuilder(pool);
+  arrow::StringBuilder stringbuilder(pool);
+  std::shared_ptr<arrow::Array> array_a;
+  std::shared_ptr<arrow::Array> array_b;
+  std::shared_ptr<arrow::Array> array_c;
+  std::shared_ptr<arrow::Array> array_d;
+  std::shared_ptr<arrow::Array> array_e;
+  std::shared_ptr<arrow::Array> array_f;
+  std::shared_ptr<arrow::Array> array_g;
 
-    ABORT_ON_FAILURE(int32builder.AppendValues({9, 8, 7, 6, 5, 4, 3, 2, 1, 0}));
-    ABORT_ON_FAILURE(int32builder.AppendNull());
-    ABORT_ON_FAILURE(int32builder.Finish(&array_b));
-    
-    ABORT_ON_FAILURE(int64builder.AppendValues({1, 2, 1, 2, 1, 2, 1, 2, 1, 2}));
-    ABORT_ON_FAILURE(int64builder.AppendNull());
-    ABORT_ON_FAILURE(int64builder.Finish(&array_c));
+  ABORT_ON_FAILURE(int16builder.AppendValues({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
+  ABORT_ON_FAILURE(int16builder.AppendNull());
+  ABORT_ON_FAILURE(int16builder.Finish(&array_a));
 
-    ABORT_ON_FAILURE(floatbuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
-    ABORT_ON_FAILURE(floatbuilder.AppendNull());
-    ABORT_ON_FAILURE(floatbuilder.Finish(&array_d));
+  ABORT_ON_FAILURE(int32builder.AppendValues({9, 8, 7, 6, 5, 4, 3, 2, 1, 0}));
+  ABORT_ON_FAILURE(int32builder.AppendNull());
+  ABORT_ON_FAILURE(int32builder.Finish(&array_b));
 
-    ABORT_ON_FAILURE(doublebuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
-    ABORT_ON_FAILURE(doublebuilder.AppendNull());
-    ABORT_ON_FAILURE(doublebuilder.Finish(&array_e));
+  ABORT_ON_FAILURE(int64builder.AppendValues({1, 2, 1, 2, 1, 2, 1, 2, 1, 2}));
+  ABORT_ON_FAILURE(int64builder.AppendNull());
+  ABORT_ON_FAILURE(int64builder.Finish(&array_c));
 
-    ABORT_ON_FAILURE(boolbuilder.AppendValues(std::vector<bool>{true, false, true, false, true, false, true, false, true, false}));
-    ABORT_ON_FAILURE(boolbuilder.AppendNull());
-    ABORT_ON_FAILURE(boolbuilder.Finish(&array_f));
+  ABORT_ON_FAILURE(
+      floatbuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
+  ABORT_ON_FAILURE(floatbuilder.AppendNull());
+  ABORT_ON_FAILURE(floatbuilder.Finish(&array_d));
 
-    ABORT_ON_FAILURE(stringbuilder.AppendValues({"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}));
-    ABORT_ON_FAILURE(stringbuilder.AppendNull());
-    ABORT_ON_FAILURE(stringbuilder.Finish(&array_g));
+  ABORT_ON_FAILURE(
+      doublebuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
+  ABORT_ON_FAILURE(doublebuilder.AppendNull());
+  ABORT_ON_FAILURE(doublebuilder.Finish(&array_e));
 
-    return arrow::Table::Make(schema, {
-	array_a,
-	array_b,
-	array_c,
-	array_d,
-	array_e,
-	array_f,
-	array_g});
-  }
+  ABORT_ON_FAILURE(boolbuilder.AppendValues(std::vector<bool>{
+      true, false, true, false, true, false, true, false, true, false}));
+  ABORT_ON_FAILURE(boolbuilder.AppendNull());
+  ABORT_ON_FAILURE(boolbuilder.Finish(&array_f));
 
-  Status RunMain(int argc, char** argv) {
-    std::cerr << "* Generating data:" << std::endl;
-    std::shared_ptr<arrow::Table> table = createTable();  
+  ABORT_ON_FAILURE(stringbuilder.AppendValues(
+      {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}));
+  ABORT_ON_FAILURE(stringbuilder.AppendNull());
+  ABORT_ON_FAILURE(stringbuilder.Finish(&array_g));
 
-    std::cerr << "* Creating Hyper File:" << std::endl;
-    hyperarrow::arrowTableToHyper(table, "example.hyper");
-    std::cerr << "* Hyper File Created Successfullly!" << std::endl;
+  return arrow::Table::Make(
+      schema, {array_a, array_b, array_c, array_d, array_e, array_f, array_g});
+}
 
-    return Status::OK();
-  }
+Status RunMain(int argc, char** argv) {
+  std::cerr << "* Generating data:" << std::endl;
+  std::shared_ptr<arrow::Table> table = createTable();
+
+  std::cerr << "* Creating Hyper File:" << std::endl;
+  hyperarrow::arrowTableToHyper(table, "example.hyper");
+  std::cerr << "* Hyper File Created Successfullly!" << std::endl;
+
+  return Status::OK();
+}
 
 }  // namespace
 

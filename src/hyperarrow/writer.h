@@ -1,5 +1,6 @@
 #include <arrow/table.h>
 
 namespace hyperarrow {
-  void arrowTableToHyper(const std::shared_ptr<arrow::Table> table, const std::string path);
+void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
+                       const std::string path);
 }
