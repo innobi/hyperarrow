@@ -22,6 +22,7 @@ RUN wget --no-verbose https://downloads.tableau.com/tssoftware/$tableau_version.
 RUN unzip $tableau_version.zip
 RUN mv $tableau_version tableauhyperapi
 RUN rm $tableau_version.zip
+ARG TABLEAU_CMAKE_PATH=/build/tableauhyperapi/share/cmake
 
 WORKDIR hyperarrow
 COPY build_arrow.sh .
