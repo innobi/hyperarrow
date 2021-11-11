@@ -9,11 +9,12 @@ option(ARROW_LINK_SHARED "Link to the Arrow shared library" ON)
 find_package(Arrow REQUIRED)
 
 if (NOT DEFINED CMAKE_PREFIX_PATH)
-  set(CMAKE_PREFIX_PATH "/build/tableauhyperapi/share/cmake" CACHE PATH "Cmake prefix path" FORCE)
-endif ()
+  set(CMAKE_PREFIX_PATH $ENV{TABLEAU_CMAKE_PATH} CACHE PATH "Cmake prefix path" FORCE)
+  endif ()
+  
 find_package(tableauhyperapi-cxx REQUIRED CONFIG)
 
-set(HYPERARROW_SRC_DIR ${CMAKE_CURRENT_BINARY_DIR}/src/hyperarrow)
+set(HYPERARROW_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/hyperarrow)
 set(SOURCES
   ${HYPERARROW_SRC_DIR}/types.cc
   ${HYPERARROW_SRC_DIR}/writer.cc

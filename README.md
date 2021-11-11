@@ -35,3 +35,15 @@ run
 ```
 
 	
+## Local Build
+
+For a local build you must show CMakeLists where it can find both a pre-built arrow library as well as the tableau hyper api.
+
+```sh
+mkdir build
+pushd build
+export TABLEAU_CMAKE_PATH=<path_to_tableau>
+
+cmake ..
+popd
+```
