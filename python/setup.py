@@ -2,6 +2,7 @@ import os
 import sys
 from glob import glob
 
+import pyarrow as pa
 from setuptools import Extension, find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -16,7 +17,9 @@ if os.name == "nt":
     # see https://bugzilla.mozilla.org/show_bug.cgi?id=857863 for justification
     extra_compile_args = ["/WX", "/wd4244"]
 else:
-    extra_compile_args = ["-Wextra", "-Werror", "-Wno-error=unused-parameter"]
+    # Would love to add -Werror here but looks like the tableauhyperapi
+    # ships with a few
+    extra_compile_args = ["-Wextra"]
     if "--debug" in sys.argv:
         extra_compile_args.extend(["-g", "-UNDEBUG", "-O0"])
 
@@ -26,15 +29,19 @@ else:
 # point elsewhere on the system to a pre-built arrow package
 # much of this mirrors the build instructions here
 # https://arrow.apache.org/docs/developers/python.html#environment-setup-and-build
-arrow_lib_dir = "../../arrow/cpp/release/release"
+
+# pyarrow might support this with the right installation. See
+# https://arrow.apache.org/docs/python/extending.html?highlight=import_pyarrow
 arrow_include_dir = "../../arrow/python/pyarrow/include"
+tableau_include_dir = "../../tableauhyperapi/include"
+
 hyperarrow_module = Extension(
     "libhyperarrow",
-    include_dirs=[arrow_include_dir],
-    libraries=["arrow"],
-    library_dirs=[arrow_lib_dir],
-    sources=list(glob("hyperarrow/src/*.cpp")),
-    depends=list(glob("hyperarrow/src/*.h")),
+    include_dirs=[arrow_include_dir, tableau_include_dir] + ["../src"],
+    libraries=pa.get_libraries(),
+    library_dirs=pa.get_library_dirs(),
+    sources=list(glob("../src/hyperarrow/*.cc")),
+    depends=list(glob("../src/hyperarrow/*.h")),
     extra_compile_args=extra_compile_args,
     language="c++",
 )

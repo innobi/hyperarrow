@@ -2,20 +2,23 @@
 #include <Python.h>
 
 #include <arrow/python/pyarrow.h>
-#include "writer.h"
+#include "hyperarrow/writer.h"
 
 static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   int ok;
-  PyObject *arrowTable;
+  PyObject *obj;
 
-  ok = PyArg_ParseTuple(args, "O", &arrowTable);
+  ok = PyArg_ParseTuple(args, "O", &obj);
   if (!ok)
     return NULL;
-  
-  if (!writeToHyper(arrowTable)) {
-    PyErr_SetString(PyExc_RuntimeError, "Failed to write to hyper file!");
+
+  if (!arrow::py::is_table(obj)) {
     return NULL;
   }
+
+  auto table = arrow::py::unwrap_table(obj);
+  // TODO: this should probably return some kind of status code
+  arrowTableToHyper(table, "example.hyper");
 
   Py_RETURN_NONE;
 };
@@ -38,7 +41,8 @@ static struct PyModuleDef hyperarrowmodule = {
   .m_free = NULL
 };
 
-PyMODINIT_FUNC PyInit_libhyperarrow(void) {
+PyMODINIT_FUNC
+PyInit_libhyperarrow(void) {
   PyDateTime_IMPORT;
   PyObject *module = NULL;
   if (!arrow::py::import_pyarrow()) {
