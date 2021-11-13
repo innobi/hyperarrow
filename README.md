@@ -42,8 +42,10 @@ For a local build you must show CMakeLists where it can find both a pre-built ar
 ```sh
 mkdir build
 pushd build
-export TABLEAU_CMAKE_PATH=<path_to_tableau>
+# Modify below to point to whereve the tableauhyperapi is
+export TABLEAU_CMAKE_PATH=../tableauhyperapi/share/cmake
 
 cmake ..
+make
 popd
 ```
