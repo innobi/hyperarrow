@@ -2,7 +2,6 @@ import os
 import sys
 from glob import glob
 
-import numpy as np
 from setuptools import Extension, find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -17,16 +16,27 @@ if os.name == "nt":
     # see https://bugzilla.mozilla.org/show_bug.cgi?id=857863 for justification
     extra_compile_args = ["/WX", "/wd4244"]
 else:
-    extra_compile_args = ["-Wextra", "-Werror"]
+    extra_compile_args = ["-Wextra", "-Werror", "-Wno-error=unused-parameter"]
     if "--debug" in sys.argv:
         extra_compile_args.extend(["-g", "-UNDEBUG", "-O0"])
 
+
+# Was hoping pa.get_includes() would help
+# but doesn't appear to be the case. For now
+# point elsewhere on the system to a pre-built arrow package
+# much of this mirrors the build instructions here
+# https://arrow.apache.org/docs/developers/python.html#environment-setup-and-build
+arrow_lib_dir = "../../arrow/cpp/release/release"
+arrow_include_dir = "../../arrow/python/pyarrow/include"
 hyperarrow_module = Extension(
     "libhyperarrow",
-    include_dirs=[pa.get_include()],
-    sources=list(glob("hyperarrow/src/*.c")),
+    include_dirs=[arrow_include_dir],
+    libraries=["arrow"],
+    library_dirs=[arrow_lib_dir],
+    sources=list(glob("hyperarrow/src/*.cpp")),
     depends=list(glob("hyperarrow/src/*.h")),
     extra_compile_args=extra_compile_args,
+    language="c++",
 )
 
 setup(

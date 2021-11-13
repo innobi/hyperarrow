@@ -1,6 +1,5 @@
-#include <writer.h>
-#include <hyperarrow/writer.h>
-#include <arrow/python/pyarrow.h>
+#include "hyperarrow/writer.h"
+#include "arrow/python/pyarrow.h"
 
 ///
 /// Bridge function between the Python C module and hyperarrow

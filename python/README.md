@@ -1,3 +1,15 @@
 # Hyperarrow
 
 Currently this python wrapper is used internally for testing as well as prototyping. It is unclear yet if this should be delivered as a standalone Python package or it if will be integrated into pantab.
+
+# Building
+
+```sh
+conda create -y -n hyperarrow-dev -c conda-forge \
+  pyarrow \
+  python=3.8
+
+conda activate hyperarrow-dev
+pip install tableauhyperapi
+```
+

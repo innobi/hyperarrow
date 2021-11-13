@@ -1,0 +1,49 @@
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
+#include <arrow/python/pyarrow.h>
+#include "writer.h"
+
+static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
+  int ok;
+  PyObject *arrowTable;
+
+  ok = PyArg_ParseTuple(args, "O", &arrowTable);
+  if (!ok)
+    return NULL;
+  
+  if (!writeToHyper(arrowTable)) {
+    PyErr_SetString(PyExc_RuntimeError, "Failed to write to hyper file!");
+    return NULL;
+  }
+
+  Py_RETURN_NONE;
+};
+
+static PyMethodDef methods[] = {
+  {"write_to_hyper", write_to_hyper, METH_VARARGS,
+   "Writes an arrow table to a hyper file"},
+  {NULL, NULL, 0, NULL}};
+
+
+static struct PyModuleDef hyperarrowmodule = {
+  .m_base = PyModuleDef_HEAD_INIT,
+  .m_name = "libhyperarrow",
+  .m_doc = PyDoc_STR("Writes pyarrow Table to a hyper file"),
+  .m_size = 0,
+  .m_methods = methods,
+  .m_slots = NULL,
+  .m_traverse = NULL,
+  .m_clear = NULL,
+  .m_free = NULL
+};
+
+PyMODINIT_FUNC PyInit_libhyperarrow(void) {
+  PyDateTime_IMPORT;
+  PyObject *module = NULL;
+  if (!arrow::py::import_pyarrow()) {
+    module = PyModule_Create(&hyperarrowmodule);
+  }
+
+  return module;
+}

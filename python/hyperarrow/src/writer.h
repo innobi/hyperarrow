@@ -1,3 +1,3 @@
 #include <Python.h>
 
-extern "C" int writeToHyper(PyObject *table)
+int writeToHyper(PyObject *table);
