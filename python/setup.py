@@ -37,14 +37,13 @@ tableau_include_dir = "../../tableauhyperapi/include"
 
 hyperarrow_module = Extension(
     "libhyperarrow",
-    include_dirs=[arrow_include_dir, tableau_include_dir] + ["../src"],
+    include_dirs=[arrow_include_dir, tableau_include_dir] + ["../include"],
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to
     # expected build folder location
     libraries=pa.get_libraries() + ["hyperarrow_writer"],
     library_dirs=pa.get_library_dirs() + ["../build/src"],
-    sources=list(glob("../src/hyperarrow/*.cc")),
-    depends=list(glob("../src/hyperarrow/*.h")),
+    sources=list(glob("hyperarrow/src/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
     language="c++",
 )

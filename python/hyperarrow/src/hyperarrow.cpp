@@ -2,7 +2,7 @@
 #include <Python.h>
 
 #include <arrow/python/pyarrow.h>
-#include "hyperarrow/writer.h"
+#include <hyperarrow/writer.h>
 
 static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   int ok;
@@ -16,9 +16,13 @@ static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
     return NULL;
   }
 
-  auto table = arrow::py::unwrap_table(obj);
+  auto maybe_table = arrow::py::unwrap_table(obj);
+  if (!maybe_table.ok()) {
+    return NULL;
+  }
+  auto table = maybe_table.ValueOrDie();
   // TODO: this should probably return some kind of status code
-  arrowTableToHyper(table, "example.hyper");
+  hyperarrow::arrowTableToHyper(table, "example.hyper");
 
   Py_RETURN_NONE;
 };
