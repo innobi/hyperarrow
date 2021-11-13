@@ -30,7 +30,9 @@ RUN chmod 755 ./build_arrow.sh
 RUN ./build_arrow.sh
 
 COPY CMakeLists.txt  build_example.sh ./
+COPY apps ./apps/
 COPY src ./src/
+COPY include ./include/
 RUN chmod 755 ./build_example.sh
 RUN ./build_example.sh
 

@@ -4,7 +4,7 @@
 #include <hyperapi/hyperapi.hpp>
 #include <iostream>
 
-#include "writer.h"
+#include "hyperarrow/writer.h"
 
 using arrow::Status;
 

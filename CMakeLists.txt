@@ -1,8 +1,9 @@
+# Much inspiration here borrow from
+# https://gitlab.com/CLIUtils/modern-cmake/tree/master/examples/extended-project
+# https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html
 cmake_minimum_required(VERSION 3.0)
 
-set(CMAKE_BUILD_TYPE Debug)
-
-project(HyperArrow)
+project(HyperArrow VERSION 0.1)
 
 option(ARROW_LINK_SHARED "Link to the Arrow shared library" ON)
 
@@ -10,18 +11,9 @@ find_package(Arrow REQUIRED)
 
 if (NOT DEFINED CMAKE_PREFIX_PATH)
   set(CMAKE_PREFIX_PATH $ENV{TABLEAU_CMAKE_PATH} CACHE PATH "Cmake prefix path" FORCE)
-  endif ()
+endif ()
   
 find_package(tableauhyperapi-cxx REQUIRED CONFIG)
 
-set(HYPERARROW_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/hyperarrow)
-set(SOURCES
-  ${HYPERARROW_SRC_DIR}/types.cc
-  ${HYPERARROW_SRC_DIR}/writer.cc
-  ${HYPERARROW_SRC_DIR}/hyperarrow.cc
-  )
-  
-add_executable(hyperarrow ${SOURCES})
-target_include_directories(hyperarrow PRIVATE ${HYPERARROW_SRC_DIR})
-target_link_libraries(hyperarrow PRIVATE Tableau::tableauhyperapi-cxx)
-target_link_libraries(hyperarrow PRIVATE arrow_shared)
+add_subdirectory(src)
+add_subdirectory(apps)

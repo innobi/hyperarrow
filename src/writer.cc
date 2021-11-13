@@ -1,4 +1,4 @@
-#include "writer.h"
+#include <hyperarrow/writer.h>
 
 #include <arrow/builder.h>
 #include <arrow/compute/api.h>
