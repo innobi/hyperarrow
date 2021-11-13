@@ -13,3 +13,7 @@ conda activate hyperarrow-dev
 pip install tableauhyperapi
 ```
 
+.. note::
+
+	There is currently a gap where we build the internal hyperrrow libraries with an arrow library that differs from the one we build in Python. This may cause issues in case of binary incompatabilities
+

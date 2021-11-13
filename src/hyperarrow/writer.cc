@@ -63,21 +63,21 @@ mapDateArraysToComponents(const std::shared_ptr<arrow::Table> table) {
       //
       // Possibly a bug with the macro?
       arrow::Datum year_datum;
-      auto year_datum_result = arrow::compute::Year(array);
+      auto year_datum_result = arrow::compute::CallFunction("year", {array});
       if (!year_datum_result.ok()) {
         // TODO: handle error
       } else {
         year_datum = year_datum_result.ValueOrDie();
       }
       arrow::Datum month_datum;
-      auto month_datum_result = arrow::compute::Month(array);
+      auto month_datum_result = arrow::compute::CallFunction("month", {array});
       if (!month_datum_result.ok()) {
         // TODO: handle error
       } else {
         month_datum = month_datum_result.ValueOrDie();
       }
       arrow::Datum day_datum;
-      auto day_datum_result = arrow::compute::Day(array);
+      auto day_datum_result = arrow::compute::CallFunction("day", {array});
       if (!day_datum_result.ok()) {
         // TODO: handle error
       } else {
