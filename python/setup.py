@@ -49,7 +49,7 @@ def path_to_build_folder():
     return os.path.join('build', dir_name, 'hyperarrow')
 
 hyperarrow_module = Extension(
-    "libhyperarrow",
+    "hyperarrow.libhyperarrow",
     include_dirs=[arrow_include_dir, tableau_include_dir] + ["../include"],
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to

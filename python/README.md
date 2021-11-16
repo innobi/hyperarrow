@@ -25,6 +25,10 @@ pip install dist/hyperarrow
 ```
 
 ```python
-import hyperarrow.lib
+import hyperarrow.libhyperarrow
+import pyarrow as pa
+
+tbl = pa.Table.from_pydict({"a": range(100)})
+hyperarrow.libhyperarrow.write_to_hyper(tbl)
 ```
 
