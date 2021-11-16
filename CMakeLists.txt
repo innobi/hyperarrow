@@ -2,6 +2,7 @@
 # https://gitlab.com/CLIUtils/modern-cmake/tree/master/examples/extended-project
 # https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html
 cmake_minimum_required(VERSION 3.0)
+set (CMAKE_CXX_STANDARD 11)
 
 project(HyperArrow VERSION 0.1)
 
