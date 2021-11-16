@@ -1,5 +1,6 @@
 import os
 import sys
+import sysconfig
 from glob import glob
 
 import pyarrow as pa
@@ -35,16 +36,29 @@ else:
 arrow_include_dir = "../../arrow/python/pyarrow/include"
 tableau_include_dir = "../../tableauhyperapi/include"
 
+
+# Inspiration for this method taken from:
+# https://stackoverflow.com/a/63837811/621736
+
+def path_to_build_folder():
+    """Returns the name of a distutils build directory"""
+    f = "{dirname}.{platform}-{version[0]}.{version[1]}"
+    dir_name = f.format(dirname='lib',
+                    platform=sysconfig.get_platform(),
+                    version=sys.version_info)
+    return os.path.join('build', dir_name, 'hyperarrow')
+
 hyperarrow_module = Extension(
-    "libhyperarrow",
+    "hyperarrow.lib",
     include_dirs=[arrow_include_dir, tableau_include_dir] + ["../include"],
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to
     # expected build folder location
     libraries=pa.get_libraries() + ["hyperarrow_writer"],
-    library_dirs=pa.get_library_dirs() + ["../build/src"],
-    sources=list(glob("hyperarrow/src/hyperarrow.cpp")),
+    library_dirs=pa.get_library_dirs() + [os.path.join(path_to_build_folder(), "lib")],
+    sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
+    extra_link_args=["-Wl,-rpath=$ORIGIN/lib/."],
     language="c++",
 )
 
@@ -66,9 +80,10 @@ setup(
         'Programming Language :: Python :: 3'
     ],
     keywords="tableau tableauhyperapi arrow",
-    packages=find_packages(),
-    package_data={"": ["*.h"]},
-    data_files=[("", ["LICENSE.txt", "README.md"])],
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    package_data={"hyperarrow": ["lib/libhyperarrow_writer.so"]},
+    data_files=[("", ["README.md"])],
     python_requires=">=3.8",
     install_requires=["pyarrow", "tableauhyperapi"],
     extras_require={"dev": ["pytest"]},
