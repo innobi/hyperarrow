@@ -1,0 +1,10 @@
+name: hyperarrow-dev
+channels:
+  - conda-forge
+dependencies:
+  - pip
+  - pyarrow
+  - python
+  - pytest
+  - pip:
+    - tableauhyperapi

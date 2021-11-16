@@ -20,7 +20,7 @@ if os.name == "nt":
 else:
     # Would love to add -Werror here but looks like the tableauhyperapi
     # ships with a few
-    extra_compile_args = ["-Wextra"]
+    extra_compile_args = ["-Wextra", "-std=c++11"]
     if "--debug" in sys.argv:
         extra_compile_args.extend(["-g", "-UNDEBUG", "-O0"])
 
@@ -36,6 +36,15 @@ else:
 arrow_include_dir = "../../arrow/python/pyarrow/include"
 tableau_include_dir = "../../tableauhyperapi/include"
 
+
+extra_compile_args = []
+package_data = []
+if sys.platform == "darwin":
+    extra_compile_args.append("-Wl,-rpath,@loader_path/lib/.")
+    package_data.append("**/*.dylib")
+elif sys.platform == "linux":
+    extra_compile_args.append("-Wl,-rpath=$ORIGIN/lib/.")
+    package_data.append("**/*.so")
 
 # Inspiration for this method taken from:
 # https://stackoverflow.com/a/63837811/621736
@@ -58,7 +67,7 @@ hyperarrow_module = Extension(
     library_dirs=pa.get_library_dirs() + [os.path.join(path_to_build_folder(), "lib")],
     sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
-    extra_link_args=["-Wl,-rpath=$ORIGIN/lib/."],
+    extra_link_args=["-Wl,-rpath,@loader_path/lib/."],
     language="c++",
 )
 
@@ -82,7 +91,7 @@ setup(
     keywords="tableau tableauhyperapi arrow",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    package_data={"hyperarrow": ["**/*.so"]},
+    package_data={"hyperarrow": package_data},
     data_files=[("", ["README.md"])],
     python_requires=">=3.8",
     install_requires=["pyarrow", "tableauhyperapi"],
