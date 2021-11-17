@@ -37,13 +37,13 @@ arrow_include_dir = "../../arrow/python/pyarrow/include"
 tableau_include_dir = "../../tableauhyperapi/include"
 
 
-extra_compile_args = []
+extra_link_args = []
 package_data = []
 if sys.platform == "darwin":
-    extra_compile_args.append("-Wl,-rpath,@loader_path/lib/.")
+    extra_link_args.append("-Wl,-rpath,@loader_path/lib/.")
     package_data.append("**/*.dylib")
 elif sys.platform == "linux":
-    extra_compile_args.append("-Wl,-rpath=$ORIGIN/lib/.")
+    extra_link_args.append("-Wl,-rpath=$ORIGIN/lib/.")
     package_data.append("**/*.so")
 
 # Inspiration for this method taken from:
@@ -67,7 +67,7 @@ hyperarrow_module = Extension(
     library_dirs=pa.get_library_dirs() + [os.path.join(path_to_build_folder(), "lib")],
     sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
-    extra_link_args=["-Wl,-rpath,@loader_path/lib/."],
+    extra_link_args=extra_link_args,
     language="c++",
 )
 
