@@ -27,4 +27,26 @@ hyperapi::SqlType arrowTypeToSqlType(
       std::string("Type not supported or not yet implemented: ") +
       typeid(arrowType).name());
 }
+
+  std::shared_ptr<arrow::DataType> hyperTypeToArrowType(const hyperapi::SqlType hyperType) {
+    if (hyperType == hyperapi::SqlType::smallInt()) {
+      return arrow::int16();
+    } else if (hyperType == hyperapi::SqlType::integer()) {
+      return arrow::int32();
+    } else if (hyperType == hyperapi::SqlType::intbigInt()) {
+      return arrow::int64();
+    } else if (hyperType == hyperapi::SqlType::doublePrecision()) {
+      return arrow::float64();
+    } else if (hyperType == hyperapi::SqlType::boolean()) {
+      return arrow::boolean();
+    } else if (hyperType == hyperapi::SqlType::text()) {
+      return arrow::utf8();
+    } else if (hyperType == hyperapi::SqlType::date()) {
+      return arrow::date32();
+    }
+
+    throw std::runtime_error(
+	std::string("type note supported or not yet implemented: ") +
+	typeid(hyperType).name());
+  }
 }  // namespace hyperarrow
