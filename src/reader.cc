@@ -8,9 +8,12 @@
 #include <map>
 #include "types.h"
 
-static std::shared_ptr<arrow::Schema> arrowSchemaFromHyperTableDef(hyperapi::TableDefinition tableDefinition) { }
+static std::shared_ptr<arrow::Schema> arrowSchemaFromHyperTableDef(hyperapi::TableDefinition tableDefinition) {
+  
+}
 
 static std::shared_ptr<arrow::Table> arrowTableFromHyperResult(hyperapi::Result result) {
+  // See MakeColumnBuilders for reference in arrow::csv::reader.cc
   for (const hyperapi::Row& row : result) {
     for (const hyperapi::Value& value : row ) {
       // TODO: add to arrow table builders
