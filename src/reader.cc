@@ -1,27 +1,62 @@
 #include <hyperarrow/reader.h>
 
 #include <arrow/builder.h>
+#include <arrow/pretty_print.h>
 #include <arrow/table.h>
 
-#include <hyperarpi/hyperapi.hpp>
+#include <hyperapi/hyperapi.hpp>
 
-#include <map>
-#include "types.h"
-
-static std::shared_ptr<arrow::Schema> arrowSchemaFromHyperTableDef(hyperapi::TableDefinition tableDefinition) {
-  
-}
-
-static std::shared_ptr<arrow::Table> arrowTableFromHyperResult(hyperapi::Result result) {
-  // See MakeColumnBuilders for reference in arrow::csv::reader.cc
-  for (const hyperapi::Row& row : result) {
-    for (const hyperapi::Value& value : row ) {
-      // TODO: add to arrow table builders
-    }
-  }
-}
+#include <vector>
 
 namespace hyperarrow {
+  //static std::shared_ptr<arrow::Table> arrowTableFromHyperResult(hyperapi::Result result) {
+  void printArrowTable() {
+    // Create a schema describing datasets with two columns:
+    std::shared_ptr<arrow::Field> field_a, field_b;
+    std::shared_ptr<arrow::Schema> schema;
+
+    field_a = arrow::field("A", arrow::int64());
+    field_b = arrow::field("B", arrow::int64());
+    schema = arrow::schema({field_a, field_b});
+
+    std::size_t rowCount = 2;
+    std::size_t colCount = 2;
+
+    std::vector<arrow::Int64Builder> builders;
+    for (std::size_t i = 0; i < colCount; i++) {
+      arrow::Int64Builder tmp;
+      tmp.Reserve(rowCount);
+      builders.push_back(tmp);
+    }
+
+    std::size_t rowNum = 0;
+    std::size_t colNum = 0;
+    while ( rowNum < rowCount ) {
+      while ( colNum < colCount ) {
+	//for (auto rit = result.begin(); rit != result.end(); ++rit) {
+	//  for (auto cit = *rit.begin(); cit != *rit.end(); ++cit) {
+	builders[colNum].UnsafeAppend(1);
+	colNum++;
+      }
+      rowNum++;
+    }
+
+
+    std::vector<std::shared_ptr<arrow::Array>> arrays;  
+    for (std::size_t i = 0; i < colCount; i++) {
+      auto maybe_array = builders[i].Finish();
+      if (!maybe_array.ok()) {
+	// TODO: handle failure
+      }
+
+      std::shared_ptr<arrow::Array> array;
+      arrays.push_back(array);
+    } 
+
+    auto table = arrow::Table::Make(schema, arrays);
+    arrow::PrettyPrint(*table, {}, &std::cerr);  
+  }
+  /*
   std::shared_ptr<arrow::Table> arrowTableFromHyper(const std::string path) {
     hyperapi::HyperProcess hyper(hyperapi::Telemetry::DoNotSendUsageDataToTableau);
     {
@@ -33,4 +68,5 @@ namespace hyperarrow {
       hyperapi::Result rowsInTable = connection.executeQuery("SELECT * FROM " + extractTable.ToString());
       
   }
+  */
 }

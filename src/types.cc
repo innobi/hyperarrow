@@ -33,7 +33,7 @@ hyperapi::SqlType arrowTypeToSqlType(
       return arrow::int16();
     } else if (hyperType == hyperapi::SqlType::integer()) {
       return arrow::int32();
-    } else if (hyperType == hyperapi::SqlType::intbigInt()) {
+    } else if (hyperType == hyperapi::SqlType::bigInt()) {
       return arrow::int64();
     } else if (hyperType == hyperapi::SqlType::doublePrecision()) {
       return arrow::float64();
