@@ -1,8 +1,6 @@
 #include <hyperarrow/reader.h>
 
-#include <arrow/builder.h>
-#include <arrow/pretty_print.h>
-#include <arrow/table.h>
+#include <arrow/api.h>
 
 #include <hyperapi/hyperapi.hpp>
 
@@ -26,12 +24,12 @@ namespace hyperarrow {
     for (std::size_t i = 0; i < colCount; i++) {
       arrow::Int64Builder tmp;
       tmp.Reserve(rowCount);
-      builders.push_back(tmp);
+      builders.push_back(std::move(tmp));
     }
 
     std::size_t rowNum = 0;
-    std::size_t colNum = 0;
     while ( rowNum < rowCount ) {
+      std::size_t colNum = 0;
       while ( colNum < colCount ) {
 	//for (auto rit = result.begin(); rit != result.end(); ++rit) {
 	//  for (auto cit = *rit.begin(); cit != *rit.end(); ++cit) {
@@ -41,15 +39,14 @@ namespace hyperarrow {
       rowNum++;
     }
 
-
     std::vector<std::shared_ptr<arrow::Array>> arrays;  
     for (std::size_t i = 0; i < colCount; i++) {
-      auto maybe_array = builders[i].Finish();
+      std::shared_ptr<arrow::Array> array;      
+      auto maybe_array = builders[i].Finish(&array);
       if (!maybe_array.ok()) {
 	// TODO: handle failure
       }
 
-      std::shared_ptr<arrow::Array> array;
       arrays.push_back(array);
     } 
 
