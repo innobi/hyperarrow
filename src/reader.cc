@@ -6,10 +6,7 @@
 
 #include <vector>
 
-namespace hyperarrow {
-  //static std::shared_ptr<arrow::Table> arrowTableFromHyperResult(hyperapi::Result result) {
-  void printArrowTable() {
-    // Create a schema describing datasets with two columns:
+static std::shared_ptr<arrow::Schema> schemaFromHyper() {
     std::shared_ptr<arrow::Field> field_a, field_b;
     std::shared_ptr<arrow::Schema> schema;
 
@@ -17,8 +14,15 @@ namespace hyperarrow {
     field_b = arrow::field("B", arrow::int64());
     schema = arrow::schema({field_a, field_b});
 
+    return schema;
+}
+
+namespace hyperarrow {
+  //static std::shared_ptr<arrow::Table> arrowTableFromHyperResult(hyperapi::Result result) {
+  void printArrowTable() {
+    auto schema = schemaFromHyper();
+    auto colCount = schema->num_fields();
     std::size_t rowCount = 2;
-    std::size_t colCount = 2;
 
     std::vector<arrow::Int64Builder> builders;
     for (std::size_t i = 0; i < colCount; i++) {
