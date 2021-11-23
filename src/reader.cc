@@ -24,11 +24,21 @@ namespace hyperarrow {
     auto colCount = schema->num_fields();
     std::size_t rowCount = 2;
 
-    std::vector<arrow::Int64Builder> builders;
-    for (std::size_t i = 0; i < colCount; i++) {
-      arrow::Int64Builder tmp;
-      tmp.Reserve(rowCount);
-      builders.push_back(std::move(tmp));
+    std::vector<std::function<arrow::Status()>> append_funcs;
+    std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
+    for (int i = 0; i < schema->fields().size(); i++) {
+      const auto& field = schema->fields()[i];
+      if (schema->field(i)->type() == arrow::int64()) {
+	auto int_builder = std::make_shared<arrow::Int64Builder>();
+	append_funcs.push_back([int_builder] () {
+	      // TODO; this sentinel should be replaced by a value
+	      // coming from the Hyper extract
+	      int val = 1;
+	      return int_builder->Append(val);
+	});
+	int_builder->Reserve(rowCount);	
+	builders.push_back(std::move(int_builder));
+      }
     }
 
     std::size_t rowNum = 0;
@@ -37,7 +47,9 @@ namespace hyperarrow {
       while ( colNum < colCount ) {
 	//for (auto rit = result.begin(); rit != result.end(); ++rit) {
 	//  for (auto cit = *rit.begin(); cit != *rit.end(); ++cit) {
-	builders[colNum].UnsafeAppend(1);
+	//builders[colNum].UnsafeAppend(1);
+	//ARROW_RETURN_NOT_OK(
+	append_funcs[colNum]();//);
 	colNum++;
       }
       rowNum++;
@@ -46,7 +58,7 @@ namespace hyperarrow {
     std::vector<std::shared_ptr<arrow::Array>> arrays;  
     for (std::size_t i = 0; i < colCount; i++) {
       std::shared_ptr<arrow::Array> array;      
-      auto maybe_array = builders[i].Finish(&array);
+      auto maybe_array = builders[i]->Finish(&array);
       if (!maybe_array.ok()) {
 	// TODO: handle failure
       }
