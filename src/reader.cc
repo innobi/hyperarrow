@@ -7,7 +7,6 @@
 static std::shared_ptr<arrow::Schema> schemaFromHyper(hyperapi::TableDefinition tableDefinition) {
   std::vector<std::shared_ptr<arrow::Field>> fields;
   for (auto& column : tableDefinition.getColumns()) {
-    // TODO: don't hard code; use types.h
     auto type = hyperarrow::hyperTypeToArrowType(column.getType());
     auto field = arrow::field(column.getName().toString(), type);
     fields.push_back(field);
@@ -42,17 +41,56 @@ namespace hyperarrow {
       std::vector<std::function<arrow::Status(const hyperapi::Value& value)>> append_funcs;
       for (int i = 0; i < schema->fields().size(); i++) {
 	const auto& field = schema->fields()[i];
-	if (schema->field(i)->type() == arrow::int64()) {
-	  auto int_builder = std::make_shared<arrow::Int64Builder>();
-	  append_funcs.push_back([int_builder] (const hyperapi::Value& value) {
+	if (schema->field(i)->type() == arrow::int16()) {
+	  auto builder = std::make_shared<arrow::Int16Builder>();
+	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
+	    return builder->Append(value);
+	  });
+	  // TODO: if we get rowCount up front we can more efficiently append
+	  //builder->Reserve(rowCount);	
+	  builders.push_back(std::move(builder));
+	}
+	else if (schema->field(i)->type() == arrow::int32()) {
+	  auto builder = std::make_shared<arrow::Int32Builder>();
+	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
+	    return builder->Append(value);
+	  });
+	  
+	  // TODO: if we get rowCount up front we can more efficiently append
+	  //builder->Reserve(rowCount);	
+	  builders.push_back(std::move(builder));
+	}
+	else if (schema->field(i)->type() == arrow::int64()) {
+	  auto builder = std::make_shared<arrow::Int64Builder>();
+	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
 	    // TODO; this sentinel should be replaced by a value
 	    // coming from the Hyper extract
-	    return int_builder->Append(value);
+	    return builder->Append(value);
+	  });
+	  
+	  // TODO: if we get rowCount up front we can more efficiently append
+	  //builder->Reserve(rowCount);	
+	  builders.push_back(std::move(builder));
+	}
+	else if (schema->field(i)->type() == arrow::float64()) {
+	  auto builder = std::make_shared<arrow::DoubleBuilder>();
+	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
+	    return builder->Append(value);
 	  });
 	  
 	  // TODO: if we get rowCount up front we can more efficiently append
 	  //int_builder->Reserve(rowCount);	
-	  builders.push_back(std::move(int_builder));
+	  builders.push_back(std::move(builder));
+	}
+	else if (schema->field(i)->type() == arrow::boolean()) {
+	  auto builder = std::make_shared<arrow::BooleanBuilder>();
+	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
+	    return builder->Append(static_cast<bool>(value));
+	  });
+	  
+	  // TODO: if we get rowCount up front we can more efficiently append
+	  //int_builder->Reserve(rowCount);	
+	  builders.push_back(std::move(builder));
 	}
       }
 
