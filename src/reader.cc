@@ -90,7 +90,8 @@ namespace hyperarrow {
 	} else if (schema->field(i)->type() == arrow::utf8()) {
 	  auto builder = std::make_shared<arrow::StringBuilder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    return builder->Append(value);
+	    std::string stringVal = value.get<std::string>();
+	    return builder->Append(stringVal);
 	  });
 
 	  // TODO: if we get rowCount up front we can more efficiently append
