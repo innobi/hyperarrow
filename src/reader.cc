@@ -1,13 +1,15 @@
-#include <hyperarrow/reader.h>
 #include <arrow/api.h>
 #include <hyperapi/hyperapi.hpp>
 #include <vector>
+#include "hyperarrow/reader.h"
+#include "types.h"
 
 static std::shared_ptr<arrow::Schema> schemaFromHyper(hyperapi::TableDefinition tableDefinition) {
   std::vector<std::shared_ptr<arrow::Field>> fields;
   for (auto& column : tableDefinition.getColumns()) {
     // TODO: don't hard code; use types.h
-    auto field = arrow::field(column.getName().toString(), arrow::int64());
+    auto type = hyperarrow::hyperTypeToArrowType(column.getType());
+    auto field = arrow::field(column.getName().toString(), type);
     fields.push_back(field);
   }
   
