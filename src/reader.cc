@@ -5,24 +5,23 @@
 #include "hyperarrow/reader.h"
 #include "types.h"
 
-static std::shared_ptr<arrow::Schema> schemaFromHyper(hyperapi::TableDefinition tableDefinition) {
-  std::vector<std::shared_ptr<arrow::Field>> fields;
-  for (auto& column : tableDefinition.getColumns()) {
-    auto type = hyperarrow::hyperTypeToArrowType(column.getType());
-    auto field = arrow::field(column.getName().toString(), type);
-    fields.push_back(field);
+namespace hyperarrow {
+  static std::shared_ptr<arrow::Schema> schemaFromHyper(hyperapi::TableDefinition tableDefinition) {
+    std::vector<std::shared_ptr<arrow::Field>> fields;
+    for (auto& column : tableDefinition.getColumns()) {
+      auto type = hyperarrow::hyperTypeToArrowType(column.getType());
+      auto field = arrow::field(column.getName().toString(), type);
+      fields.push_back(field);
+    }
+  
+    std::shared_ptr<arrow::Schema> schema;
+
+    schema = arrow::schema(fields);
+
+    return schema;
   }
   
-  std::shared_ptr<arrow::Schema> schema;
-
-  schema = arrow::schema(fields);
-
-  return schema;
-}
-
-namespace hyperarrow {
-  //static std::shared_ptr<arrow::Table> arrowTableFromHyperResult(hyperapi::Result result) {
-  void printArrowTable() {
+   std::shared_ptr<arrow::Table> arrowTableFromHyper() {
     auto path = "example.hyper";
     std::size_t colCount;
     std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
@@ -150,6 +149,7 @@ namespace hyperarrow {
     } 
 
     auto table = arrow::Table::Make(schema, arrays);
-    arrow::PrettyPrint(*table, {}, &std::cerr);  
+    arrow::PrettyPrint(*table, {}, &std::cerr);
+    return table;
   }
 }

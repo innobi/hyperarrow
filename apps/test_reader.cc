@@ -1,6 +1,6 @@
 #include "hyperarrow/reader.h"
 
 int main(int argc, char** argv) {
-  hyperarrow::printArrowTable();
+  auto foo = hyperarrow::arrowTableFromHyper();
   return 0;
 }
