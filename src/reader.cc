@@ -21,7 +21,7 @@ namespace hyperarrow {
     return schema;
   }
   
-   std::shared_ptr<arrow::Table> arrowTableFromHyper() {
+  arrow::Result<std::shared_ptr<arrow::Table>> arrowTableFromHyper() {
     auto path = "example.hyper";
     std::size_t colCount;
     std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
@@ -131,7 +131,7 @@ namespace hyperarrow {
       for (const hyperapi::Row& row : rowsInTable) {
 	std::size_t colNum = 0;
 	for (const hyperapi::Value& value : row) {
-	  append_funcs[colNum](value);
+	  ARROW_RETURN_NOT_OK(append_funcs[colNum](value));
 	  colNum++;
 	}
       }
@@ -149,7 +149,6 @@ namespace hyperarrow {
     } 
 
     auto table = arrow::Table::Make(schema, arrays);
-    arrow::PrettyPrint(*table, {}, &std::cerr);
     return table;
   }
 }
