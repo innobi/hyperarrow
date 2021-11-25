@@ -1,4 +1,5 @@
 #include <arrow/api.h>
+#include <arrow/vendored/datetime.h>
 #include <hyperapi/hyperapi.hpp>
 #include <vector>
 #include "hyperarrow/reader.h"
@@ -22,7 +23,7 @@ static std::shared_ptr<arrow::Schema> schemaFromHyper(hyperapi::TableDefinition 
 namespace hyperarrow {
   //static std::shared_ptr<arrow::Table> arrowTableFromHyperResult(hyperapi::Result result) {
   void printArrowTable() {
-    auto path = "read_example.hyper";
+    auto path = "example.hyper";
     std::size_t colCount;
     std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
     std::shared_ptr<arrow::Schema> schema;
@@ -92,6 +93,20 @@ namespace hyperarrow {
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
 	    std::string stringVal = value.get<std::string>();
 	    return builder->Append(stringVal);
+	  });
+
+	  // TODO: if we get rowCount up front we can more efficiently append
+	  //int_builder->Reserve(rowCount);
+	  builders.push_back(std::move(builder));
+	} else if (schema->field(i)->type() == arrow::date32()) {
+	  auto builder = std::make_shared<arrow::Date32Builder>();
+	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
+	    hyperapi::Date dt = value.get<hyperapi::Date>();
+	    // Arrow uses Julian epoch
+	    auto chrono_dt = arrow_vendored::date::sys_days(arrow_vendored::date::year(dt.getYear())/arrow_vendored::date::month(dt.getMonth())/arrow_vendored::date::day(dt.getDay()));
+	    auto epoch = chrono_dt.time_since_epoch();
+	    auto val = std::chrono::duration_cast<arrow_vendored::date::days>(epoch);
+	    return builder->Append(val.count());
 	  });
 
 	  // TODO: if we get rowCount up front we can more efficiently append
