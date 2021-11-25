@@ -45,7 +45,11 @@ namespace hyperarrow {
 	if (schema->field(i)->type() == arrow::int16()) {
 	  auto builder = std::make_shared<arrow::Int16Builder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    return builder->Append(value);
+	    if (value.isNull()) {
+	      return builder->AppendNull();
+	    } else {
+	      return builder->Append(value);
+	    }
 	  });
 	  // TODO: if we get rowCount up front we can more efficiently append
 	  //builder->Reserve(rowCount);	
@@ -53,7 +57,11 @@ namespace hyperarrow {
 	} else if (schema->field(i)->type() == arrow::int32()) {
 	  auto builder = std::make_shared<arrow::Int32Builder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    return builder->Append(value);
+	    if (value.isNull()) {
+	      return builder->AppendNull();
+	    } else {
+	      return builder->Append(value);
+	    }
 	  });
 	  
 	  // TODO: if we get rowCount up front we can more efficiently append
@@ -62,55 +70,59 @@ namespace hyperarrow {
 	} else if (schema->field(i)->type() == arrow::int64()) {
 	  auto builder = std::make_shared<arrow::Int64Builder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    // TODO; this sentinel should be replaced by a value
-	    // coming from the Hyper extract
-	    return builder->Append(value);
+	    if (value.isNull()) {
+	      return builder->AppendNull();
+	    } else {
+	      return builder->Append(value);
+	    }
 	  });
-	  
-	  // TODO: if we get rowCount up front we can more efficiently append
-	  //builder->Reserve(rowCount);	
 	  builders.push_back(std::move(builder));
 	} else if (schema->field(i)->type() == arrow::float64()) {
 	  auto builder = std::make_shared<arrow::DoubleBuilder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    return builder->Append(value);
+	    if (value.isNull()) {
+	      return builder->AppendNull();
+	    } else {
+	      return builder->Append(value);
+	    }
 	  });
-	  
-	  // TODO: if we get rowCount up front we can more efficiently append
-	  //int_builder->Reserve(rowCount);	
 	  builders.push_back(std::move(builder));
 	} else if (schema->field(i)->type() == arrow::boolean()) {
 	  auto builder = std::make_shared<arrow::BooleanBuilder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    return builder->Append(static_cast<bool>(value));
-	  });
-	  
-	  // TODO: if we get rowCount up front we can more efficiently append
-	  //int_builder->Reserve(rowCount);	
+	    if (value.isNull()) {
+	      return builder->AppendNull();
+	    } else {
+	      return builder->Append(static_cast<bool>(value));	      
+	    }	    
+
+	  });	  
 	  builders.push_back(std::move(builder));
 	} else if (schema->field(i)->type() == arrow::utf8()) {
 	  auto builder = std::make_shared<arrow::StringBuilder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    std::string stringVal = value.get<std::string>();
-	    return builder->Append(stringVal);
+	    if (value.isNull()) {
+	      return builder->AppendNull();
+	    } else {
+	      std::string stringVal = value.get<std::string>();
+	      return builder->Append(stringVal);	      
+	    }	    
 	  });
-
-	  // TODO: if we get rowCount up front we can more efficiently append
-	  //int_builder->Reserve(rowCount);
 	  builders.push_back(std::move(builder));
 	} else if (schema->field(i)->type() == arrow::date32()) {
 	  auto builder = std::make_shared<arrow::Date32Builder>();
 	  append_funcs.push_back([builder] (const hyperapi::Value& value) {
-	    hyperapi::Date dt = value.get<hyperapi::Date>();
-	    // Arrow uses Julian epoch
-	    auto chrono_dt = arrow_vendored::date::sys_days(arrow_vendored::date::year(dt.getYear())/arrow_vendored::date::month(dt.getMonth())/arrow_vendored::date::day(dt.getDay()));
-	    auto epoch = chrono_dt.time_since_epoch();
-	    auto val = std::chrono::duration_cast<arrow_vendored::date::days>(epoch);
-	    return builder->Append(val.count());
+	    if (value.isNull()) {
+	      return builder->AppendNull();
+	    } else {	    
+	      hyperapi::Date dt = value.get<hyperapi::Date>();
+	      // Arrow uses Julian epoch
+	      auto chrono_dt = arrow_vendored::date::sys_days(arrow_vendored::date::year(dt.getYear())/arrow_vendored::date::month(dt.getMonth())/arrow_vendored::date::day(dt.getDay()));
+	      auto epoch = chrono_dt.time_since_epoch();
+	      auto val = std::chrono::duration_cast<arrow_vendored::date::days>(epoch);
+	      return builder->Append(val.count());
+	    }
 	  });
-
-	  // TODO: if we get rowCount up front we can more efficiently append
-	  //int_builder->Reserve(rowCount);
 	  builders.push_back(std::move(builder));
 	}
       }
