@@ -15,6 +15,8 @@ if (NOT DEFINED CMAKE_PREFIX_PATH)
 endif ()
   
 find_package(tableauhyperapi-cxx REQUIRED CONFIG)
+find_package(Boost REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(apps)
+add_subdirectory(tests)
