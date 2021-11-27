@@ -3,7 +3,7 @@
 #include "hyperarrow/reader.h"
 
 int main(int argc, char** argv) {
-  auto result = hyperarrow::arrowTableFromHyper();
+  auto result = hyperarrow::arrowTableFromHyper("example.hyper", "schema", "table");
   if (result.ok()) {
     auto table = result.ValueOrDie();
     auto printed = arrow::PrettyPrint(*table, {}, &std::cerr);

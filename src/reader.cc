@@ -21,22 +21,23 @@ namespace hyperarrow {
     return schema;
   }
   
-  arrow::Result<std::shared_ptr<arrow::Table>> arrowTableFromHyper() {
-    auto path = "example.hyper";
+  arrow::Result<std::shared_ptr<arrow::Table>> arrowTableFromHyper(
+                       const std::string databasePath,
+		       const std::string schemaName,
+		       const std::string tableName) {
     std::size_t colCount;
     std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
     std::shared_ptr<arrow::Schema> schema;
     
     hyperapi::HyperProcess hyper(hyperapi::Telemetry::DoNotSendUsageDataToTableau);
     {
-      hyperapi::Connection connection(hyper.getEndpoint(), path);
+      hyperapi::Connection connection(hyper.getEndpoint(), databasePath);
       const hyperapi::Catalog& catalog = connection.getCatalog();
-      hyperapi::TableName extractTable("Extract", "Extract");
+      hyperapi::TableName extractTable(schemaName, tableName);
 
       hyperapi::TableDefinition tableDefinition = catalog.getTableDefinition(extractTable);
       schema = schemaFromHyper(tableDefinition);
       colCount = schema->num_fields();
-      //std::size_t rowCount = 2;
 
       std::vector<std::function<arrow::Status(const hyperapi::Value& value)>> append_funcs;
       for (int i = 0; i < schema->fields().size(); i++) {
