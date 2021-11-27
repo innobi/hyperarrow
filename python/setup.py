@@ -41,10 +41,11 @@ extra_link_args = []
 package_data = []
 if sys.platform == "darwin":
     extra_link_args.append("-Wl,-rpath,@loader_path/lib/.")
-    package_data.append("**/*.dylib")
+    package_data.append("lib/*.dylib")
 elif sys.platform == "linux":
     extra_link_args.append("-Wl,-rpath=$ORIGIN/lib/.")
-    package_data.append("**/*.so")
+    package_data.append("lib/*.so")
+
 
 # Inspiration for this method taken from:
 # https://stackoverflow.com/a/63837811/621736
@@ -63,7 +64,7 @@ hyperarrow_module = Extension(
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to
     # expected build folder location
-    libraries=pa.get_libraries() + ["hyperarrow_writer"],
+    libraries=pa.get_libraries() + ["hyperarrow_writer", "hyperarrow_reader"],
     library_dirs=pa.get_library_dirs() + [os.path.join(path_to_build_folder(), "lib")],
     sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,

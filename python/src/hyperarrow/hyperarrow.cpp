@@ -3,6 +3,7 @@
 
 #include <arrow/python/pyarrow.h>
 #include <hyperarrow/writer.h>
+#include <hyperarrow/reader.h>
 
 static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   int ok;
@@ -27,9 +28,26 @@ static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   Py_RETURN_NONE;
 };
 
+static PyObject *read_from_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
+  PyObject *obj;
+
+  auto result = hyperarrow::arrowTableFromHyper();
+  if (result.ok()) {
+    auto table = result.ValueOrDie();
+    obj = arrow::py::wrap_table(table);
+  } else {
+    PyErr_SetString(PyExc_RuntimeError, "Could not read hyper file");
+    obj = NULL;
+  }
+
+  return obj;
+}
+
 static PyMethodDef methods[] = {
   {"write_to_hyper", write_to_hyper, METH_VARARGS,
    "Writes an arrow table to a hyper file"},
+  {"read_from_hyper", read_from_hyper, METH_VARARGS,
+   "Reads an arrow table from a hyper file"},
   {NULL, NULL, 0, NULL}};
 
 
