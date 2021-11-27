@@ -81,4 +81,6 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   const std::string path = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");
   BOOST_TEST(boost::filesystem::exists(path));
+  boost::filesystem::remove(path);
+  boost::filesystem::remove("hyperd.log");
 }
