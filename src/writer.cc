@@ -11,10 +11,13 @@
 
 namespace hyperarrow {
 static const hyperapi::TableDefinition createDefinitionFromSchema(
-    std::shared_ptr<arrow::Table> table) {
+								  std::shared_ptr<arrow::Table> table,
+								  const std::string schemaName,
+								  const std::string tableName
+								  ) {
   const std::shared_ptr<arrow::Schema> schema = table->schema();
-  hyperapi::TableDefinition tableDef =
-      hyperapi::TableDefinition({"Extract", "Extract"});
+  hyperapi::TableDefinition tableDef = 
+    hyperapi::TableDefinition({schemaName, tableName});
   for (const std::shared_ptr<arrow::Field> field : schema->fields()) {
     // TODO: without these conversions can easily get an error like
     // error: no matching function for call to
@@ -108,20 +111,22 @@ mapDateArraysToComponents(const std::shared_ptr<arrow::Table> table) {
 }
 
 void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
-                       const std::string path) {
-  const std::string pathToDatabase = "example.hyper";
+                       const std::string databasePath,
+		       const std::string schemaName,
+		       const std::string tableName
+		       ) {
   {
     auto dateComponents = mapDateArraysToComponents(table);
     hyperapi::HyperProcess hyper(
         hyperapi::Telemetry::DoNotSendUsageDataToTableau);
     {
-      hyperapi::Connection connection(hyper.getEndpoint(), pathToDatabase,
+      hyperapi::Connection connection(hyper.getEndpoint(), databasePath,
                                       hyperapi::CreateMode::CreateAndReplace);
       const hyperapi::Catalog& catalog = connection.getCatalog();
       static const hyperapi::TableDefinition extractTable =
-          createDefinitionFromSchema(table);
+	createDefinitionFromSchema(table, schemaName, tableName);
 
-      catalog.createSchema("Extract");
+      catalog.createSchemaIfNotExists(schemaName);
       catalog.createTable(extractTable);
       {
         hyperapi::Inserter inserter{connection, extractTable};

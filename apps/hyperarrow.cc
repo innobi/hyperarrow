@@ -89,7 +89,7 @@ Status RunMain(int argc, char** argv) {
   std::shared_ptr<arrow::Table> table = createTable();
 
   std::cerr << "* Creating Hyper File:" << std::endl;
-  hyperarrow::arrowTableToHyper(table, "example.hyper");
+  hyperarrow::arrowTableToHyper(table, "example.hyper", "schema", "table");
   std::cerr << "* Hyper File Created Successfullly!" << std::endl;
 
   return Status::OK();
