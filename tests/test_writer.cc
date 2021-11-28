@@ -1,18 +1,17 @@
 #define BOOST_TEST_MODULE hyperarrow_writer_tests
+#include <arrow/api.h>
 #include <boost/filesystem.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <hyperarrow/writer.h>
-#include <arrow/api.h>
 
-#define ABORT_ON_FAILURE(expr)                     \
-  do {                                             \
-    arrow::Status status_ = (expr);                \
-    if (!status_.ok()) {                           \
-      std::cerr << status_.message() << std::endl; \
-      abort();                                     \
-    }                                              \
+#define ABORT_ON_FAILURE(expr)                                                 \
+  do {                                                                         \
+    arrow::Status status_ = (expr);                                            \
+    if (!status_.ok()) {                                                       \
+      std::cerr << status_.message() << std::endl;                             \
+      abort();                                                                 \
+    }                                                                          \
   } while (0);
-
 
 BOOST_AUTO_TEST_CASE(test_basic_write) {
   auto schema = arrow::schema(
@@ -21,7 +20,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
        arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
        arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8())});
 
-  arrow::MemoryPool* pool = arrow::default_memory_pool();
+  arrow::MemoryPool *pool = arrow::default_memory_pool();
   arrow::Int16Builder int16builder(pool);
   arrow::Int32Builder int32builder(pool);
   arrow::Int64Builder int64builder(pool);
@@ -76,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(stringbuilder.Finish(&array_h));
 
   auto table = arrow::Table::Make(schema, {array_a, array_b, array_c, array_d,
-                                     array_e, array_f, array_g, array_h});
+                                           array_e, array_f, array_g, array_h});
 
   const std::string path = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");

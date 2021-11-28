@@ -8,13 +8,13 @@
 
 using arrow::Status;
 
-#define ABORT_ON_FAILURE(expr)                     \
-  do {                                             \
-    arrow::Status status_ = (expr);                \
-    if (!status_.ok()) {                           \
-      std::cerr << status_.message() << std::endl; \
-      abort();                                     \
-    }                                              \
+#define ABORT_ON_FAILURE(expr)                                                 \
+  do {                                                                         \
+    arrow::Status status_ = (expr);                                            \
+    if (!status_.ok()) {                                                       \
+      std::cerr << status_.message() << std::endl;                             \
+      abort();                                                                 \
+    }                                                                          \
   } while (0);
 
 namespace {
@@ -26,7 +26,7 @@ std::shared_ptr<arrow::Table> createTable() {
        arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
        arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8())});
 
-  arrow::MemoryPool* pool = arrow::default_memory_pool();
+  arrow::MemoryPool *pool = arrow::default_memory_pool();
   arrow::Int16Builder int16builder(pool);
   arrow::Int32Builder int32builder(pool);
   arrow::Int64Builder int64builder(pool);
@@ -84,7 +84,7 @@ std::shared_ptr<arrow::Table> createTable() {
                                      array_e, array_f, array_g, array_h});
 }
 
-Status RunMain(int argc, char** argv) {
+Status RunMain(int argc, char **argv) {
   std::cerr << "* Generating data:" << std::endl;
   std::shared_ptr<arrow::Table> table = createTable();
 
@@ -95,9 +95,9 @@ Status RunMain(int argc, char** argv) {
   return Status::OK();
 }
 
-}  // namespace
+} // namespace
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   Status st = RunMain(argc, argv);
   if (!st.ok()) {
     std::cerr << st << std::endl;

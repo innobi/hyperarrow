@@ -10,14 +10,13 @@
 #include "types.h"
 
 namespace hyperarrow {
-static const hyperapi::TableDefinition createDefinitionFromSchema(
-								  std::shared_ptr<arrow::Table> table,
-								  const std::string schemaName,
-								  const std::string tableName
-								  ) {
+static const hyperapi::TableDefinition
+createDefinitionFromSchema(std::shared_ptr<arrow::Table> table,
+                           const std::string schemaName,
+                           const std::string tableName) {
   const std::shared_ptr<arrow::Schema> schema = table->schema();
-  hyperapi::TableDefinition tableDef = 
-    hyperapi::TableDefinition({schemaName, tableName});
+  hyperapi::TableDefinition tableDef =
+      hyperapi::TableDefinition({schemaName, tableName});
   for (const std::shared_ptr<arrow::Field> field : schema->fields()) {
     // TODO: without these conversions can easily get an error like
     // error: no matching function for call to
@@ -112,9 +111,8 @@ mapDateArraysToComponents(const std::shared_ptr<arrow::Table> table) {
 
 void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                        const std::string databasePath,
-		       const std::string schemaName,
-		       const std::string tableName
-		       ) {
+                       const std::string schemaName,
+                       const std::string tableName) {
   {
     auto dateComponents = mapDateArraysToComponents(table);
     hyperapi::HyperProcess hyper(
@@ -122,9 +120,9 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
     {
       hyperapi::Connection connection(hyper.getEndpoint(), databasePath,
                                       hyperapi::CreateMode::CreateAndReplace);
-      const hyperapi::Catalog& catalog = connection.getCatalog();
+      const hyperapi::Catalog &catalog = connection.getCatalog();
       static const hyperapi::TableDefinition extractTable =
-	createDefinitionFromSchema(table, schemaName, tableName);
+          createDefinitionFromSchema(table, schemaName, tableName);
 
       catalog.createSchemaIfNotExists(schemaName);
       catalog.createTable(extractTable);
@@ -233,4 +231,4 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
     }
   }
 }
-}  // namespace hyperarrow
+} // namespace hyperarrow
