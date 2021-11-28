@@ -1,5 +1,14 @@
 build
 
+# Hyper items
+*.hyper
+*hyperd.log
+
+# Python items
+*.whl
+*.egg-info*
+
+
 # Prerequisites
 *.d
 

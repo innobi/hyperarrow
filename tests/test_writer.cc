@@ -1,12 +1,8 @@
-#include <arrow/builder.h>
-#include <arrow/table.h>
-
-#include <hyperapi/hyperapi.hpp>
-#include <iostream>
-
-#include "hyperarrow/writer.h"
-
-using arrow::Status;
+#define BOOST_TEST_MODULE hyperarrow_writer_tests
+#include <arrow/api.h>
+#include <boost/filesystem.hpp>
+#include <boost/test/included/unit_test.hpp>
+#include <hyperarrow/writer.h>
 
 #define ABORT_ON_FAILURE(expr)                                                 \
   do {                                                                         \
@@ -17,9 +13,7 @@ using arrow::Status;
     }                                                                          \
   } while (0);
 
-namespace {
-
-std::shared_ptr<arrow::Table> createTable() {
+BOOST_AUTO_TEST_CASE(test_basic_write) {
   auto schema = arrow::schema(
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
        arrow::field("c", arrow::int64()), arrow::field("d", arrow::float32()),
@@ -80,28 +74,12 @@ std::shared_ptr<arrow::Table> createTable() {
   ABORT_ON_FAILURE(stringbuilder.AppendNull());
   ABORT_ON_FAILURE(stringbuilder.Finish(&array_h));
 
-  return arrow::Table::Make(schema, {array_a, array_b, array_c, array_d,
-                                     array_e, array_f, array_g, array_h});
-}
+  auto table = arrow::Table::Make(schema, {array_a, array_b, array_c, array_d,
+                                           array_e, array_f, array_g, array_h});
 
-Status RunMain(int argc, char **argv) {
-  std::cerr << "* Generating data:" << std::endl;
-  std::shared_ptr<arrow::Table> table = createTable();
-
-  std::cerr << "* Creating Hyper File:" << std::endl;
-  hyperarrow::arrowTableToHyper(table, "example.hyper", "schema", "table");
-  std::cerr << "* Hyper File Created Successfullly!" << std::endl;
-
-  return Status::OK();
-}
-
-} // namespace
-
-int main(int argc, char **argv) {
-  Status st = RunMain(argc, argv);
-  if (!st.ok()) {
-    std::cerr << st << std::endl;
-    return 1;
-  }
-  return 0;
+  const std::string path = "example.hyper";
+  hyperarrow::arrowTableToHyper(table, path, "schema", "table");
+  BOOST_TEST(boost::filesystem::exists(path));
+  boost::filesystem::remove(path);
+  boost::filesystem::remove("hyperd.log");
 }
