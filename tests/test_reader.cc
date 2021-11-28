@@ -24,12 +24,10 @@ BOOST_AUTO_TEST_CASE(test_basic_read) {
     BOOST_TEST(!array64->IsValid(1));
 
     // Floats cannot be round-tripped via hyper; come back as double
-    // TODO: some precision loss in round tripping
-    /*
+    // so expect some precision loss in round tripping
     auto arrayF = std::static_pointer_cast<arrow::DoubleArray>(
 				  table->column(3)->chunk(0));
-    BOOST_TEST(arrayF->Value(0) == 1.234);
-    */
+    BOOST_TEST(abs(arrayF->Value(0) - 1.234) <= 1.0e-007);
 
     auto arrayD = std::static_pointer_cast<arrow::DoubleArray>(
 				  table->column(4)->chunk(0));
@@ -49,6 +47,6 @@ BOOST_AUTO_TEST_CASE(test_basic_read) {
     auto arrayString = std::static_pointer_cast<arrow::StringArray>(
 				  table->column(7)->chunk(0));
     BOOST_TEST(arrayString->Value(0) == "a");
-    BOOST_TEST(!arrayString->IsValid(1));
+    gBOOST_TEST(!arrayString->IsValid(1));
   }
 }
