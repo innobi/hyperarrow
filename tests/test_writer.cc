@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   arrow::BooleanBuilder boolbuilder(pool);
   arrow::StringBuilder stringbuilder(pool);
   arrow::Date32Builder date32builder(pool);
-  arrow::TimestampBuilder tsbuilder(arrow::timestamp(arrow::TimeUnit::MILLI), pool);
+  arrow::TimestampBuilder tsbuilder(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
   std::shared_ptr<arrow::Array> array_a;
   std::shared_ptr<arrow::Array> array_b;
   std::shared_ptr<arrow::Array> array_c;

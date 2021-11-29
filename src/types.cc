@@ -21,7 +21,7 @@ arrowTypeToSqlType(const std::shared_ptr<arrow::DataType> arrowType) {
     return hyperapi::SqlType::text();
   } else if (arrowType == arrow::date32()) {
     return hyperapi::SqlType::date();
-  } else if (arrowType == arrow::timestamp(arrow::TimeUnit::MILLI)) {
+  } else if (arrowType == arrow::timestamp(arrow::TimeUnit::MICRO)) {
     return hyperapi::SqlType::timestamp();
   }
 
