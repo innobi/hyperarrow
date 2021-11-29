@@ -15,8 +15,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Arrow Dependency
       run: |
-        mkdir /deps
-        pushd /deps
+        mkdir ~/deps
+        pushd ~/deps
         git clone https://github.com/apache/arrow.git
         cd arrow
         cd cpp
@@ -24,14 +24,14 @@ jobs:
         cd build
         cmake .. -DARROW_COMPUTE=ON
         make
-        make install
+        sudo make install
         popd
     - name: Download Hyper Library / Headers
       run: |
-        pushd /deps
+        pushd ~/deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
-        export TABLEAU_CMAKE_PATH=/deps/tableauhyperapi/share/cmake
+        export TABLEAU_CMAKE_PATH=~/deps/tableauhyperapi/share/cmake
         popd
     - name: Set up out of core build
       run: |
@@ -49,8 +49,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Arrow Dependency
       run: |
-        mkdir /deps
-        pushd /deps
+        mkdir ~/deps
+        pushd ~/deps
         git clone https://github.com/apache/arrow.git
         cd arrow
         cd cpp
@@ -58,14 +58,14 @@ jobs:
         cd build
         cmake .. -DARROW_COMPUTE=ON
         make
-        make install
+        sudo make install
         popd
     - name: Download Hyper Library / Headers
       run: |
-        pushd /deps
+        pushd ~deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
-        export TABLEAU_CMAKE_PATH=/deps/tableauhyperapi/share/cmake
+        export TABLEAU_CMAKE_PATH=~/deps/tableauhyperapi/share/cmake
         popd
     - name: Set up out of core build
       run: |
