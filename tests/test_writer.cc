@@ -20,15 +20,14 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
        arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
        arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8())});
 
-  arrow::MemoryPool *pool = arrow::default_memory_pool();
-  arrow::Int16Builder int16builder(pool);
-  arrow::Int32Builder int32builder(pool);
-  arrow::Int64Builder int64builder(pool);
-  arrow::FloatBuilder floatbuilder(pool);
-  arrow::DoubleBuilder doublebuilder(pool);
-  arrow::BooleanBuilder boolbuilder(pool);
-  arrow::StringBuilder stringbuilder(pool);
-  arrow::Date32Builder date32builder(pool);
+  arrow::Int16Builder int16builder;
+  arrow::Int32Builder int32builder;
+  arrow::Int64Builder int64builder;
+  arrow::FloatBuilder floatbuilder;
+  arrow::DoubleBuilder doublebuilder;
+  arrow::BooleanBuilder boolbuilder;
+  arrow::StringBuilder stringbuilder;
+  arrow::Date32Builder date32builder;
   std::shared_ptr<arrow::Array> array_a;
   std::shared_ptr<arrow::Array> array_b;
   std::shared_ptr<arrow::Array> array_c;
