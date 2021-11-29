@@ -18,8 +18,33 @@ jobs:
       run: conda install arrow-cpp=6.0.* -c conda-forge
     - name: Download Hyper Library / Headers
       run: |
+        mkdir ~/deps
         pushd ~/deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip tableauhyperapi.zip
+        export TABLEAU_CMAKE_PATH=~/deps/tableauhyperapi/share/cmake
+        popd
+    - name: Set up out of core build
+      run: |
+        mkdir build
+        cmake ..
+        make
+    - name: Run test suite
+      run: make test
+
+  build-macos:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Arrow Libraries
+      run: conda install arrow-cpp=6.0.* -c conda-forge
+    - name: Download Hyper Library / Headers
+      run: |
+        mkdir ~/deps
+        pushd ~/deps
+        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
         export TABLEAU_CMAKE_PATH=~/deps/tableauhyperapi/share/cmake
         popd
