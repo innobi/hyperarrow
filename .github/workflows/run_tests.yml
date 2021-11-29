@@ -26,6 +26,7 @@ jobs:
       run: |
         mkdir deps
         pushd deps
+        pwd
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
         popd
@@ -33,6 +34,7 @@ jobs:
       run: |
         mkdir build
         cd build
+        pwd
         ls ../deps/tableauhyperapi/share/cmake
         export TABLEAU_CMAKE_PATH=../deps/tableauhyperapi/share/cmake
         cmake ..
