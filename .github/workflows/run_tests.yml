@@ -28,6 +28,8 @@ jobs:
         pushd deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
+        pwd
+        ls
         popd
     - name: Set up out of core build
       run: |
