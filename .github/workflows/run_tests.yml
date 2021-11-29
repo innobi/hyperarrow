@@ -27,6 +27,7 @@ jobs:
     - name: Set up out of core build
       run: |
         mkdir build
+        cd build
         cmake ..
         make
     - name: Run test suite
@@ -51,6 +52,7 @@ jobs:
     - name: Set up out of core build
       run: |
         mkdir build
+        cd build
         cmake ..
         make
     - name: Run test suite
