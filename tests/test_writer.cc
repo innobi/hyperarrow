@@ -20,14 +20,16 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
        arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
        arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8())});
 
-  arrow::Int16Builder int16builder;
-  arrow::Int32Builder int32builder;
-  arrow::Int64Builder int64builder;
-  arrow::FloatBuilder floatbuilder;
-  arrow::DoubleBuilder doublebuilder;
-  arrow::BooleanBuilder boolbuilder;
-  arrow::StringBuilder stringbuilder;
-  arrow::Date32Builder date32builder;
+  arrow::MemoryPool *pool = arrow::default_memory_pool();
+  arrow::Int16Builder int16builder(pool);
+  arrow::Int32Builder int32builder(pool);
+  arrow::Int64Builder int64builder(pool);
+  arrow::FloatBuilder floatbuilder(pool);
+  arrow::DoubleBuilder doublebuilder(pool);
+  arrow::BooleanBuilder boolbuilder(pool);
+  arrow::StringBuilder stringbuilder(pool);
+  arrow::Date32Builder date32builder(pool);
+  arrow::TimestampBuilder tsbuilder(arrow::timestamp(arrow::TimeUnit::MILLI), pool);
   std::shared_ptr<arrow::Array> array_a;
   std::shared_ptr<arrow::Array> array_b;
   std::shared_ptr<arrow::Array> array_c;
@@ -36,6 +38,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   std::shared_ptr<arrow::Array> array_f;
   std::shared_ptr<arrow::Array> array_g;
   std::shared_ptr<arrow::Array> array_h;
+  std::shared_ptr<arrow::Array> array_i;
 
   ABORT_ON_FAILURE(int16builder.AppendValues({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
   ABORT_ON_FAILURE(int16builder.AppendNull());
@@ -73,8 +76,13 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(stringbuilder.AppendNull());
   ABORT_ON_FAILURE(stringbuilder.Finish(&array_h));
 
+  ABORT_ON_FAILURE(tsbuilder.AppendValues(
+					  {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
+  ABORT_ON_FAILURE(tsbuilder.AppendNull());
+  ABORT_ON_FAILURE(tsbuilder.Finish(&array_i));  
+
   auto table = arrow::Table::Make(schema, {array_a, array_b, array_c, array_d,
-                                           array_e, array_f, array_g, array_h});
+                                           array_e, array_f, array_g, array_h, array_i});
 
   const std::string path = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");

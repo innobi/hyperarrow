@@ -214,6 +214,14 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
               } else {
                 inserter.add(hyperapi::optional<hyperapi::Date>());
               }
+            } else if (type == arrow::timestamp(arrow::TimeUnit::MILLI)) {
+              auto array = std::static_pointer_cast<arrow::TimestampArray>(
+                  table->column(j)->chunk(0));
+              if (array->IsValid(i)) {
+                inserter.add(hyperapi::Timestamp());
+              } else {
+                inserter.add(hyperapi::optional<hyperapi::Timestamp>());
+              }
             } else if (type == arrow::utf8()) {
               auto array = std::static_pointer_cast<arrow::StringArray>(
                   table->column(j)->chunk(0));
