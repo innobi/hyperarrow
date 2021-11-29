@@ -33,6 +33,7 @@ jobs:
       run: |
         mkdir build
         cd build
+        ls ../deps/tableauhyperapi/share/cmake
         export TABLEAU_CMAKE_PATH=../deps/tableauhyperapi/share/cmake
         cmake ..
         make
