@@ -24,16 +24,16 @@ jobs:
         sudo apt install -y -V libarrow-dev
     - name: Download Hyper Library / Headers
       run: |
-        mkdir ~/deps
-        pushd ~/deps
+        mkdir deps
+        pushd deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
-        export TABLEAU_CMAKE_PATH=~/deps/tableauhyperapi/share/cmake
         popd
     - name: Set up out of core build
       run: |
         mkdir build
         cd build
+        export TABLEAU_CMAKE_PATH=../deps/tableauhyperapi/share/cmake
         cmake ..
         make
     - name: Run test suite
