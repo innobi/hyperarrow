@@ -16,28 +16,27 @@ jobs:
     - name: Install Arrow Dependency
       run: |
         mkdir /deps
-	pushd /deps
-	git clone https://github.com/apache/arrow.git
-	cd arrow
-	cd cpp
-	mkdir build
-	cd build
-	cmake .. -DARROW_COMPUTE=ON
-	make
-	make install
-	popd
+        pushd /deps
+        git clone https://github.com/apache/arrow.git
+        cd arrow
+        cd cpp
+        mkdir build
+        cd build
+        cmake .. -DARROW_COMPUTE=ON
+        make
+        make install
+        popd
     - name: Download Hyper Library / Headers
       run: |
         pushd /deps
-	wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
-	unzip tableauhyperapi.zip
-	export TABLEAU_CMAKE_PATH=/deps/tableauhyperapi/share/cmake
-	popd
+        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip tableauhyperapi.zip
+        export TABLEAU_CMAKE_PATH=/deps/tableauhyperapi/share/cmake
+        popd
     - name: Set up out of core build
       run: |
         mkdir build
-	cmake ..
-	make
+        cmake ..
+        make
     - name: Run test suite
-	make test
-		
+      run: make test
