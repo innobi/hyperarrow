@@ -48,6 +48,6 @@ BOOST_AUTO_TEST_CASE(test_basic_read) {
     auto arrayString = std::static_pointer_cast<arrow::StringArray>(
         table->column(7)->chunk(0));
     BOOST_TEST(arrayString->Value(0) == "a");
-    gBOOST_TEST(!arrayString->IsValid(1));
+    BOOST_TEST(!arrayString->IsValid(1));
   }
 }
