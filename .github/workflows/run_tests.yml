@@ -58,6 +58,11 @@ jobs:
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
         mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
+        pwd
+        ls
+        ls tableauhyperapi
+        ls tableauhyperapi/share
+        ls tableauhyperapi/share/cmake
         popd
     - name: Install boost for test dependency
       run: brew install boost
