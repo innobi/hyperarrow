@@ -2,9 +2,9 @@ name: hyperarrow tests
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ main ]
   pull_request:
-    branches [ $default-branch ]
+    branches: [ main ]
 
 jobs:
   build-linux:
@@ -13,30 +13,93 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install Arrow Dependency
+    - uses: conda-incubator/setup-miniconda@v2
+    - name: Install Arrow Libraries
       run: |
-        mkdir /deps
-        pushd /deps
-        git clone https://github.com/apache/arrow.git
-        cd arrow
-        cd cpp
-        mkdir build
-        cd build
-        cmake .. -DARROW_COMPUTE=ON
-        make
-        make install
-        popd
+        sudo apt update
+        sudo apt install -y -V ca-certificates lsb-release wget
+        wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+        sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+        sudo apt update
+        sudo apt install -y -V libarrow-dev
     - name: Download Hyper Library / Headers
       run: |
-        pushd /deps
+        mkdir deps
+        pushd deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
-        export TABLEAU_CMAKE_PATH=/deps/tableauhyperapi/share/cmake
+        mv tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         popd
+    - name: Install boost for test dependency
+      run: sudo apt install libboost-all-dev
     - name: Set up out of core build
       run: |
         mkdir build
+        cd build
+        export TABLEAU_CMAKE_PATH=/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
         cmake ..
         make
-    - name: Run test suite
-      run: make test
+        make test
+
+  build-macos:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+    - name: Install Arrow Libraries
+      run: |
+        brew install apache-arrow
+    - name: Download Hyper Library / Headers
+      run: |
+        mkdir deps
+        pushd deps
+        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip tableauhyperapi.zip
+        mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
+        pwd
+        ls
+        ls tableauhyperapi
+        ls tableauhyperapi/share
+        ls tableauhyperapi/share/cmake
+        popd
+    - name: Install boost for test dependency
+      run: brew install boost
+    - name: Set up out of core build
+      run: |
+        mkdir build
+        cd build
+        export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
+        cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
+        make
+        make test
+
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+    - name: Install Arrow Libraries
+      run: |
+        vcpkg install arrow:x64-windows
+    - name: Download Hyper Library / Headers
+      run: |
+        mkdir deps
+        pushd deps
+        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip tableauhyperapi.zip
+        mv tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
+        popd
+    - name: Install boost for test dependency
+      run: vcpkg install boost
+    - name: Set up out of core build
+      run: |
+        mkdir build
+        cd build
+        export TABLEAU_CMAKE_PATH=/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
+        cmake ..
+        make
+        make test
