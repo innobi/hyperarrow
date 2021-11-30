@@ -39,5 +39,4 @@ jobs:
         export TABLEAU_CMAKE_PATH=/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
         cmake ..
         make
-    - name: Run test suite
-      run: make test
+        make test
