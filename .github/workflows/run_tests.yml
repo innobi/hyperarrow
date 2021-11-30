@@ -50,7 +50,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
     - name: Install Arrow Libraries
       run: |
-        brew install apache-arrow openssl@1.1
+        brew install apache-arrow
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -66,7 +66,7 @@ jobs:
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
-        cmake ..
+        cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
         make
         make test
 
