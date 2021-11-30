@@ -69,3 +69,32 @@ jobs:
         cmake ..
         make
         make test
+
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+    - name: Install Arrow Libraries
+      run: |
+        vcpkg install arrow
+    - name: Download Hyper Library / Headers
+      run: |
+        mkdir deps
+        pushd deps
+        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip tableauhyperapi.zip
+        mv tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
+        popd
+    - name: Install boost for test dependency
+      run: vcpkg install boost
+    - name: Set up out of core build
+      run: |
+        mkdir build
+        cd build
+        export TABLEAU_CMAKE_PATH=/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
+        cmake ..
+        make
+        make test
