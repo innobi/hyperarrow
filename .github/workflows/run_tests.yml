@@ -29,6 +29,10 @@ jobs:
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
         mv tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tabuleauhyperapi
+	pwd
+	ls tableauhyperapi
+	ls tableauhyperapi/share
+	ls tableauhyperapi/share/cmake
         popd
     - name: Set up out of core build
       run: |
