@@ -31,7 +31,7 @@ jobs:
         mv tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         popd
     - name: Install build dependencies
-      run: sudo apt install -y -V libc-ares-dev
+      run: sudo apt install build-essential cmake
     - name: Set up out of core build
       run: |
         mkdir build
