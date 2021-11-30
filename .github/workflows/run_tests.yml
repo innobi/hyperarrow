@@ -50,7 +50,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
     - name: Install Arrow Libraries
       run: |
-        brew install apache-arrow
+        brew install apache-arrow openssl@1.1
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -79,7 +79,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
     - name: Install Arrow Libraries
       run: |
-        vcpkg install arrow
+        vcpkg install arrow:x64-windows
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
