@@ -31,7 +31,7 @@ jobs:
         mv tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         popd
     - name: Install boost for test dependency
-      run: sudo apt install libboost-dev
+      run: sudo apt install libboost-all-dev
     - name: Set up out of core build
       run: |
         mkdir build
