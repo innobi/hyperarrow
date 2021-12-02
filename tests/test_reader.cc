@@ -49,5 +49,10 @@ BOOST_AUTO_TEST_CASE(test_basic_read) {
         table->column(7)->chunk(0));
     BOOST_TEST(arrayString->Value(0) == "a");
     BOOST_TEST(!arrayString->IsValid(1));
+
+    auto arrayTs = std::static_pointer_cast<arrow::TimestampArray>(
+        table->column(8)->chunk(0));
+    BOOST_TEST(arrayTs->Value(0) == 0);
+    BOOST_TEST(!arrayTs->IsValid(1));
   }
 }

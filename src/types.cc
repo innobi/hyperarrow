@@ -21,6 +21,8 @@ arrowTypeToSqlType(const std::shared_ptr<arrow::DataType> arrowType) {
     return hyperapi::SqlType::text();
   } else if (arrowType == arrow::date32()) {
     return hyperapi::SqlType::date();
+  } else if (arrowType->id() == arrow::Type::TIMESTAMP) {
+    return hyperapi::SqlType::timestamp();
   }
 
   throw std::runtime_error(
@@ -44,10 +46,12 @@ hyperTypeToArrowType(const hyperapi::SqlType hyperType) {
     return arrow::utf8();
   } else if (hyperType == hyperapi::SqlType::date()) {
     return arrow::date32();
+  } else if (hyperType == hyperapi::SqlType::timestamp()) {
+    return arrow::timestamp(arrow::TimeUnit::MICRO);
   }
 
   throw std::runtime_error(
-      std::string("type note supported or not yet implemented: ") +
+      std::string("type not supported or not yet implemented: ") +
       typeid(hyperType).name());
 }
 } // namespace hyperarrow
