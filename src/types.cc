@@ -46,10 +46,12 @@ hyperTypeToArrowType(const hyperapi::SqlType hyperType) {
     return arrow::utf8();
   } else if (hyperType == hyperapi::SqlType::date()) {
     return arrow::date32();
+  } else if (hyperType == hyperapi::SqlType::timestamp()) {
+    return arrow::timestamp(arrow::TimeUnit::MICRO);
   }
 
   throw std::runtime_error(
-      std::string("type note supported or not yet implemented: ") +
+      std::string("type not supported or not yet implemented: ") +
       typeid(hyperType).name());
 }
 } // namespace hyperarrow
