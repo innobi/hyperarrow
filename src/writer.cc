@@ -241,6 +241,182 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
   {
     auto dateComponents = mapDateArraysToComponents(table);
     auto tsComponents = mapTsArraysToComponents(table);
+
+    std::vector<std::function<void(
+        std::shared_ptr<arrow::Array> anArray, hyperapi::Inserter & inserter,
+        int64_t colNum, int64_t rowNum)>>
+        write_funcs;
+    for (auto &field : table->fields()) {
+      auto type = field->type();
+      if (type == arrow::int16()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::Int16Array>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<int16_t>());
+          }
+        });
+      } else if (type == arrow::int32()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::Int32Array>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<int32_t>());
+          }
+        });
+      } else if (type == arrow::int64()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::Int64Array>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<int64_t>());
+          }
+        });
+      } else if (type == arrow::float32()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::FloatArray>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<double_t>());
+          }
+        });
+      } else if (type == arrow::float64()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::DoubleArray>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<double_t>());
+          }
+        });
+      } else if (type == arrow::boolean()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::BooleanArray>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<bool>());
+          }
+        });
+      } else if (type == arrow::date32()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::Date32Array>(anArray);
+          if (array->IsValid(rowNum)) {
+            int64_t year, month, day;
+            auto search = dateComponents.find(colNum);
+            if (search == dateComponents.end()) {
+              // TODO:: some error
+            } else {
+              auto dateMap = search->second;
+              auto yearSearch = dateMap.find("year");
+              if (yearSearch == dateMap.end()) {
+                // TODO:: handle error
+              } else {
+                year = yearSearch->second->Value(rowNum);
+              }
+              auto monthSearch = dateMap.find("month");
+              if (monthSearch == dateMap.end()) {
+                // TODO:: handle error
+              } else {
+                month = monthSearch->second->Value(rowNum);
+              }
+              auto daySearch = dateMap.find("day");
+              if (daySearch == dateMap.end()) {
+                // TODO:: handle error
+              } else {
+                day = daySearch->second->Value(rowNum);
+              }
+            }
+            inserter.add(hyperapi::Date(year, month, day));
+          } else {
+            inserter.add(hyperapi::optional<hyperapi::Date>());
+          }
+        });
+      } else if (type->id() == arrow::Type::TIMESTAMP) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::TimestampArray>(anArray);
+          if (array->IsValid(rowNum)) {
+            int64_t year, month, day, hour, minute, second, microsecond;
+            auto search = tsComponents.find(colNum);
+            if (search == tsComponents.end()) {
+              // TODO: handle error
+            } else {
+              auto tsMap = search->second;
+              auto yearSearch = tsMap.find("year");
+              if (yearSearch == tsMap.end()) {
+                // TODO:: handle error
+              } else {
+                year = yearSearch->second->Value(rowNum);
+              }
+              auto monthSearch = tsMap.find("month");
+              if (monthSearch == tsMap.end()) {
+                // TODO:: handle error
+              } else {
+                month = monthSearch->second->Value(rowNum);
+              }
+              auto daySearch = tsMap.find("day");
+              if (daySearch == tsMap.end()) {
+                // TODO:: handle error
+              } else {
+                day = daySearch->second->Value(rowNum);
+              }
+              auto hourSearch = tsMap.find("hour");
+              if (hourSearch == tsMap.end()) {
+                // TODO:: handle error
+              } else {
+                hour = hourSearch->second->Value(rowNum);
+              }
+              auto minuteSearch = tsMap.find("minute");
+              if (minuteSearch == tsMap.end()) {
+                // TODO:: handle error
+              } else {
+                minute = minuteSearch->second->Value(rowNum);
+              }
+              auto secondSearch = tsMap.find("second");
+              if (secondSearch == tsMap.end()) {
+                // TODO:: handle error
+              } else {
+                second = secondSearch->second->Value(rowNum);
+              }
+              auto microsecondSearch = tsMap.find("microsecond");
+              if (microsecondSearch == tsMap.end()) {
+                // TODO:: handle error
+              } else {
+                microsecond = microsecondSearch->second->Value(rowNum);
+              }
+            }
+            auto time = hyperapi::Time(hour, minute, second, microsecond);
+            auto date = hyperapi::Date(year, month, day);
+            inserter.add(hyperapi::Timestamp(date, time));
+          } else {
+            inserter.add(hyperapi::optional<hyperapi::Timestamp>());
+          }
+        });
+      } else if (type == arrow::utf8()) {
+        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+          auto array = std::static_pointer_cast<arrow::StringArray>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->GetString(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<std::string>());
+          }
+        });
+      }
+    }
+
     hyperapi::HyperProcess hyper(
         hyperapi::Telemetry::DoNotSendUsageDataToTableau);
     {
@@ -254,160 +430,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
       catalog.createTable(extractTable);
       {
         hyperapi::Inserter inserter{connection, extractTable};
-        for (int64_t i = 0; i < table->num_rows(); i++) {
-          for (int64_t j = 0; j < table->num_columns(); j++) {
-            // TODO: templating could likely help a ton here
-            const std::shared_ptr<arrow::DataType> type =
-                table->field(j)->type();
-            if (type == arrow::int16()) {
-              auto array = std::static_pointer_cast<arrow::Int16Array>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->Value(i));
-              } else {
-                inserter.add(hyperapi::optional<int16_t>());
-              }
-            } else if (type == arrow::int32()) {
-              auto array = std::static_pointer_cast<arrow::Int32Array>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->Value(i));
-              } else {
-                inserter.add(hyperapi::optional<int32_t>());
-              }
-            } else if (type == arrow::int64()) {
-              auto array = std::static_pointer_cast<arrow::Int64Array>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->Value(i));
-              } else {
-                inserter.add(hyperapi::optional<int64_t>());
-              }
-            } else if (type == arrow::float32()) {
-              auto array = std::static_pointer_cast<arrow::FloatArray>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->Value(i));
-              } else {
-                inserter.add(hyperapi::optional<double_t>());
-              }
-            } else if (type == arrow::float64()) {
-              auto array = std::static_pointer_cast<arrow::DoubleArray>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->Value(i));
-              } else {
-                inserter.add(hyperapi::optional<double_t>());
-              }
-            } else if (type == arrow::boolean()) {
-              auto array = std::static_pointer_cast<arrow::BooleanArray>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->Value(i));
-              } else {
-                inserter.add(hyperapi::optional<bool>());
-              }
-            } else if (type == arrow::date32()) {
-              auto array = std::static_pointer_cast<arrow::Date32Array>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                int64_t year, month, day;
-                auto search = dateComponents.find(j);
-                if (search == dateComponents.end()) {
-                  // TODO:: some error
-                } else {
-                  auto dateMap = search->second;
-                  auto yearSearch = dateMap.find("year");
-                  if (yearSearch == dateMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    year = yearSearch->second->Value(i);
-                  }
-                  auto monthSearch = dateMap.find("month");
-                  if (monthSearch == dateMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    month = monthSearch->second->Value(i);
-                  }
-                  auto daySearch = dateMap.find("day");
-                  if (daySearch == dateMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    day = daySearch->second->Value(i);
-                  }
-                }
-                inserter.add(hyperapi::Date(year, month, day));
-              } else {
-                inserter.add(hyperapi::optional<hyperapi::Date>());
-              }
-            } else if (type->id() == arrow::Type::TIMESTAMP) {
-              auto array = std::static_pointer_cast<arrow::TimestampArray>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                int64_t year, month, day, hour, minute, second, microsecond;
-                auto search = tsComponents.find(j);
-                if (search == tsComponents.end()) {
-                  // TODO: handle error
-                } else {
-                  auto tsMap = search->second;
-                  auto yearSearch = tsMap.find("year");
-                  if (yearSearch == tsMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    year = yearSearch->second->Value(i);
-                  }
-                  auto monthSearch = tsMap.find("month");
-                  if (monthSearch == tsMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    month = monthSearch->second->Value(i);
-                  }
-                  auto daySearch = tsMap.find("day");
-                  if (daySearch == tsMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    day = daySearch->second->Value(i);
-                  }
-                  auto hourSearch = tsMap.find("hour");
-                  if (hourSearch == tsMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    hour = hourSearch->second->Value(i);
-                  }
-                  auto minuteSearch = tsMap.find("minute");
-                  if (minuteSearch == tsMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    minute = minuteSearch->second->Value(i);
-                  }
-                  auto secondSearch = tsMap.find("second");
-                  if (secondSearch == tsMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    second = secondSearch->second->Value(i);
-                  }
-                  auto microsecondSearch = tsMap.find("microsecond");
-                  if (microsecondSearch == tsMap.end()) {
-                    // TODO:: handle error
-                  } else {
-                    microsecond = microsecondSearch->second->Value(i);
-                  }
-                }
-                auto time = hyperapi::Time(hour, minute, second, microsecond);
-                auto date = hyperapi::Date(year, month, day);
-                inserter.add(hyperapi::Timestamp(date, time));
-              } else {
-                inserter.add(hyperapi::optional<hyperapi::Timestamp>());
-              }
-            } else if (type == arrow::utf8()) {
-              auto array = std::static_pointer_cast<arrow::StringArray>(
-                  table->column(j)->chunk(0));
-              if (array->IsValid(i)) {
-                inserter.add(array->GetString(i));
-              } else {
-                inserter.add(hyperapi::optional<std::string>());
-              }
-            }
+        for (int64_t rowNum = 0; rowNum < table->num_rows(); rowNum++) {
+          for (int64_t colNum = 0; colNum < table->num_columns(); colNum++) {
+            auto chunk = table->column(colNum)->chunk(0);
+            write_funcs[colNum](chunk, inserter, colNum, rowNum);
           }
           inserter.endRow();
         }
