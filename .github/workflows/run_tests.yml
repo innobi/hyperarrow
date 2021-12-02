@@ -95,7 +95,7 @@ jobs:
         make -j2
         make install
         popd
-    shell: bash
+      shell: bash
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
