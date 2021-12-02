@@ -242,15 +242,17 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
     auto dateComponents = mapDateArraysToComponents(table);
     auto tsComponents = mapTsArraysToComponents(table);
 
-    std::vector<std::function<void(
-        std::shared_ptr<arrow::Array> anArray, hyperapi::Inserter & inserter,
-        int64_t colNum, int64_t rowNum)>>
+    std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
+                                   hyperapi::Inserter & inserter,
+                                   int64_t colNum, int64_t rowNum)>>
         write_funcs;
     for (auto &field : table->fields()) {
       auto type = field->type();
       if (type == arrow::int16()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::Int16Array>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -259,8 +261,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type == arrow::int32()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::Int32Array>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -269,8 +273,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type == arrow::int64()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::Int64Array>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -279,8 +285,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type == arrow::float32()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::FloatArray>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -289,8 +297,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type == arrow::float64()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::DoubleArray>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -299,8 +309,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type == arrow::boolean()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::BooleanArray>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -309,8 +321,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type == arrow::date32()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::Date32Array>(anArray);
           if (array->IsValid(rowNum)) {
             int64_t year, month, day;
@@ -344,8 +358,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type->id() == arrow::Type::TIMESTAMP) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::TimestampArray>(anArray);
           if (array->IsValid(rowNum)) {
             int64_t year, month, day, hour, minute, second, microsecond;
@@ -405,8 +421,10 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type == arrow::utf8()) {
-        write_funcs.push_back([dateComponents, tsComponents](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum, int64_t rowNum) {
+        write_funcs.push_back([dateComponents, tsComponents](
+                                  std::shared_ptr<arrow::Array> anArray,
+                                  hyperapi::Inserter &inserter, int64_t colNum,
+                                  int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::StringArray>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->GetString(rowNum));
