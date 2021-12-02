@@ -124,7 +124,7 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
       result;
   const std::shared_ptr<arrow::Schema> schema = table->schema();
   for (int i = 0; i < schema->num_fields(); i++) {
-    if (schema->field(i)->type() == arrow::timestamp(arrow::TimeUnit::MICRO)) {
+    if (schema->field(i)->type()->id() == arrow::Type::TIMESTAMP) {
       auto array = std::static_pointer_cast<arrow::TimestampArray>(
           table->column(i)->chunk(0));
 
@@ -219,10 +219,10 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
       innerResult["year"] = years;
       innerResult["month"] = months;
       innerResult["day"] = days;
-      innerResult["hours"] = hours;
-      innerResult["minutes"] = minutes;
-      innerResult["seconds"] = seconds;
-      innerResult["microseconds"] = microseconds;      
+      innerResult["hour"] = hours;
+      innerResult["minute"] = minutes;
+      innerResult["second"] = seconds;
+      innerResult["microsecond"] = microseconds;
       result.insert({i, innerResult});
     }
   }
@@ -337,14 +337,14 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
               } else {
                 inserter.add(hyperapi::optional<hyperapi::Date>());
               }
-            } else if (type == arrow::timestamp(arrow::TimeUnit::MICRO)) {
+            } else if (type->id() == arrow::Type::TIMESTAMP) {
               auto array = std::static_pointer_cast<arrow::TimestampArray>(
                   table->column(j)->chunk(0));
               if (array->IsValid(i)) {
                 int64_t year, month, day, hour, minute, second, microsecond;
                 auto search = tsComponents.find(j);
                 if (search == tsComponents.end()) {
-		  std::cout << "Something messed up here" << std::endl;
+		  // TODO: handle error
                 } else {
                   auto tsMap = search->second;
                   auto yearSearch = tsMap.find("year");
@@ -393,8 +393,6 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
 		auto time = hyperapi::Time(hour, minute, second, microsecond);
 		auto date = hyperapi::Date(year, month, day);
 		inserter.add(hyperapi::Timestamp(date, time));
-		
-                inserter.add(hyperapi::Timestamp());
               } else {
                 inserter.add(hyperapi::optional<hyperapi::Timestamp>());
               }

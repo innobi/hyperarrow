@@ -18,7 +18,8 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
        arrow::field("c", arrow::int64()), arrow::field("d", arrow::float32()),
        arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
-       arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8())});
+       arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8()),
+       arrow::field("i", arrow::timestamp(arrow::TimeUnit::MICRO))});
 
   arrow::MemoryPool *pool = arrow::default_memory_pool();
   arrow::Int16Builder int16builder(pool);
