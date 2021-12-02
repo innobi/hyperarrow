@@ -82,9 +82,20 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
-    - name: Install Boost + Arrow Libraries
+    - name: Install Arrow
       run: |
-        vcpkg install arrow:x64-windows boost
+        mkdir clones
+	pushd clones
+	git clone https://github.com/apache/arrow.git
+	cd arrow
+        vcpkg install --triplet x64-windows --x-manifest-root cpp --feature-flags=versions --clean-after-build
+	mkdir build
+	cd build
+	cmake .. -DARROW_COMPUTE=ON -DARROW_DEPENDENCY_SOURCE=VCPKG
+	make -j2
+	make install
+	popd
+    shell: bash
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -93,7 +104,9 @@ jobs:
         unzip tableauhyperapi.zip
         mv tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         popd
-      shell: bash	
+      shell: bash
+    - name: Install boost for test dependency
+      run: choco install boost-msvc-12      
     - name: Set up out of core build
       run: |
         mkdir build
