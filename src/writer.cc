@@ -168,7 +168,8 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
       }
 
       arrow::Datum minute_datum;
-      auto minute_datum_result = arrow::compute::CallFunction("minute", {array});
+      auto minute_datum_result =
+          arrow::compute::CallFunction("minute", {array});
       if (!minute_datum_result.ok()) {
         // TODO: handle error
       } else {
@@ -176,7 +177,8 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
       }
 
       arrow::Datum second_datum;
-      auto second_datum_result = arrow::compute::CallFunction("minute", {array});
+      auto second_datum_result =
+          arrow::compute::CallFunction("minute", {array});
       if (!second_datum_result.ok()) {
         // TODO: handle error
       } else {
@@ -184,7 +186,8 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
       }
 
       arrow::Datum microsecond_datum;
-      auto microsecond_datum_result = arrow::compute::CallFunction("minute", {array});
+      auto microsecond_datum_result =
+          arrow::compute::CallFunction("minute", {array});
       if (!microsecond_datum_result.ok()) {
         // TODO: handle error
       } else {
@@ -197,7 +200,8 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
       std::shared_ptr<arrow::Array> hours_arr = hour_datum.make_array();
       std::shared_ptr<arrow::Array> minutes_arr = minute_datum.make_array();
       std::shared_ptr<arrow::Array> seconds_arr = second_datum.make_array();
-      std::shared_ptr<arrow::Array> microseconds_arr = microsecond_datum.make_array();
+      std::shared_ptr<arrow::Array> microseconds_arr =
+          microsecond_datum.make_array();
 
       std::shared_ptr<arrow::Int64Array> years =
           std::dynamic_pointer_cast<arrow::Int64Array>(years_arr);
@@ -228,8 +232,7 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
   }
 
   return result;
-}  
-
+}
 
 void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                        const std::string databasePath,
@@ -344,7 +347,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                 int64_t year, month, day, hour, minute, second, microsecond;
                 auto search = tsComponents.find(j);
                 if (search == tsComponents.end()) {
-		  // TODO: handle error
+                  // TODO: handle error
                 } else {
                   auto tsMap = search->second;
                   auto yearSearch = tsMap.find("year");
@@ -376,7 +379,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                     // TODO:: handle error
                   } else {
                     minute = minuteSearch->second->Value(i);
-                  }		  
+                  }
                   auto secondSearch = tsMap.find("second");
                   if (secondSearch == tsMap.end()) {
                     // TODO:: handle error
@@ -388,11 +391,11 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                     // TODO:: handle error
                   } else {
                     microsecond = microsecondSearch->second->Value(i);
-                  }		  
+                  }
                 }
-		auto time = hyperapi::Time(hour, minute, second, microsecond);
-		auto date = hyperapi::Date(year, month, day);
-		inserter.add(hyperapi::Timestamp(date, time));
+                auto time = hyperapi::Time(hour, minute, second, microsecond);
+                auto date = hyperapi::Date(year, month, day);
+                inserter.add(hyperapi::Timestamp(date, time));
               } else {
                 inserter.add(hyperapi::optional<hyperapi::Timestamp>());
               }

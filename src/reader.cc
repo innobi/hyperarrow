@@ -131,28 +131,31 @@ arrowTableFromHyper(const std::string databasePath,
         });
         builders.push_back(std::move(builder));
       } else if (schema->field(i)->type()->id() == arrow::Type::TIMESTAMP) {
-	// TODO: specialization fails withotu providing arrow::default_memory_pool()
-	// as the second argument. Seems like an arrow bug
-        auto builder = std::make_shared<arrow::TimestampBuilder>(arrow::timestamp(arrow::TimeUnit::MICRO), arrow::default_memory_pool());
+        // TODO: specialization fails withotu providing
+        // arrow::default_memory_pool() as the second argument. Seems like an
+        // arrow bug
+        auto builder = std::make_shared<arrow::TimestampBuilder>(
+            arrow::timestamp(arrow::TimeUnit::MICRO),
+            arrow::default_memory_pool());
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
           } else {
             auto ts = value.get<hyperapi::Timestamp>();
-	    auto dt = ts.getDate();
-	    auto time = ts.getTime();
+            auto dt = ts.getDate();
+            auto time = ts.getTime();
             // Arrow uses Unix epoch
             auto chrono_time = arrow_vendored::date::sys_days(
-                arrow_vendored::date::year(dt.getYear()) /
-                arrow_vendored::date::month(dt.getMonth()) /
-                arrow_vendored::date::day(dt.getDay()))
-	      + std::chrono::hours(time.getHour())
-		+ std::chrono::minutes(time.getMinute())
-		+ std::chrono::seconds(time.getSecond())
-	      + std::chrono::microseconds(time.getMicrosecond());
+                                   arrow_vendored::date::year(dt.getYear()) /
+                                   arrow_vendored::date::month(dt.getMonth()) /
+                                   arrow_vendored::date::day(dt.getDay())) +
+                               std::chrono::hours(time.getHour()) +
+                               std::chrono::minutes(time.getMinute()) +
+                               std::chrono::seconds(time.getSecond()) +
+                               std::chrono::microseconds(time.getMicrosecond());
             auto epoch = chrono_time.time_since_epoch();
             auto val =
-	      std::chrono::duration_cast<std::chrono::microseconds>(epoch);
+                std::chrono::duration_cast<std::chrono::microseconds>(epoch);
             return builder->Append(val.count());
           }
         });

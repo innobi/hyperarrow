@@ -36,7 +36,8 @@ std::shared_ptr<arrow::Table> createTable() {
   arrow::BooleanBuilder boolbuilder(pool);
   arrow::StringBuilder stringbuilder(pool);
   arrow::Date32Builder date32builder(pool);
-  arrow::TimestampBuilder tsbuilder(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
+  arrow::TimestampBuilder tsbuilder(arrow::timestamp(arrow::TimeUnit::MICRO),
+                                    pool);
   std::shared_ptr<arrow::Array> array_a;
   std::shared_ptr<arrow::Array> array_b;
   std::shared_ptr<arrow::Array> array_c;
@@ -59,13 +60,11 @@ std::shared_ptr<arrow::Table> createTable() {
   ABORT_ON_FAILURE(int64builder.AppendNull());
   ABORT_ON_FAILURE(int64builder.Finish(&array_c));
 
-  ABORT_ON_FAILURE(
-		   floatbuilder.Append(1.234));
+  ABORT_ON_FAILURE(floatbuilder.Append(1.234));
   ABORT_ON_FAILURE(floatbuilder.AppendNull());
   ABORT_ON_FAILURE(floatbuilder.Finish(&array_d));
 
-  ABORT_ON_FAILURE(
-		   doublebuilder.Append(123.4));
+  ABORT_ON_FAILURE(doublebuilder.Append(123.4));
   ABORT_ON_FAILURE(doublebuilder.AppendNull());
   ABORT_ON_FAILURE(doublebuilder.Finish(&array_e));
 
@@ -83,10 +82,11 @@ std::shared_ptr<arrow::Table> createTable() {
 
   ABORT_ON_FAILURE(tsbuilder.Append(0));
   ABORT_ON_FAILURE(tsbuilder.AppendNull());
-  ABORT_ON_FAILURE(tsbuilder.Finish(&array_i));  
+  ABORT_ON_FAILURE(tsbuilder.Finish(&array_i));
 
-  return arrow::Table::Make(schema, {array_a, array_b, array_c, array_d,
-                                     array_e, array_f, array_g, array_h, array_i});
+  return arrow::Table::Make(schema,
+                            {array_a, array_b, array_c, array_d, array_e,
+                             array_f, array_g, array_h, array_i});
 }
 
 Status RunMain(int argc, char **argv) {
