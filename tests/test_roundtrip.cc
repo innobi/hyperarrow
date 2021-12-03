@@ -17,7 +17,7 @@
 BOOST_AUTO_TEST_CASE(test_basic_write) {
   auto schema = arrow::schema(
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
-       arrow::field("c", arrow::int64()), arrow::field("d", arrow::float32()),
+       arrow::field("c", arrow::int64()),
        arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
        arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8()),
        arrow::field("i", arrow::timestamp(arrow::TimeUnit::MICRO))});
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   arrow::Int16Builder int16builder(pool);
   arrow::Int32Builder int32builder(pool);
   arrow::Int64Builder int64builder(pool);
-  arrow::FloatBuilder floatbuilder(pool);
+  // TODO: space for float impl
   arrow::DoubleBuilder doublebuilder(pool);
   arrow::BooleanBuilder boolbuilder(pool);
   arrow::StringBuilder stringbuilder(pool);
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   std::shared_ptr<arrow::Array> array_a;
   std::shared_ptr<arrow::Array> array_b;
   std::shared_ptr<arrow::Array> array_c;
-  std::shared_ptr<arrow::Array> array_d;
+  // TODO: space for float impl
   std::shared_ptr<arrow::Array> array_e;
   std::shared_ptr<arrow::Array> array_f;
   std::shared_ptr<arrow::Array> array_g;
@@ -54,11 +54,6 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(int64builder.AppendValues({1, 2, 1, 2, 1, 2, 1, 2, 1, 2}));
   ABORT_ON_FAILURE(int64builder.AppendNull());
   ABORT_ON_FAILURE(int64builder.Finish(&array_c));
-
-  ABORT_ON_FAILURE(
-      floatbuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
-  ABORT_ON_FAILURE(floatbuilder.AppendNull());
-  ABORT_ON_FAILURE(floatbuilder.Finish(&array_d));
 
   ABORT_ON_FAILURE(
       doublebuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
@@ -84,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(tsbuilder.Finish(&array_i));
 
   auto table =
-      arrow::Table::Make(schema, {array_a, array_b, array_c, array_d, array_e,
+      arrow::Table::Make(schema, {array_a, array_b, array_c, array_e,
                                   array_f, array_g, array_h, array_i});
 
   const char path[] = "example.hyper";
@@ -93,21 +88,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   auto result = hyperarrow::arrowTableFromHyper(path, "schema", "table");
   if (result.ok()) {
     auto read = result.ValueOrDie();
-    const int floatIdx = 3;
-    // float values do not round trip, so explicitly test
-    auto castArray = std::static_pointer_cast<arrow::DoubleArray>(
-	read->column(floatIdx)->chunk(0));
-    BOOST_TEST(castArray->ApproxEquals(*std::static_pointer_cast<arrow::DoubleArray>(table->column(floatIdx)->chunk(0))));
-    auto readResult = read->RemoveColumn(floatIdx);
-    auto tableResult = table->RemoveColumn(floatIdx);
-
-    if (!(readResult.ok() && tableResult.ok())) {
-      BOOST_ERROR("Could not drop float column from tables");
-    } else {
-      auto tableNoFloat = tableResult.ValueOrDie();
-      auto readNoFloat = readResult.ValueOrDie();
-      BOOST_TEST(tableNoFloat->Equals(*readNoFloat));
-    }
+    BOOST_TEST(table->Equals(*read));
   } else {
     BOOST_ERROR("Could not read file");
   }

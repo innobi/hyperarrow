@@ -284,18 +284,6 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
             inserter.add(hyperapi::optional<int64_t>());
           }
         });
-      } else if (type == arrow::float32()) {
-        write_funcs.push_back([dateComponents, tsComponents](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::FloatArray>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<double_t>());
-          }
-        });
       } else if (type == arrow::float64()) {
         write_funcs.push_back([dateComponents, tsComponents](
                                   std::shared_ptr<arrow::Array> anArray,
