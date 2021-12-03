@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(stringbuilder.AppendNull());
   ABORT_ON_FAILURE(stringbuilder.Finish(&array_h));
 
-  ABORT_ON_FAILURE(tsbuilder.AppendValues({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
+  ABORT_ON_FAILURE(tsbuilder.AppendValues({0, 1000000LL * 60LL * 60LL * 24LL, 2000000, 3000000, 4000000, 5000000, 6000000, 7000000, 8000000, 9000000}));
   ABORT_ON_FAILURE(tsbuilder.AppendNull());
   ABORT_ON_FAILURE(tsbuilder.Finish(&array_i));
 
@@ -95,12 +95,9 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
     auto read = result.ValueOrDie();
     const int floatIdx = 3;
     // float values do not round trip, so explicitly test
-    auto floatArray = std::static_pointer_cast<arrow::DoubleArray>(
+    auto castArray = std::static_pointer_cast<arrow::DoubleArray>(
 	read->column(floatIdx)->chunk(0));
-    BOOST_TEST(abs(floatArray->Value(0) - 0.) <= 1.0e-007);
-    BOOST_TEST(abs(floatArray->Value(9) - 9.) <= 1.0e-007);
-    BOOST_TEST(!floatArray->IsValid(10));
-
+    BOOST_TEST(castArray->ApproxEquals(*std::static_pointer_cast<arrow::DoubleArray>(table->column(floatIdx)->chunk(0))));
     auto readResult = read->RemoveColumn(floatIdx);
     auto tableResult = table->RemoveColumn(floatIdx);
 

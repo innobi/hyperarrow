@@ -178,7 +178,7 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
 
       arrow::Datum second_datum;
       auto second_datum_result =
-          arrow::compute::CallFunction("minute", {array});
+          arrow::compute::CallFunction("second", {array});
       if (!second_datum_result.ok()) {
         // TODO: handle error
       } else {
@@ -187,7 +187,7 @@ mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
 
       arrow::Datum microsecond_datum;
       auto microsecond_datum_result =
-          arrow::compute::CallFunction("minute", {array});
+          arrow::compute::CallFunction("microsecond", {array});
       if (!microsecond_datum_result.ok()) {
         // TODO: handle error
       } else {
