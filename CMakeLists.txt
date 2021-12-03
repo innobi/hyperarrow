@@ -23,3 +23,15 @@ add_subdirectory(apps)
 enable_testing()
 include(CTest)
 add_subdirectory(tests)
+
+add_custom_target(python
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+    ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
+  COMMAND ${CMAKE_COMMAND} -E copy
+    $<TARGET_FILE:hyperarrow_writer>
+    ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
+  COMMAND ${CMAKE_COMMAND} -E copy
+    $<TARGET_FILE:hyperarrow_reader> 
+    ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
+  DEPENDS hyperarrow_writer hyperarrow_reader
+)
