@@ -1,8 +1,9 @@
 #define BOOST_TEST_MODULE hyperarrow_writer_tests
 #include <arrow/api.h>
-#include <boost/filesystem.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include <hyperarrow/reader.h>
 #include <hyperarrow/writer.h>
+#include <stdio.h>
 
 #define ABORT_ON_FAILURE(expr)                                                 \
   do {                                                                         \
@@ -16,16 +17,16 @@
 BOOST_AUTO_TEST_CASE(test_basic_write) {
   auto schema = arrow::schema(
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
-       arrow::field("c", arrow::int64()), arrow::field("d", arrow::float32()),
-       arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
-       arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8()),
+       arrow::field("c", arrow::int64()), arrow::field("e", arrow::float64()),
+       arrow::field("f", arrow::boolean()), arrow::field("g", arrow::date32()),
+       arrow::field("h", arrow::utf8()),
        arrow::field("i", arrow::timestamp(arrow::TimeUnit::MICRO))});
 
   arrow::MemoryPool *pool = arrow::default_memory_pool();
   arrow::Int16Builder int16builder(pool);
   arrow::Int32Builder int32builder(pool);
   arrow::Int64Builder int64builder(pool);
-  arrow::FloatBuilder floatbuilder(pool);
+  // TODO: space for float impl
   arrow::DoubleBuilder doublebuilder(pool);
   arrow::BooleanBuilder boolbuilder(pool);
   arrow::StringBuilder stringbuilder(pool);
@@ -35,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   std::shared_ptr<arrow::Array> array_a;
   std::shared_ptr<arrow::Array> array_b;
   std::shared_ptr<arrow::Array> array_c;
-  std::shared_ptr<arrow::Array> array_d;
+  // TODO: space for float impl
   std::shared_ptr<arrow::Array> array_e;
   std::shared_ptr<arrow::Array> array_f;
   std::shared_ptr<arrow::Array> array_g;
@@ -53,11 +54,6 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(int64builder.AppendValues({1, 2, 1, 2, 1, 2, 1, 2, 1, 2}));
   ABORT_ON_FAILURE(int64builder.AppendNull());
   ABORT_ON_FAILURE(int64builder.Finish(&array_c));
-
-  ABORT_ON_FAILURE(
-      floatbuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
-  ABORT_ON_FAILURE(floatbuilder.AppendNull());
-  ABORT_ON_FAILURE(floatbuilder.Finish(&array_d));
 
   ABORT_ON_FAILURE(
       doublebuilder.AppendValues({0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}));
@@ -78,17 +74,26 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(stringbuilder.AppendNull());
   ABORT_ON_FAILURE(stringbuilder.Finish(&array_h));
 
-  ABORT_ON_FAILURE(tsbuilder.AppendValues({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
+  ABORT_ON_FAILURE(tsbuilder.AppendValues(
+      {0, 1000000LL * 60LL * 60LL * 24LL, 2000000, 3000000, 4000000, 5000000,
+       6000000, 7000000, 8000000, 9000000}));
   ABORT_ON_FAILURE(tsbuilder.AppendNull());
   ABORT_ON_FAILURE(tsbuilder.Finish(&array_i));
 
-  auto table =
-      arrow::Table::Make(schema, {array_a, array_b, array_c, array_d, array_e,
-                                  array_f, array_g, array_h, array_i});
+  auto table = arrow::Table::Make(schema, {array_a, array_b, array_c, array_e,
+                                           array_f, array_g, array_h, array_i});
 
-  const std::string path = "example.hyper";
+  const char path[] = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");
-  BOOST_TEST(boost::filesystem::exists(path));
-  boost::filesystem::remove(path);
-  boost::filesystem::remove("hyperd.log");
+
+  auto result = hyperarrow::arrowTableFromHyper(path, "schema", "table");
+  if (result.ok()) {
+    auto read = result.ValueOrDie();
+    BOOST_TEST(table->Equals(*read));
+  } else {
+    BOOST_ERROR("Could not read file");
+  }
+
+  remove(path);
+  remove("hyperd.log");
 }
