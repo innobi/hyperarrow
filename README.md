@@ -16,5 +16,8 @@ export TABLEAU_CMAKE_PATH=../tableauhyperapi/share/cmake
 cmake ..
 make
 make test
+
+# Optionally build python binding wheel in python/dist
+make python
 popd
 ```
