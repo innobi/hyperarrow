@@ -1,7 +1,8 @@
 #define BOOST_TEST_MODULE hyperarrow_writer_tests
+#include <stdio.h>
 #include <arrow/api.h>
-#include <boost/filesystem.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include <hyperarrow/reader.h>
 #include <hyperarrow/writer.h>
 
 #define ABORT_ON_FAILURE(expr)                                                 \
@@ -86,9 +87,34 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
       arrow::Table::Make(schema, {array_a, array_b, array_c, array_d, array_e,
                                   array_f, array_g, array_h, array_i});
 
-  const std::string path = "example.hyper";
+  const char path[] = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");
-  BOOST_TEST(boost::filesystem::exists(path));
-  boost::filesystem::remove(path);
-  boost::filesystem::remove("hyperd.log");
+
+  auto result = hyperarrow::arrowTableFromHyper(path, "schema", "table");
+  if (result.ok()) {
+    auto read = result.ValueOrDie();
+    const int floatIdx = 3;
+    // float values do not round trip, so explicitly test
+    auto floatArray = std::static_pointer_cast<arrow::DoubleArray>(
+	read->column(floatIdx)->chunk(0));
+    BOOST_TEST(abs(floatArray->Value(0) - 0.) <= 1.0e-007);
+    BOOST_TEST(abs(floatArray->Value(9) - 9.) <= 1.0e-007);
+    BOOST_TEST(!floatArray->IsValid(10));
+
+    auto readResult = read->RemoveColumn(floatIdx);
+    auto tableResult = table->RemoveColumn(floatIdx);
+
+    if (!(readResult.ok() && tableResult.ok())) {
+      BOOST_ERROR("Could not drop float column from tables");
+    } else {
+      auto tableNoFloat = tableResult.ValueOrDie();
+      auto readNoFloat = readResult.ValueOrDie();
+      BOOST_TEST(tableNoFloat->Equals(*readNoFloat));
+    }
+  } else {
+    BOOST_ERROR("Could not read file");
+  }
+  
+  remove(path);
+  remove("hyperd.log");
 }
