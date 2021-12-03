@@ -109,129 +109,31 @@ mapDateArraysToComponents(const std::shared_ptr<arrow::Table> table) {
   return result;
 }
 
-///
-/// Maps arrow::TimestampArrays to a map of maps. The top level map
-/// uses the 0-based index of the array in the provided table as its key
-/// The inner map uses the constant "year", "month", "day" as values
-///
-/// Ideally we could just call a compute function that maps multiple functions
-/// to a struct containing year / month / day, just wasn't sure how to do that
-/// :-)
-static const std::map<
-    int, std::map<const std::string, std::shared_ptr<arrow::Int64Array>>>
+  static const std::vector<std::shared_ptr<arrow::StructArray>>
 mapTsArraysToComponents(const std::shared_ptr<arrow::Table> table) {
-  std::map<int, std::map<const std::string, std::shared_ptr<arrow::Int64Array>>>
-      result;
-  const std::shared_ptr<arrow::Schema> schema = table->schema();
+    const std::shared_ptr<arrow::Schema> schema = table->schema();
+    std::vector<std::shared_ptr<arrow::StructArray>> results;
+    results.reserve(schema->num_fields());
+	
   for (int i = 0; i < schema->num_fields(); i++) {
     if (schema->field(i)->type()->id() == arrow::Type::TIMESTAMP) {
       auto array = std::static_pointer_cast<arrow::TimestampArray>(
           table->column(i)->chunk(0));
 
-      // ARROW_ASSIGN_OR_RAISE(arrow::Datum year_datum,
-      // arrow::compute::Year(array)); ARROW_ASSIGN_OR_RAISE macro wasn't
-      // working. Yielded error: error: could not convert '(&
-      // _error_or_value7)->arrow::Result<arrow::Datum>
-      // ::status()' from 'const arrow::Status' to 'const std::map<int,
-      // std::map< const std::__cxx11::basic_string<char>,
-      // std::shared_ptr<arrow::NumericArray< arrow::Int64Type> > > >
-      //
-      // Possibly a bug with the macro?
-      arrow::Datum year_datum;
-      auto year_datum_result = arrow::compute::CallFunction("year", {array});
-      if (!year_datum_result.ok()) {
-        // TODO: handle error
-      } else {
-        year_datum = year_datum_result.ValueOrDie();
-      }
-      arrow::Datum month_datum;
-      auto month_datum_result = arrow::compute::CallFunction("month", {array});
-      if (!month_datum_result.ok()) {
-        // TODO: handle error
-      } else {
-        month_datum = month_datum_result.ValueOrDie();
-      }
-      arrow::Datum day_datum;
-      auto day_datum_result = arrow::compute::CallFunction("day", {array});
-      if (!day_datum_result.ok()) {
-        // TODO: handle error
-      } else {
-        day_datum = day_datum_result.ValueOrDie();
+      std::vector<std::shared_ptr<arrow::Array>> result;
+      std::vector<std::string> functions = {"year", "month", "day", "hour", "minute", "second", "microsecond"};
+      for (auto function : functions) {
+	auto res = arrow::compute::CallFunction(function, {array}).ValueOrDie();
+	result.push_back(res.make_array());
       }
 
-      arrow::Datum hour_datum;
-      auto hour_datum_result = arrow::compute::CallFunction("hour", {array});
-      if (!hour_datum_result.ok()) {
-        // TODO: handle error
-      } else {
-        hour_datum = hour_datum_result.ValueOrDie();
-      }
-
-      arrow::Datum minute_datum;
-      auto minute_datum_result =
-          arrow::compute::CallFunction("minute", {array});
-      if (!minute_datum_result.ok()) {
-        // TODO: handle error
-      } else {
-        minute_datum = minute_datum_result.ValueOrDie();
-      }
-
-      arrow::Datum second_datum;
-      auto second_datum_result =
-          arrow::compute::CallFunction("second", {array});
-      if (!second_datum_result.ok()) {
-        // TODO: handle error
-      } else {
-        second_datum = second_datum_result.ValueOrDie();
-      }
-
-      arrow::Datum microsecond_datum;
-      auto microsecond_datum_result =
-          arrow::compute::CallFunction("microsecond", {array});
-      if (!microsecond_datum_result.ok()) {
-        // TODO: handle error
-      } else {
-        microsecond_datum = microsecond_datum_result.ValueOrDie();
-      }
-
-      std::shared_ptr<arrow::Array> years_arr = year_datum.make_array();
-      std::shared_ptr<arrow::Array> months_arr = month_datum.make_array();
-      std::shared_ptr<arrow::Array> days_arr = day_datum.make_array();
-      std::shared_ptr<arrow::Array> hours_arr = hour_datum.make_array();
-      std::shared_ptr<arrow::Array> minutes_arr = minute_datum.make_array();
-      std::shared_ptr<arrow::Array> seconds_arr = second_datum.make_array();
-      std::shared_ptr<arrow::Array> microseconds_arr =
-          microsecond_datum.make_array();
-
-      std::shared_ptr<arrow::Int64Array> years =
-          std::dynamic_pointer_cast<arrow::Int64Array>(years_arr);
-      std::shared_ptr<arrow::Int64Array> months =
-          std::dynamic_pointer_cast<arrow::Int64Array>(months_arr);
-      std::shared_ptr<arrow::Int64Array> days =
-          std::dynamic_pointer_cast<arrow::Int64Array>(days_arr);
-      std::shared_ptr<arrow::Int64Array> hours =
-          std::dynamic_pointer_cast<arrow::Int64Array>(hours_arr);
-      std::shared_ptr<arrow::Int64Array> minutes =
-          std::dynamic_pointer_cast<arrow::Int64Array>(minutes_arr);
-      std::shared_ptr<arrow::Int64Array> seconds =
-          std::dynamic_pointer_cast<arrow::Int64Array>(seconds_arr);
-      std::shared_ptr<arrow::Int64Array> microseconds =
-          std::dynamic_pointer_cast<arrow::Int64Array>(microseconds_arr);
-
-      std::map<const std::string, std::shared_ptr<arrow::Int64Array>>
-          innerResult;
-      innerResult["year"] = years;
-      innerResult["month"] = months;
-      innerResult["day"] = days;
-      innerResult["hour"] = hours;
-      innerResult["minute"] = minutes;
-      innerResult["second"] = seconds;
-      innerResult["microsecond"] = microseconds;
-      result.insert({i, innerResult});
+      results.push_back(arrow::StructArray::Make(result, functions).ValueOrDie());
+    } else {
+      results.push_back(NULL);
     }
   }
 
-  return result;
+  return results;
 }
 
 void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
@@ -350,57 +252,16 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                                   std::shared_ptr<arrow::Array> anArray,
                                   hyperapi::Inserter &inserter, int64_t colNum,
                                   int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::TimestampArray>(anArray);
-          if (array->IsValid(rowNum)) {
-            int64_t year, month, day, hour, minute, second, microsecond;
-            auto search = tsComponents.find(colNum);
-            if (search == tsComponents.end()) {
-              // TODO: handle error
-            } else {
-              auto tsMap = search->second;
-              auto yearSearch = tsMap.find("year");
-              if (yearSearch == tsMap.end()) {
-                // TODO:: handle error
-              } else {
-                year = yearSearch->second->Value(rowNum);
-              }
-              auto monthSearch = tsMap.find("month");
-              if (monthSearch == tsMap.end()) {
-                // TODO:: handle error
-              } else {
-                month = monthSearch->second->Value(rowNum);
-              }
-              auto daySearch = tsMap.find("day");
-              if (daySearch == tsMap.end()) {
-                // TODO:: handle error
-              } else {
-                day = daySearch->second->Value(rowNum);
-              }
-              auto hourSearch = tsMap.find("hour");
-              if (hourSearch == tsMap.end()) {
-                // TODO:: handle error
-              } else {
-                hour = hourSearch->second->Value(rowNum);
-              }
-              auto minuteSearch = tsMap.find("minute");
-              if (minuteSearch == tsMap.end()) {
-                // TODO:: handle error
-              } else {
-                minute = minuteSearch->second->Value(rowNum);
-              }
-              auto secondSearch = tsMap.find("second");
-              if (secondSearch == tsMap.end()) {
-                // TODO:: handle error
-              } else {
-                second = secondSearch->second->Value(rowNum);
-              }
-              auto microsecondSearch = tsMap.find("microsecond");
-              if (microsecondSearch == tsMap.end()) {
-                // TODO:: handle error
-              } else {
-                microsecond = microsecondSearch->second->Value(rowNum);
-              }
-            }
+          auto array = tsComponents[colNum];
+	  auto yearArr = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("year"));
+	  if (yearArr->IsValid(rowNum)) {
+	    auto year = yearArr->Value(rowNum);
+	    auto month = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("month"))->Value(rowNum);
+	    auto day = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("day"))->Value(rowNum);
+	    auto hour = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("hour"))->Value(rowNum);
+	    auto minute = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("minute"))->Value(rowNum);
+	    auto second = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("second"))->Value(rowNum);
+	    auto microsecond = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("microsecond"))->Value(rowNum);
             auto time = hyperapi::Time(hour, minute, second, microsecond);
             auto date = hyperapi::Date(year, month, day);
             inserter.add(hyperapi::Timestamp(date, time));
