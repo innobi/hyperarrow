@@ -17,7 +17,7 @@ cmake ..
 make
 make test
 
-# Optionally build python binding
+# Optionally build python binding wheel in python/dist
 make python
 popd
 ```
