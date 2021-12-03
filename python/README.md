@@ -17,9 +17,9 @@ pip install tableauhyperapi
 
 	There is currently a gap where we build the internal hyperrrow libraries with an arrow library that differs from the one we build in Python. This may cause issues in case of binary incompatabilities
 	
-From here we can build a wheel and install the wheel to use the python binding.
-
 ```sh
+python -m pip install -e .
+# OR 
 python setup.py bdist_wheel --py-limited-api=cp37
 pip install dist/hyperarrow
 ```
