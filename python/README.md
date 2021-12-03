@@ -20,7 +20,7 @@ pip install tableauhyperapi
 From here we can build a wheel and install the wheel to use the python binding.
 
 ```sh
-python setup.py bdist_wheel
+python setup.py bdist_wheel --py-limited-api=cp37
 pip install dist/hyperarrow
 ```
 

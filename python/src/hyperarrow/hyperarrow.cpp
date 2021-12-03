@@ -1,3 +1,4 @@
+#define Py_LIMITED_API 0x03080000
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -23,7 +24,7 @@ static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   }
   auto table = maybe_table.ValueOrDie();
   // TODO: this should probably return some kind of status code
-  hyperarrow::arrowTableToHyper(table, "example.hyper");
+  hyperarrow::arrowTableToHyper(table, "example.hyper", "schema", "table");
 
   Py_RETURN_NONE;
 };
@@ -31,7 +32,7 @@ static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
 static PyObject *read_from_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   PyObject *obj;
 
-  auto result = hyperarrow::arrowTableFromHyper();
+  auto result = hyperarrow::arrowTableFromHyper("example.hyper", "schema", "table");
   if (result.ok()) {
     auto table = result.ValueOrDie();
     obj = arrow::py::wrap_table(table);
@@ -65,7 +66,6 @@ static struct PyModuleDef hyperarrowmodule = {
 
 PyMODINIT_FUNC
 PyInit_libhyperarrow(void) {
-  PyDateTime_IMPORT;
   PyObject *module = NULL;
   if (!arrow::py::import_pyarrow()) {
     module = PyModule_Create(&hyperarrowmodule);
