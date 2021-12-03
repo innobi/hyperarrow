@@ -18,7 +18,6 @@ find_package(tableauhyperapi-cxx REQUIRED CONFIG)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 add_subdirectory(src)
-add_subdirectory(apps)
 
 enable_testing()
 include(CTest)
