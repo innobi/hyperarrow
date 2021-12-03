@@ -1,9 +1,9 @@
 #define BOOST_TEST_MODULE hyperarrow_writer_tests
-#include <stdio.h>
 #include <arrow/api.h>
 #include <boost/test/included/unit_test.hpp>
 #include <hyperarrow/reader.h>
 #include <hyperarrow/writer.h>
+#include <stdio.h>
 
 #define ABORT_ON_FAILURE(expr)                                                 \
   do {                                                                         \
@@ -17,9 +17,9 @@
 BOOST_AUTO_TEST_CASE(test_basic_write) {
   auto schema = arrow::schema(
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
-       arrow::field("c", arrow::int64()),
-       arrow::field("e", arrow::float64()), arrow::field("f", arrow::boolean()),
-       arrow::field("g", arrow::date32()), arrow::field("h", arrow::utf8()),
+       arrow::field("c", arrow::int64()), arrow::field("e", arrow::float64()),
+       arrow::field("f", arrow::boolean()), arrow::field("g", arrow::date32()),
+       arrow::field("h", arrow::utf8()),
        arrow::field("i", arrow::timestamp(arrow::TimeUnit::MICRO))});
 
   arrow::MemoryPool *pool = arrow::default_memory_pool();
@@ -74,13 +74,14 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   ABORT_ON_FAILURE(stringbuilder.AppendNull());
   ABORT_ON_FAILURE(stringbuilder.Finish(&array_h));
 
-  ABORT_ON_FAILURE(tsbuilder.AppendValues({0, 1000000LL * 60LL * 60LL * 24LL, 2000000, 3000000, 4000000, 5000000, 6000000, 7000000, 8000000, 9000000}));
+  ABORT_ON_FAILURE(tsbuilder.AppendValues(
+      {0, 1000000LL * 60LL * 60LL * 24LL, 2000000, 3000000, 4000000, 5000000,
+       6000000, 7000000, 8000000, 9000000}));
   ABORT_ON_FAILURE(tsbuilder.AppendNull());
   ABORT_ON_FAILURE(tsbuilder.Finish(&array_i));
 
-  auto table =
-      arrow::Table::Make(schema, {array_a, array_b, array_c, array_e,
-                                  array_f, array_g, array_h, array_i});
+  auto table = arrow::Table::Make(schema, {array_a, array_b, array_c, array_e,
+                                           array_f, array_g, array_h, array_i});
 
   const char path[] = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   } else {
     BOOST_ERROR("Could not read file");
   }
-  
+
   remove(path);
   remove("hyperd.log");
 }
