@@ -89,6 +89,7 @@ jobs:
         git clone https://github.com/apache/arrow.git
         cd arrow
         vcpkg install --triplet x64-windows --x-manifest-root cpp --feature-flags=versions --clean-after-build
+        cd cpp
         mkdir build
         cd build
         cmake .. -DARROW_COMPUTE=ON -DARROW_DEPENDENCY_SOURCE=VCPKG
