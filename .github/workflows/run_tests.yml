@@ -93,7 +93,7 @@ jobs:
         mkdir build
         cd build
         cmake .. -DARROW_COMPUTE=ON -DARROW_DEPENDENCY_SOURCE=VCPKG
-        make -j2
+        make
         make install
         popd
       shell: bash
