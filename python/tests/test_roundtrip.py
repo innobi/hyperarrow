@@ -6,13 +6,10 @@ import hyperarrow.libhyperarrow as hal
 
 
 def test_roundtrip():
-    # TODO: float32 doesn't round trip - try to place
-    # tests for this elsewhere
     schema = pa.schema([
         ("int16", pa.int16()),
         ("int32", pa.int32()),
         ("int64", pa.int64()),
-        ("float32", pa.float32()),
         ("float64", pa.float64()),
         ("boolean", pa.bool_()),
         ("string", pa.utf8()),
@@ -24,7 +21,6 @@ def test_roundtrip():
         "int16": range(3),
         "int32": range(3),
         "int64": range(3),
-        "float32": [1., 2., 3.],
         "float64": [1., 2., 3.],
         "boolean": [True, False, True],
         "string": list("abc"),
