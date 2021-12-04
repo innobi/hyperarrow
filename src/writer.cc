@@ -155,11 +155,12 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                                   hyperapi::Inserter &inserter, int64_t colNum,
                                   int64_t rowNum) {
           auto array = temporalComponents[colNum];
-	  auto yearArr = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("year"));
+	  auto flattened = array->Flatten().ValueOrDie();
+	  auto yearArr = std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
 	  if (yearArr->IsValid(rowNum)) {
 	    auto year = yearArr->Value(rowNum);
-	    auto month = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("month"))->Value(rowNum);
-	    auto day = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("day"))->Value(rowNum);
+	    auto month = std::static_pointer_cast<arrow::Int64Array>(flattened[1])->Value(rowNum);
+	    auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])->Value(rowNum);
             auto date = hyperapi::Date(year, month, day);
 	    inserter.add(date);
 	  } else {
@@ -172,15 +173,16 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                                   hyperapi::Inserter &inserter, int64_t colNum,
                                   int64_t rowNum) {
           auto array = temporalComponents[colNum];
-	  auto yearArr = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("year"));
+	  auto flattened = array->Flatten().ValueOrDie();
+	  auto yearArr = std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
 	  if (yearArr->IsValid(rowNum)) {
 	    auto year = yearArr->Value(rowNum);
-	    auto month = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("month"))->Value(rowNum);
-	    auto day = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("day"))->Value(rowNum);
-	    auto hour = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("hour"))->Value(rowNum);
-	    auto minute = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("minute"))->Value(rowNum);
-	    auto second = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("second"))->Value(rowNum);
-	    auto microsecond = std::static_pointer_cast<arrow::Int64Array>(array->GetFieldByName("microsecond"))->Value(rowNum);
+	    auto month = std::static_pointer_cast<arrow::Int64Array>(flattened[1])->Value(rowNum);
+	    auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])->Value(rowNum);
+	    auto hour = std::static_pointer_cast<arrow::Int64Array>(flattened[3])->Value(rowNum);
+	    auto minute = std::static_pointer_cast<arrow::Int64Array>(flattened[4])->Value(rowNum);
+	    auto second = std::static_pointer_cast<arrow::Int64Array>(flattened[5])->Value(rowNum);
+	    auto microsecond = std::static_pointer_cast<arrow::Int64Array>(flattened[6])->Value(rowNum);
             auto time = hyperapi::Time(hour, minute, second, microsecond);
             auto date = hyperapi::Date(year, month, day);
             inserter.add(hyperapi::Timestamp(date, time));
