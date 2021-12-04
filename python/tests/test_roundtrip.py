@@ -5,7 +5,7 @@ import pyarrow as pa
 import hyperarrow.libhyperarrow as hal
 
 
-def test_roundtrip():
+def test_roundtrip(tmp_hyper):
     schema = pa.schema([
         ("int16", pa.int16()),
         ("int32", pa.int32()),
@@ -36,6 +36,6 @@ def test_roundtrip():
         ]
     }, schema=schema)
 
-    hal.write_to_hyper(tbl)
-    read = hal.read_from_hyper("example.hyper", "schema", "table")
+    hal.write_to_hyper(tbl, str(tmp_hyper), "schema", "table")
+    read = hal.read_from_hyper(str(tmp_hyper), "schema", "table")
     assert tbl.equals(read)

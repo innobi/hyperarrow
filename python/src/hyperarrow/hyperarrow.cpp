@@ -9,8 +9,9 @@
 static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   int ok;
   PyObject *obj;
+  const char *path, *schema, *tableName;
 
-  ok = PyArg_ParseTuple(args, "O", &obj);
+  ok = PyArg_ParseTuple(args, "Osss", &obj, &path, &schema, &tableName);
   if (!ok)
     return NULL;
 
@@ -24,7 +25,7 @@ static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   }
   auto table = maybe_table.ValueOrDie();
   // TODO: this should probably return some kind of status code
-  hyperarrow::arrowTableToHyper(table, "example.hyper", "schema", "table");
+  hyperarrow::arrowTableToHyper(table, path, schema, tableName);
 
   Py_RETURN_NONE;
 };
