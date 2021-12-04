@@ -31,9 +31,15 @@ static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
 };
 
 static PyObject *read_from_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
+  int ok;
   PyObject *obj;
+  const char *path, *schema, *tableName;
 
-  auto result = hyperarrow::arrowTableFromHyper("example.hyper", "schema", "table");
+  ok = PyArg_ParseTuple(args, "sss", &path, &schema, &tableName);
+  if (!ok)
+    return NULL;
+
+  auto result = hyperarrow::arrowTableFromHyper(path, schema, tableName);
   if (result.ok()) {
     auto table = result.ValueOrDie();
     obj = arrow::py::wrap_table(table);
