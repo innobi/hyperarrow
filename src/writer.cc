@@ -36,39 +36,42 @@ createDefinitionFromSchema(std::shared_ptr<arrow::Table> table,
   return tableDef;
 }
 
-  static const std::vector<std::shared_ptr<arrow::StructArray>>
+static const std::vector<std::shared_ptr<arrow::StructArray>>
 extractTemporalComponents(const std::shared_ptr<arrow::Table> table) {
-    const std::shared_ptr<arrow::Schema> schema = table->schema();
-    std::vector<std::shared_ptr<arrow::StructArray>> results;
-    results.reserve(schema->num_fields());
-	
+  const std::shared_ptr<arrow::Schema> schema = table->schema();
+  std::vector<std::shared_ptr<arrow::StructArray>> results;
+  results.reserve(schema->num_fields());
+
   for (int i = 0; i < schema->num_fields(); i++) {
     auto type = schema->field(i)->type()->id();
     if (type == arrow::Type::TIMESTAMP || type == arrow::Type::DATE32) {
       std::vector<std::shared_ptr<arrow::Array>> result;
       std::vector<std::string> functions;
       if (type == arrow::Type::TIMESTAMP) {
-	auto array = std::static_pointer_cast<arrow::TimestampArray>(
-          table->column(i)->chunk(0));
+        auto array = std::static_pointer_cast<arrow::TimestampArray>(
+            table->column(i)->chunk(0));
 
-	functions = {"year", "month", "day", "hour", "minute", "second", "microsecond"};
-	for (auto function : functions) {
-	  auto res = arrow::compute::CallFunction(function, {array}).ValueOrDie();
-	  result.push_back(res.make_array());
-	}
+        functions = {"year",   "month",  "day",        "hour",
+                     "minute", "second", "microsecond"};
+        for (auto function : functions) {
+          auto res =
+              arrow::compute::CallFunction(function, {array}).ValueOrDie();
+          result.push_back(res.make_array());
+        }
       } else if (type == arrow::Type::DATE32) {
-	auto array = std::static_pointer_cast<arrow::Date32Array>(
-          table->column(i)->chunk(0));
+        auto array = std::static_pointer_cast<arrow::Date32Array>(
+            table->column(i)->chunk(0));
 
-	functions = {"year", "month", "day"};
-	for (auto function : functions) {
-	  auto res = arrow::compute::CallFunction(function, {array}).ValueOrDie();
-	  result.push_back(res.make_array());
-	}	
+        functions = {"year", "month", "day"};
+        for (auto function : functions) {
+          auto res =
+              arrow::compute::CallFunction(function, {array}).ValueOrDie();
+          result.push_back(res.make_array());
+        }
       }
-      results.push_back(arrow::StructArray::Make(result, functions).ValueOrDie());
-    }
-     else {
+      results.push_back(
+          arrow::StructArray::Make(result, functions).ValueOrDie());
+    } else {
       results.push_back(NULL);
     }
   }
@@ -90,41 +93,41 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
     for (auto &field : table->fields()) {
       auto type = field->type();
       if (type == arrow::int16()) {
-        write_funcs.push_back([temporalComponents](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::Int16Array>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<int16_t>());
-          }
-        });
+        write_funcs.push_back(
+            [temporalComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum,
+                                 int64_t rowNum) {
+              auto array = std::static_pointer_cast<arrow::Int16Array>(anArray);
+              if (array->IsValid(rowNum)) {
+                inserter.add(array->Value(rowNum));
+              } else {
+                inserter.add(hyperapi::optional<int16_t>());
+              }
+            });
       } else if (type == arrow::int32()) {
-        write_funcs.push_back([temporalComponents](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::Int32Array>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<int32_t>());
-          }
-        });
+        write_funcs.push_back(
+            [temporalComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum,
+                                 int64_t rowNum) {
+              auto array = std::static_pointer_cast<arrow::Int32Array>(anArray);
+              if (array->IsValid(rowNum)) {
+                inserter.add(array->Value(rowNum));
+              } else {
+                inserter.add(hyperapi::optional<int32_t>());
+              }
+            });
       } else if (type == arrow::int64()) {
-        write_funcs.push_back([temporalComponents](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::Int64Array>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<int64_t>());
-          }
-        });
+        write_funcs.push_back(
+            [temporalComponents](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum,
+                                 int64_t rowNum) {
+              auto array = std::static_pointer_cast<arrow::Int64Array>(anArray);
+              if (array->IsValid(rowNum)) {
+                inserter.add(array->Value(rowNum));
+              } else {
+                inserter.add(hyperapi::optional<int64_t>());
+              }
+            });
       } else if (type == arrow::float64()) {
         write_funcs.push_back([temporalComponents](
                                   std::shared_ptr<arrow::Array> anArray,
@@ -155,17 +158,21 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                                   hyperapi::Inserter &inserter, int64_t colNum,
                                   int64_t rowNum) {
           auto array = temporalComponents[colNum];
-	  auto flattened = array->Flatten().ValueOrDie();
-	  auto yearArr = std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
-	  if (yearArr->IsValid(rowNum)) {
-	    auto year = yearArr->Value(rowNum);
-	    auto month = std::static_pointer_cast<arrow::Int64Array>(flattened[1])->Value(rowNum);
-	    auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])->Value(rowNum);
+          auto flattened = array->Flatten().ValueOrDie();
+          auto yearArr =
+              std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
+          if (yearArr->IsValid(rowNum)) {
+            auto year = yearArr->Value(rowNum);
+            auto month =
+                std::static_pointer_cast<arrow::Int64Array>(flattened[1])
+                    ->Value(rowNum);
+            auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])
+                           ->Value(rowNum);
             auto date = hyperapi::Date(year, month, day);
-	    inserter.add(date);
-	  } else {
-	    inserter.add(hyperapi::optional<hyperapi::Date>());
-	  }
+            inserter.add(date);
+          } else {
+            inserter.add(hyperapi::optional<hyperapi::Date>());
+          }
         });
       } else if (type->id() == arrow::Type::TIMESTAMP) {
         write_funcs.push_back([temporalComponents](
@@ -173,16 +180,28 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                                   hyperapi::Inserter &inserter, int64_t colNum,
                                   int64_t rowNum) {
           auto array = temporalComponents[colNum];
-	  auto flattened = array->Flatten().ValueOrDie();
-	  auto yearArr = std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
-	  if (yearArr->IsValid(rowNum)) {
-	    auto year = yearArr->Value(rowNum);
-	    auto month = std::static_pointer_cast<arrow::Int64Array>(flattened[1])->Value(rowNum);
-	    auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])->Value(rowNum);
-	    auto hour = std::static_pointer_cast<arrow::Int64Array>(flattened[3])->Value(rowNum);
-	    auto minute = std::static_pointer_cast<arrow::Int64Array>(flattened[4])->Value(rowNum);
-	    auto second = std::static_pointer_cast<arrow::Int64Array>(flattened[5])->Value(rowNum);
-	    auto microsecond = std::static_pointer_cast<arrow::Int64Array>(flattened[6])->Value(rowNum);
+          auto flattened = array->Flatten().ValueOrDie();
+          auto yearArr =
+              std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
+          if (yearArr->IsValid(rowNum)) {
+            auto year = yearArr->Value(rowNum);
+            auto month =
+                std::static_pointer_cast<arrow::Int64Array>(flattened[1])
+                    ->Value(rowNum);
+            auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])
+                           ->Value(rowNum);
+            auto hour =
+                std::static_pointer_cast<arrow::Int64Array>(flattened[3])
+                    ->Value(rowNum);
+            auto minute =
+                std::static_pointer_cast<arrow::Int64Array>(flattened[4])
+                    ->Value(rowNum);
+            auto second =
+                std::static_pointer_cast<arrow::Int64Array>(flattened[5])
+                    ->Value(rowNum);
+            auto microsecond =
+                std::static_pointer_cast<arrow::Int64Array>(flattened[6])
+                    ->Value(rowNum);
             auto time = hyperapi::Time(hour, minute, second, microsecond);
             auto date = hyperapi::Date(year, month, day);
             inserter.add(hyperapi::Timestamp(date, time));
