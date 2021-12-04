@@ -24,8 +24,12 @@ static PyObject *write_to_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
     return NULL;
   }
   auto table = maybe_table.ValueOrDie();
-  // TODO: this should probably return some kind of status code
-  hyperarrow::arrowTableToHyper(table, path, schema, tableName);
+  try {
+    hyperarrow::arrowTableToHyper(table, path, schema, tableName);    
+  } catch(const std::exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    return NULL;
+  }  
 
   Py_RETURN_NONE;
 };
@@ -39,7 +43,13 @@ static PyObject *read_from_hyper(PyObject *Py_UNUSED(dummy), PyObject *args) {
   if (!ok)
     return NULL;
 
-  auto result = hyperarrow::arrowTableFromHyper(path, schema, tableName);
+  arrow::Result<std::shared_ptr<arrow::Table>> result;
+  try {
+    result = hyperarrow::arrowTableFromHyper(path, schema, tableName);
+  } catch(const std::exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    return NULL;
+  }
   if (result.ok()) {
     auto table = result.ValueOrDie();
     obj = arrow::py::wrap_table(table);
