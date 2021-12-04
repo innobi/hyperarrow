@@ -7,6 +7,7 @@ build
 # Python items
 *.whl
 *.egg-info*
+*.pyc
 __pycache__
 
 
