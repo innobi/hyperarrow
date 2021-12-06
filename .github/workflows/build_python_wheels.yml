@@ -42,11 +42,11 @@ jobs:
         cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
         make
         make test
-	make python
+        make python
 
 
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.python-version }}-macos
-	path: python/dist/*.whl
+        path: python/dist/*.whl
