@@ -3,7 +3,7 @@ name: hyperarrow python wheels
 on:
   release:
     types: [created, edited]
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   build-macos:
