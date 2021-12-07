@@ -23,7 +23,7 @@ enable_testing()
 include(CTest)
 add_subdirectory(tests)
 
-find_package(Python3 COMPONENTS Interpreter Development)
+find_package(Python3 COMPONENTS Interpreter Development HINTS Python3_FIND_VIRTUALENV)
 
 if (Python3_FOUND)
   add_custom_target(python
