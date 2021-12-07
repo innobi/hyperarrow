@@ -33,7 +33,7 @@ jobs:
     - name: Set up conda
       run: |
         conda create -n hyperarrow -c conda-forge python=3.7 pyarrow
-        conda activate pyarrow
+        conda activate hyperarrow
     - name: Set up out of core build
       run: |
         mkdir build
