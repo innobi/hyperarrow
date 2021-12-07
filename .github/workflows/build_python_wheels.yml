@@ -36,6 +36,7 @@ jobs:
     - name: Install boost for test dependency
       run: brew install boost
     - name: Set up out of core build
+      shell: bash -l {0}
       run: |
         conda activate hyperarrow
         conda install -c conda-forge pyarrow
