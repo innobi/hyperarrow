@@ -17,6 +17,10 @@ jobs:
         python-version: "3.7"
         activate-environment: hyperarrow
         channels: conda-forge
+    - name: Install conda dependencies
+      run: |
+        conda install python=3.7 pyarrow
+        which python
     - name: Install Arrow Libraries
       run: |
         brew install apache-arrow
@@ -43,7 +47,6 @@ jobs:
         cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
         make
         make test
-        conda install pyarrow
         make python
     - name: Upload wheel
       uses: actions/upload-artifact@v2
