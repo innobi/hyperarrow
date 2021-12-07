@@ -9,10 +9,6 @@ jobs:
   build-macos:
 
     runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: [3.7, 3.8, 3.9]
-
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
@@ -34,6 +30,10 @@ jobs:
         popd
     - name: Install boost for test dependency
       run: brew install boost
+    - name: Set up conda
+      run: |
+        conda create -n hyperarrow -c conda-forge python=3.7 pyarrow
+        conda activate pyarrow
     - name: Set up out of core build
       run: |
         mkdir build
@@ -43,10 +43,8 @@ jobs:
         make
         make test
         make python
-
-
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.python-version }}-macos
+        name: macos
         path: python/dist/*.whl
