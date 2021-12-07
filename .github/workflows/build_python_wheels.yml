@@ -45,7 +45,7 @@ jobs:
         export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
         cmake ..
         make
-        make test --output-on-failure
+        make test
         make python
     - name: Upload wheel
       uses: actions/upload-artifact@v2
