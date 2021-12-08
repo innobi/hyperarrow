@@ -19,9 +19,6 @@ jobs:
         python-version: "3.7"
         activate-environment: hyperarrow
         channels: conda-forge
-    - name: Install Arrow Libraries
-      run: |
-        brew install apache-arrow
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -35,25 +32,18 @@ jobs:
         ls tableauhyperapi/share
         ls tableauhyperapi/share/cmake
         popd
-    - name: Install boost for test dependency
-      run: brew install boost
     - name: Set up out of core build
+      shell: bash -l {0}
       run: |
+        conda activate hyperarrow
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
-        cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
+        cmake ..
         make
         make test
-        cd ..
-    - name: Python steps
-      shell: bash -l {0}
-      run: |
-        cd build
-        conda activate hyperarrow
-        conda install -c conda-forge pyarrow
-        make python
-        cd ..
+	make python
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
