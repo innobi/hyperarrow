@@ -35,10 +35,7 @@ if (Python_FOUND)
     COMMAND ${CMAKE_COMMAND} -E copy
       $<TARGET_FILE:hyperarrow_reader>
       ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-    # We should use ${Python_EXECUTABLE} here instead of just python.
-    # Currently very hacky as we can detect another Python version
-    # to allow target than we actually execute target with
-    COMMAND python setup.py bdist_wheel --py-limited-api=cp37
+    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel --py-limited-api=cp37
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
     DEPENDS hyperarrow_writer hyperarrow_reader
   )
