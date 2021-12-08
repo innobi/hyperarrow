@@ -97,7 +97,7 @@ jobs:
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/d/a/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
-        cmake ..
+        cmake -G G "MinGW Makefiles" ..
         make
         make test
 
