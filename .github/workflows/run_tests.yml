@@ -14,14 +14,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
-    - name: Install Arrow Libraries
-      run: |
-        sudo apt update
-        sudo apt install -y -V ca-certificates lsb-release wget
-        wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-        sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-        sudo apt update
-        sudo apt install -y -V libarrow-dev
+      with:
+        auto-update-conda: true
+        activate-environment: hyperarrow
+        channels: conda-forge
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -30,10 +26,12 @@ jobs:
         unzip tableauhyperapi.zip
         mv tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         popd
-    - name: Install boost for test dependency
-      run: sudo apt install libboost-all-dev
     - name: Set up out of core build
       run: |
+      shell: bash -l {0}
+      run: |
+        conda activate hyperarrow
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
@@ -48,9 +46,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
-    - name: Install Arrow Libraries
-      run: |
-        brew install apache-arrow
+      with:
+        auto-update-conda: true
+        activate-environment: hyperarrow
+        channels: conda-forge
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -64,13 +63,14 @@ jobs:
         ls tableauhyperapi/share
         ls tableauhyperapi/share/cmake
         popd
-    - name: Install boost for test dependency
-      run: brew install boost
     - name: Set up out of core build
+      shell: bash -l {0}
       run: |
+        conda activate hyperarrow
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
-        cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
+        cmake ..
         make
         make test
