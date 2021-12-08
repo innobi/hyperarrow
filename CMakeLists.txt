@@ -1,7 +1,7 @@
 # Much inspiration here borrow from
 # https://gitlab.com/CLIUtils/modern-cmake/tree/master/examples/extended-project
 # https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.18)
 set (CMAKE_CXX_STANDARD 11)
 
 project(HyperArrow VERSION 0.1)
@@ -23,7 +23,7 @@ enable_testing()
 include(CTest)
 add_subdirectory(tests)
 
-find_package(Python3 COMPONENTS Interpreter Development HINTS Python3_FIND_VIRTUALENV)
+find_package(Python COMPONENTS Interpreter Development)
 
 if (Python3_FOUND)
   add_custom_target(python
