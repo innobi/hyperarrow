@@ -42,7 +42,7 @@ jobs:
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
-        cmake ..
+        cmake .. -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib
         make
         make test
         cd ..
