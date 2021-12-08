@@ -96,7 +96,7 @@ jobs:
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp
         mkdir build
         cd build
-        export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
+        export TABLEAU_CMAKE_PATH=../deps/tableauhyperapi/share/cmake
         cmake ..
         make
         make test
