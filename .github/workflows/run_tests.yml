@@ -97,7 +97,5 @@ jobs:
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp compilers
         mkdir build
         cd build
-        cmake ..
-        make
-        make test
-
+        cmake -S ..
+        cmake --build
