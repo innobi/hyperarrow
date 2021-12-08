@@ -90,12 +90,13 @@ jobs:
         mv tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         popd
     - name: Set up out of core build
+      env:
+        TABLEAU_CMAKE_PATH: "D:\\a\\hyperarrow\\hyperarrow\\deps\\tableauhyperapi\\share\\cmake"
       run: |
         conda activate hyperarrow
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp
         mkdir build
         cd build
-        export TABLEAU_CMAKE_PATH=C:d\\a\\hyperarrow\\hyperarrow\\deps\\tableauhyperapi\\share\\cmake
         cmake ..
         make
         make test
