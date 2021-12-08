@@ -94,7 +94,7 @@ jobs:
         TABLEAU_CMAKE_PATH: "D:\\a\\hyperarrow\\hyperarrow\\deps\\tableauhyperapi\\share\\cmake"
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp compilers
         mkdir build
         cd build
         cmake ..
