@@ -25,7 +25,7 @@ add_subdirectory(tests)
 
 find_package(Python COMPONENTS Interpreter Development)
 
-if (Python3_FOUND)
+if (Python_FOUND)
   add_custom_target(python
     COMMAND ${CMAKE_COMMAND} -E make_directory
       ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
@@ -35,7 +35,10 @@ if (Python3_FOUND)
     COMMAND ${CMAKE_COMMAND} -E copy
       $<TARGET_FILE:hyperarrow_reader>
       ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-    COMMAND ${Python3_EXECUTABLE} setup.py bdist_wheel --py-limited-api=cp37
+    # We should use ${Python_EXECUTABLE} here instead of just python.
+    # Currently very hacky as we can detect another Python version
+    # to allow target than we actually execute target with
+    COMMAND python setup.py bdist_wheel --py-limited-api=cp37
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
     DEPENDS hyperarrow_writer hyperarrow_reader
   )
