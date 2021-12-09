@@ -83,5 +83,5 @@ jobs:
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
-        name: macos
+        name: windows
         path: python/dist/*.whl
