@@ -28,32 +28,37 @@ add_subdirectory(tests)
 
 find_package(Python COMPONENTS Interpreter Development)
 
-if (Python_FOUND)
+# https://stackoverflow.com/questions/63804883/including-and-distributing-third-party-libraries-with-a-python-c-extension
+if (Python_FOUND AND WIN32)
   add_custom_target(python
     COMMAND ${CMAKE_COMMAND} -E make_directory
       ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-    # https://stackoverflow.com/questions/63804883/including-and-distributing-third-party-libraries-with-a-python-c-extension
-    if(WIN32)
-      COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_LINKER_FILE:hyperarrow_writer>
-        ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-      COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:hyperarrow_writer>
-        ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/
-      COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_LINKER_FILE:hyperarrow_reader>
-        ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-      COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:hyperarrow_reader>
-        ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/
-    else(WIN32)
-      COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:hyperarrow_writer>
-        ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-      COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:hyperarrow_reader>
-        ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-    endif(WIN32)
+    COMMAND ${CMAKE_COMMAND} -E copy
+      $<TARGET_LINKER_FILE:hyperarrow_writer>
+      ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      $<TARGET_FILE:hyperarrow_writer>
+      ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      $<TARGET_LINKER_FILE:hyperarrow_reader>
+      ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      $<TARGET_FILE:hyperarrow_reader>
+      ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/
+    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel --py-limited-api=cp37
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
+    DEPENDS hyperarrow_writer hyperarrow_reader
+    )
+elseif(Python_FOUND)
+  add_custom_target(python
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+      ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      $<TARGET_FILE:hyperarrow_writer>
+      ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      $<TARGET_FILE:hyperarrow_reader>
+      ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
     COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel --py-limited-api=cp37
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
     DEPENDS hyperarrow_writer hyperarrow_reader
