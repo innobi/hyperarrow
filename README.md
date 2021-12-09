@@ -5,19 +5,34 @@ This repository is the future home of *HyperArrow* - a library to allow seamless
 	
 ## Local Build
 
-For a local build you must show CMakeLists where it can find both a pre-built arrow library as well as the tableau hyper api.
+For an easy way to build this package across platforms, you can use conda to first build your development environment.
+
+```sh
+conda create -n hyperarrow-dev
+conda activate hyperarrow-dev
+conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp compilers
+
+# Optional step if you would like to build python bindings
+conda install -c conda-forge pyarrow
+```
+
+With that out of the way, you will want to have the Tableau Hyper API available somewhere on your machine. Before the build you will want to set an environment variable pointing to this location (note that the method for setting an environment variable will depend on your platform)
+
+```sh
+export TABLEAU_CMAKE_PATH=<SOME_DIRECTORY_PATH>/tableauhyperapi/share/cmake
+```
+
+With those steps completed you can start the build process. It is recommended to do an out of source compliation with CMake, which would look as follows
 
 ```sh
 mkdir build
 pushd build
-# Modify below to point to whereve the tableauhyperapi is
-export TABLEAU_CMAKE_PATH=../tableauhyperapi/share/cmake
 
-cmake ..
-make
-make test
+cmake -S ..
+cmake --build .
+ctest
 
 # Optionally build python binding wheel in python/dist
-make python
+cmake --build . --target python
 popd
 ```
