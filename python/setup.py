@@ -33,18 +33,19 @@ else:
 
 # pyarrow might support this with the right installation. See
 # https://arrow.apache.org/docs/python/extending.html?highlight=import_pyarrow
-arrow_include_dir = "../../arrow/python/pyarrow/include"
 tableau_include_dir = "../../tableauhyperapi/include"
 
 
 extra_link_args = []
-package_data = []
+package_data = ["lib/*.so", "lib/*.dylib", "lib/*.lib", "*.dll"]
 if sys.platform == "darwin":
     extra_link_args.append("-Wl,-rpath,@loader_path/lib/.")
-    package_data.append("lib/*.dylib")
 elif sys.platform == "linux":
     extra_link_args.append("-Wl,-rpath=$ORIGIN/lib/.")
-    package_data.append("lib/*.so")
+elif sys.platform == "win32":
+    extra_link_args.append("/libpath:lib")
+else:
+    raise ValueError("Unsupported platform")
 
 
 # Inspiration for this method taken from:
@@ -60,7 +61,7 @@ def path_to_build_folder():
 
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
-    include_dirs=[arrow_include_dir, tableau_include_dir] + ["../include"],
+    include_dirs=[pa.get_include(), tableau_include_dir, "../include"],
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to
     # expected build folder location
