@@ -4,6 +4,9 @@
 cmake_minimum_required(VERSION 3.18)
 set (CMAKE_CXX_STANDARD 11)
 
+# See https://stackoverflow.com/questions/37128555/getting-cmake-to-build-shared-library-for-msvc
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
 project(HyperArrow VERSION 0.1)
 
 option(ARROW_LINK_SHARED "Link to the Arrow shared library" ON)
