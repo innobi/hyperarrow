@@ -99,3 +99,4 @@ jobs:
         cd build
         cmake -S ..
         cmake --build .
+        ctest
