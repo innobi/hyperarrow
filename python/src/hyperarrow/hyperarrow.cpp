@@ -70,15 +70,15 @@ static PyMethodDef methods[] = {
 
 
 static struct PyModuleDef hyperarrowmodule = {
-  .m_base = PyModuleDef_HEAD_INIT,
-  .m_name = "libhyperarrow",
-  .m_doc = PyDoc_STR("Writes pyarrow Table to a hyper file"),
-  .m_size = 0,
-  .m_methods = methods,
-  .m_slots = NULL,
-  .m_traverse = NULL,
-  .m_clear = NULL,
-  .m_free = NULL
+  PyModuleDef_HEAD_INIT,	// m_base
+  "libhyperarrow",		// m_name
+  PyDoc_STR("Writes pyarrow Table to a hyper file"),	// m_doc
+  0,				// m_size
+  methods,			// m_methods
+  NULL,				// m_slots
+  NULL,				// m_traverse
+  NULL,				// m_clear
+  NULL				// m_free
 };
 
 PyMODINIT_FUNC
