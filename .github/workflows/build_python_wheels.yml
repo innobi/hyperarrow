@@ -44,6 +44,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
+        python -m pip install --upgrade pip
         python -m pip install python/dist/hyperarrow*
         python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
@@ -75,6 +76,7 @@ jobs:
     - name: Set up out of core build
       env:
         TABLEAU_CMAKE_PATH: "D:\\a\\hyperarrow\\hyperarrow\\deps\\tableauhyperapi\\share\\cmake"
+        MACOSX_DEPLOYMENT_TARGET: 11_0
       run: |
         conda activate hyperarrow
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp compilers pyarrow
