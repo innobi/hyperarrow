@@ -65,7 +65,6 @@ hyperarrow_module = Extension(
     extra_compile_args=extra_compile_args,
     extra_link_args=extra_link_args,
     language="c++",
-    py_limited_api=True,
 )
 
 setup(
