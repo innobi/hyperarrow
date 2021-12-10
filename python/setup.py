@@ -1,4 +1,6 @@
+import platform
 import os
+import pkg_resources
 import sys
 import sysconfig
 from glob import glob
@@ -26,14 +28,14 @@ else:
 
 if "MACOSX_DEPLOYMENT_TARGET" not in os.environ:
     current_system = platform.mac_ver()[0]
-    python_target = get_config_vars().get(
+    python_target = sysconfig.get_config_vars().get(
         "MACOSX_DEPLOYMENT_TARGET", current_system
     )
     target_macos_version = "10.9"
-    parsed_macos_version = parse_version(target_macos_version)
+    parsed_macos_version = pkg_resources.parse_version(target_macos_version)
     if (
-        parse_version(str(python_target)) < parsed_macos_version
-        and parse_version(current_system) >= parsed_macos_version
+        pkg_resources.parse_version(str(python_target)) < parsed_macos_version
+        and pkg_resources.parse_version(current_system) >= parsed_macos_version
     ):
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = target_macos_version
 
