@@ -44,6 +44,13 @@ jobs:
         make
         make test
         make python
+        cd ..
+    - name: Test wheel
+      shell: bash -l {0}
+      run: |
+        conda activate hyperarrow
+        python -m pip install python/src/dist/hyperarrow
+        python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
@@ -80,6 +87,12 @@ jobs:
         cd build
         cmake -S ..
         cmake --build . --target python
+        cd ..
+    - name: Test wheel
+      run: |
+        conda activate hyperarrow
+        python -m pip install python/src/dist/hyperarrow
+        python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
