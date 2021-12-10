@@ -31,7 +31,7 @@ else:
 tableau_include_dir = "../../tableauhyperapi/include"
 
 extra_link_args = []
-package_data = ["lib/*.so", "lib/*.dylib", "lib/*.lib", "*.dll"]
+package_data = ["lib/*.so", "lib/*.dylib", "lib/*.lib", "./*.dll"]
 if sys.platform == "darwin":
     extra_link_args.append("-Wl,-rpath,@loader_path/lib/.")
 elif sys.platform == "linux":
