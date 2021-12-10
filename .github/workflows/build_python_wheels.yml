@@ -26,11 +26,6 @@ jobs:
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
         mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
-        pwd
-        ls
-        ls tableauhyperapi
-        ls tableauhyperapi/share
-        ls tableauhyperapi/share/cmake
         popd
     - name: Set up out of core build
       shell: bash -l {0}
@@ -49,7 +44,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
-        python -m pip install python/src/dist/hyperarrow
+        python -m pip install python/dist/hyperarrow*
         python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
       uses: actions/upload-artifact@v2
@@ -91,7 +86,7 @@ jobs:
     - name: Test wheel
       run: |
         conda activate hyperarrow
-        python -m pip install python/src/dist/hyperarrow
+        python -m pip install python/dist/hyperarrow*
         python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
       uses: actions/upload-artifact@v2
