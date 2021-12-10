@@ -5,7 +5,7 @@ The README in the root folder of this project contains instructions for building
 # Example Usage
 
 ```python
-import hyperarrow.libhyperarrow as hal
+import hyperarrow as hal
 import pyarrow as pa
 
 tbl = pa.Table.from_pydict({"a": range(100)})
