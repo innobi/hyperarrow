@@ -31,7 +31,7 @@ if "MACOSX_DEPLOYMENT_TARGET" not in os.environ:
     python_target = sysconfig.get_config_vars().get(
         "MACOSX_DEPLOYMENT_TARGET", current_system
     )
-    target_macos_version = "10.9"
+    target_macos_version = "11.0"
     parsed_macos_version = pkg_resources.parse_version(target_macos_version)
     if (
         pkg_resources.parse_version(str(python_target)) < parsed_macos_version
@@ -83,7 +83,7 @@ hyperarrow_module = Extension(
 
 setup(
     name="hyperarrow",
-    version="0.0.1-dev",
+    version="0.0.1.dev0",
     description="Python wrapper to hyperarrow",
     long_description=long_description,
     long_description_content_type="text/markdown",    
