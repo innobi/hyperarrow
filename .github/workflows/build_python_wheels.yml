@@ -64,6 +64,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
+        python-version: "3.8"
         activate-environment: hyperarrow
         channels: conda-forge
     - name: Download Hyper Library / Headers
