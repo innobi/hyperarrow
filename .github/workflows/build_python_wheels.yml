@@ -44,7 +44,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
-        python -m pip install python/dist/hyperarrow*
+        python -m pip install --find-links=python/dist hyperarrow
         python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
       uses: actions/upload-artifact@v2
@@ -86,7 +86,7 @@ jobs:
     - name: Test wheel
       run: |
         conda activate hyperarrow
-        python -m pip install python/dist/hyperarrow*
+        python -m pip install --find-links=python/dist hyperarrow
         python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
       uses: actions/upload-artifact@v2
