@@ -29,12 +29,14 @@ jobs:
         popd
     - name: Set up out of core build
       shell: bash -l {0}
+      env:
+        TABLEAU_CMAKE_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake"
+        MACOSX_DEPLOYMENT_TARGET: "10.9"
       run: |
         conda activate hyperarrow
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
         mkdir build
         cd build
-        export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
         cmake ..
         make
         make test
