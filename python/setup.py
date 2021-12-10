@@ -26,19 +26,6 @@ else:
     if "--debug" in sys.argv:
         extra_compile_args.extend(["-g", "-UNDEBUG", "-O0"])
 
-if "MACOSX_DEPLOYMENT_TARGET" not in os.environ:
-    current_system = platform.mac_ver()[0]
-    python_target = sysconfig.get_config_vars().get(
-        "MACOSX_DEPLOYMENT_TARGET", current_system
-    )
-    target_macos_version = "11.0"
-    parsed_macos_version = pkg_resources.parse_version(target_macos_version)
-    if (
-        pkg_resources.parse_version(str(python_target)) < parsed_macos_version
-        and pkg_resources.parse_version(current_system) >= parsed_macos_version
-    ):
-        os.environ["MACOSX_DEPLOYMENT_TARGET"] = target_macos_version
-
 # pyarrow might support this with the right installation. See
 # https://arrow.apache.org/docs/python/extending.html?highlight=import_pyarrow
 tableau_include_dir = "../../tableauhyperapi/include"
