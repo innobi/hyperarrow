@@ -16,7 +16,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        python-version: "3.8"
+        python-version: "3.10"
         activate-environment: hyperarrow
         channels: conda-forge
     - name: Download Hyper Library / Headers
@@ -34,20 +34,19 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: "10.9"
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow delocate
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
         mkdir build
         cd build
         cmake ..
         make
         make test
         make python
-        delocate-wheel ../python/dist/*
         cd ..
     - name: Fix and Test wheel
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge pytest
+        conda install -c conda-forge pytest delocate
         delocate-wheel -v python/dist/*
         python -m pip install python/dist/hyperarrow*
         python -c "import hyperarrow; hyperarrow.test()"
