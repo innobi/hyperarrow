@@ -54,5 +54,6 @@ jobs:
         name: macos
         path: python/dist/*.whl
     - name: Test wheel
+      run: |
         python -m pip install python/dist/hyperarrow*
         python -c "import hyperarrow; hyperarrow.test()"
