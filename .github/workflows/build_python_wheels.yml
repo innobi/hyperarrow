@@ -42,16 +42,17 @@ jobs:
         make test
         make python
         cd ..
-    - name: Fix and Test wheel
+    - name: Fix wheel
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
         conda install -c conda-forge pytest delocate
         delocate-wheel -v python/dist/*
-        python -m pip install python/dist/hyperarrow*
-        python -c "import hyperarrow; hyperarrow.test()"
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
         name: macos
         path: python/dist/*.whl
+    - name: Test wheel
+        python -m pip install python/dist/hyperarrow*
+        python -c "import hyperarrow; hyperarrow.test()"
