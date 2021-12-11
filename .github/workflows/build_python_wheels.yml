@@ -34,19 +34,20 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: "10.9"
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow delocate
         mkdir build
         cd build
         cmake ..
         make
         make test
         make python
+        delocate-wheel ../python/dist/*
         cd ..
     - name: Fix and Test wheel
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge pytest delocate
+        conda install -c conda-forge pytest
         delocate-wheel -v python/dist/*
         python -m pip install python/dist/hyperarrow*
         python -c "import hyperarrow; hyperarrow.test()"
