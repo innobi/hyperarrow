@@ -36,7 +36,7 @@ if sys.platform == "darwin":
     extra_link_args.append("-Wl,-rpath,@loader_path/lib/.")
     # loop required by delocate until we implement pkg-config?
     # https://github.com/matthew-brett/delocate/issues/131
-    for libdir in pa.get_library_dirs():
+    for lib_dir in pa.get_library_dirs():
         extra_link_args.append(f"-Wl,{lib_dir}")
 elif sys.platform == "linux":
     extra_link_args.append("-Wl,-rpath=$ORIGIN/lib/.")
