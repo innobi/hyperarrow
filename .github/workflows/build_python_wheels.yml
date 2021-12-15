@@ -50,13 +50,13 @@ jobs:
       run: |
         conda activate hyperarrow
         conda install -c conda-forge pytest delocate wheel
-        echo "HYPER_WHEEL_LOC=$(ls -d python/dist)" >> $GITHUB_ENV
-        echo "About to delocate ${{env.HYPER_WHEEL_LOC}}"
-        delocate-wheel -v ${{env.HYPER_WHEEL_LOC}}
+        HYPER_WHEEL_LOC=$(ls -d python/dist)
+        echo About to delocate $HYPER_WHEEL_LOC
+        delocate-wheel -v $HYPER_WHEEL_LOC
         # delocate-wheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
-        python -m wheel unpack ${{env.HYPER_WHEEL_LOC}}
+        python -m wheel unpack $HYPER_WHEEL_LOC
         # TODO: Don't hard code version here!!!
         cp -r deps/tableauhyperapi/lib/hyper hyperarrow-0.0.1.dev0/hyperarrow/.dylibs
         python -m wheel pack hyperarrow-0.0.1.dev0
