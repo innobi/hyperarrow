@@ -5,27 +5,28 @@
 namespace hyperarrow {
 hyperapi::SqlType
 arrowTypeToSqlType(const std::shared_ptr<arrow::DataType> arrowType) {
-  if (arrowType == arrow::int16()) {
+  arrow::Type::type type_id = arrowType->id();
+  if (type_id == arrow::Type::INT16) {
     return hyperapi::SqlType::smallInt();
-  } else if (arrowType == arrow::int32()) {
+  } else if (type_id == arrow::Type::INT32) {
     return hyperapi::SqlType::integer();
-  } else if (arrowType == arrow::int64()) {
+  } else if (type_id == arrow::Type::INT64) {
     return hyperapi::SqlType::bigInt();
-  } else if (arrowType == arrow::float64()) {
+  } else if (type_id == arrow::Type::DOUBLE) {
     return hyperapi::SqlType::doublePrecision();
-  } else if (arrowType == arrow::boolean()) {
+  } else if (type_id == arrow::Type::BOOL) {
     return hyperapi::SqlType::boolean();
-  } else if (arrowType == arrow::utf8()) {
+  } else if (type_id == arrow::Type::STRING) {
     return hyperapi::SqlType::text();
-  } else if (arrowType == arrow::date32()) {
+  } else if (type_id == arrow::Type::DATE32) {
     return hyperapi::SqlType::date();
-  } else if (arrowType->id() == arrow::Type::TIMESTAMP) {
+  } else if (type_id == arrow::Type::TIMESTAMP) {
     return hyperapi::SqlType::timestamp();
   }
 
   throw std::runtime_error(
       std::string("Type not supported or not yet implemented: ") +
-      typeid(arrowType).name());
+      typeid(type_id).name());
 }
 
 std::shared_ptr<arrow::DataType>
