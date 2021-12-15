@@ -9,6 +9,9 @@ jobs:
   build-macos:
 
     runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, "3.10"]
     env:
       CTEST_OUTPUT_ON_FAILURE: 1
     steps:
@@ -16,7 +19,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        python-version: "3.8"
+        python-version: ${{ matrix.python-version }}
         activate-environment: hyperarrow
         channels: conda-forge
     - name: Download Hyper Library / Headers
@@ -62,6 +65,8 @@ jobs:
         name: macos
         path: *.whl
     - name: Test wheel
+      shell: bash -l {0}
       run: |
+        conda activate hyperarrow    
         python -m pip install hyperarrow*.whl
         python -c "import hyperarrow; hyperarrow.test()"
