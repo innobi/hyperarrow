@@ -50,7 +50,7 @@ jobs:
       run: |
         conda activate hyperarrow
         conda install -c conda-forge pytest delocate wheel
-        HYPER_WHEEL_LOC=$(ls -d python/dist)
+        HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to delocate $HYPER_WHEEL_LOC
         delocate-wheel -v $HYPER_WHEEL_LOC
         # delocate-wheel will copy all required libraries but
