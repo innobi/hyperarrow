@@ -63,7 +63,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: macos
-        path: *.whl
+        path: ./*.whl
     - name: Test wheel
       shell: bash -l {0}
       run: |
