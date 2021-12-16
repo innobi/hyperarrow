@@ -45,7 +45,8 @@ arrowTableFromHyper(const std::string databasePath,
         append_funcs;
     for (int i = 0; i < schema->fields().size(); i++) {
       const auto &field = schema->fields()[i];
-      if (schema->field(i)->type() == arrow::int16()) {
+      auto type_id = schema->field(i)->type()->id();
+      if (type_id == arrow::Type::INT16) {
         auto builder = std::make_shared<arrow::Int16Builder>();
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
@@ -57,7 +58,7 @@ arrowTableFromHyper(const std::string databasePath,
         // TODO: if we get rowCount up front we can more efficiently append
         // builder->Reserve(rowCount);
         builders.push_back(std::move(builder));
-      } else if (schema->field(i)->type() == arrow::int32()) {
+      } else if (type_id == arrow::Type::INT32) {
         auto builder = std::make_shared<arrow::Int32Builder>();
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
@@ -70,7 +71,7 @@ arrowTableFromHyper(const std::string databasePath,
         // TODO: if we get rowCount up front we can more efficiently append
         // builder->Reserve(rowCount);
         builders.push_back(std::move(builder));
-      } else if (schema->field(i)->type() == arrow::int64()) {
+      } else if (type_id == arrow::Type::INT64) {
         auto builder = std::make_shared<arrow::Int64Builder>();
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
@@ -80,7 +81,7 @@ arrowTableFromHyper(const std::string databasePath,
           }
         });
         builders.push_back(std::move(builder));
-      } else if (schema->field(i)->type() == arrow::float64()) {
+      } else if (type_id == arrow::Type::DOUBLE) {
         auto builder = std::make_shared<arrow::DoubleBuilder>();
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
@@ -90,7 +91,7 @@ arrowTableFromHyper(const std::string databasePath,
           }
         });
         builders.push_back(std::move(builder));
-      } else if (schema->field(i)->type() == arrow::boolean()) {
+      } else if (type_id == arrow::Type::BOOL) {
         auto builder = std::make_shared<arrow::BooleanBuilder>();
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
@@ -100,7 +101,7 @@ arrowTableFromHyper(const std::string databasePath,
           }
         });
         builders.push_back(std::move(builder));
-      } else if (schema->field(i)->type() == arrow::utf8()) {
+      } else if (type_id == arrow::Type::STRING) {
         auto builder = std::make_shared<arrow::StringBuilder>();
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
@@ -111,7 +112,7 @@ arrowTableFromHyper(const std::string databasePath,
           }
         });
         builders.push_back(std::move(builder));
-      } else if (schema->field(i)->type() == arrow::date32()) {
+      } else if (type_id == arrow::Type::DATE32) {
         auto builder = std::make_shared<arrow::Date32Builder>();
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
@@ -130,7 +131,7 @@ arrowTableFromHyper(const std::string databasePath,
           }
         });
         builders.push_back(std::move(builder));
-      } else if (schema->field(i)->type()->id() == arrow::Type::TIMESTAMP) {
+      } else if (type_id == arrow::Type::TIMESTAMP) {
         // TODO: specialization fails withotu providing
         // arrow::default_memory_pool() as the second argument. Seems like an
         // arrow bug
