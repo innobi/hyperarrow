@@ -77,6 +77,7 @@ setup(
     author="Will Ayd",
     author_email="will_ayd@innobi.io",
     license="Apache",
+    license_files=("LICENSE", "TABLEAU_LICENSE"),
     classifiers=[
         "Development Status :: 3 - Alpha",
         'Intended Audience :: Developers',
