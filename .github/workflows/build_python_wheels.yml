@@ -48,7 +48,7 @@ jobs:
         cd ..
     # Py38 gives errors for missing rpath libraries, but seems
     # like a setuptools or delocate bug instead of actual issue?
-    - if: ${{ matrix.python_version == 3.8 }}
+    - if: matrix.python_version == 3.8
       name: Fix wheel (py38)
       shell: bash -l {0}
       run: |
@@ -64,7 +64,7 @@ jobs:
         # TODO: Don't hard code version here!!!
         cp -r deps/tableauhyperapi/lib/hyper hyperarrow-0.0.1.dev0/hyperarrow/.dylibs
         python -m wheel pack hyperarrow-0.0.1.dev0
-    - if: ${{ matrix.python_version != 3.8 }}
+    - if: matrix.python_version != 3.8
       name: Fix wheel
       shell: bash -l {0}
       run: |
