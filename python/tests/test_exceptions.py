@@ -1,7 +1,7 @@
 import pyarrow as pa
 import pytest
 
-import hyperarrow.libhyperarrow as hal
+import hyperarrow as hal
 
 
 def test_unsupported_type(tmp_hyper):

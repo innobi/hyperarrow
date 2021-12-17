@@ -1,4 +1,6 @@
+import platform
 import os
+import pkg_resources
 import sys
 import sysconfig
 from glob import glob
@@ -24,20 +26,12 @@ else:
     if "--debug" in sys.argv:
         extra_compile_args.extend(["-g", "-UNDEBUG", "-O0"])
 
-
-# Was hoping pa.get_includes() would help
-# but doesn't appear to be the case. For now
-# point elsewhere on the system to a pre-built arrow package
-# much of this mirrors the build instructions here
-# https://arrow.apache.org/docs/developers/python.html#environment-setup-and-build
-
 # pyarrow might support this with the right installation. See
 # https://arrow.apache.org/docs/python/extending.html?highlight=import_pyarrow
 tableau_include_dir = "../../tableauhyperapi/include"
 
-
 extra_link_args = []
-package_data = ["lib/*.so", "lib/*.dylib", "lib/*.lib", "*.dll"]
+package_data = ["lib/*.so", "lib/*.dylib", "lib/*.lib", "./*.dll"]
 if sys.platform == "darwin":
     extra_link_args.append("-Wl,-rpath,@loader_path/lib/.")
 elif sys.platform == "linux":
@@ -71,12 +65,11 @@ hyperarrow_module = Extension(
     extra_compile_args=extra_compile_args,
     extra_link_args=extra_link_args,
     language="c++",
-    py_limited_api=True,
 )
 
 setup(
     name="hyperarrow",
-    version="0.0.1-dev",
+    version="0.0.1.dev0",
     description="Python wrapper to hyperarrow",
     long_description=long_description,
     long_description_content_type="text/markdown",    
@@ -84,6 +77,7 @@ setup(
     author="Will Ayd",
     author_email="will_ayd@innobi.io",
     license="Apache",
+    license_files=("LICENSE", "TABLEAU_LICENSE"),
     classifiers=[
         "Development Status :: 3 - Alpha",
         'Intended Audience :: Developers',

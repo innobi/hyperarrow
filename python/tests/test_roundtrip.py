@@ -2,7 +2,7 @@ import datetime
 
 import pyarrow as pa
 
-import hyperarrow.libhyperarrow as hal
+import hyperarrow as hal
 
 
 def test_roundtrip(tmp_hyper):

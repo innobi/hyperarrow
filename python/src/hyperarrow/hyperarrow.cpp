@@ -1,4 +1,3 @@
-#define Py_LIMITED_API 0x03080000
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -85,6 +84,10 @@ PyMODINIT_FUNC
 PyInit_libhyperarrow(void) {
   PyObject *module = NULL;
   if (!arrow::py::import_pyarrow()) {
+    // for some reason this macro is required when
+    // not building with the limited API
+    // Maybe only for Py38???
+    PyDateTime_IMPORT;
     module = PyModule_Create(&hyperarrowmodule);
   }
 

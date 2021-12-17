@@ -91,8 +91,8 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                                    int64_t colNum, int64_t rowNum)>>
         write_funcs;
     for (auto &field : table->fields()) {
-      auto type = field->type();
-      if (type == arrow::int16()) {
+      auto type_id = field->type()->id();
+      if (type_id == arrow::Type::INT16) {
         write_funcs.push_back(
             [](std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
@@ -104,7 +104,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                 inserter.add(hyperapi::optional<int16_t>());
               }
             });
-      } else if (type == arrow::int32()) {
+      } else if (type_id == arrow::Type::INT32) {
         write_funcs.push_back(
             [](std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
@@ -116,7 +116,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                 inserter.add(hyperapi::optional<int32_t>());
               }
             });
-      } else if (type == arrow::int64()) {
+      } else if (type_id == arrow::Type::INT64) {
         write_funcs.push_back(
             [](std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
@@ -128,7 +128,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                 inserter.add(hyperapi::optional<int64_t>());
               }
             });
-      } else if (type == arrow::float64()) {
+      } else if (type_id == arrow::Type::DOUBLE) {
         write_funcs.push_back([](
                                   std::shared_ptr<arrow::Array> anArray,
                                   hyperapi::Inserter &inserter, int64_t colNum,
@@ -140,7 +140,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
             inserter.add(hyperapi::optional<double_t>());
           }
         });
-      } else if (type == arrow::boolean()) {
+      } else if (type_id == arrow::Type::BOOL) {
         write_funcs.push_back([](
                                   std::shared_ptr<arrow::Array> anArray,
                                   hyperapi::Inserter &inserter, int64_t colNum,
@@ -152,7 +152,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
             inserter.add(hyperapi::optional<bool>());
           }
         });
-      } else if (type == arrow::date32()) {
+      } else if (type_id == arrow::Type::DATE32) {
         write_funcs.push_back([temporalComponents](
                                   std::shared_ptr<arrow::Array> anArray,
                                   hyperapi::Inserter &inserter, int64_t colNum,
@@ -174,7 +174,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
             inserter.add(hyperapi::optional<hyperapi::Date>());
           }
         });
-      } else if (type->id() == arrow::Type::TIMESTAMP) {
+      } else if (type_id == arrow::Type::TIMESTAMP) {
         write_funcs.push_back([temporalComponents](
                                   std::shared_ptr<arrow::Array> anArray,
                                   hyperapi::Inserter &inserter, int64_t colNum,
@@ -209,7 +209,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
             inserter.add(hyperapi::optional<hyperapi::Timestamp>());
           }
         });
-      } else if (type == arrow::utf8()) {
+      } else if (type_id == arrow::Type::STRING) {
         write_funcs.push_back([](
                                   std::shared_ptr<arrow::Array> anArray,
                                   hyperapi::Inserter &inserter, int64_t colNum,
