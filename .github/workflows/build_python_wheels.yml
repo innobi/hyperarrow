@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10"]
+        python-version: ["3.8", "3.9", "3.10"]
       fail-fast: false
     env:
       CTEST_OUTPUT_ON_FAILURE: 1
@@ -46,7 +46,26 @@ jobs:
         make test
         make python
         cd ..
-    - name: Fix wheel
+    # Py38 gives errors for missing rpath libraries, but seems
+    # like a setuptools or delocate bug instead of actual issue?
+    - if: ${{ matrix.python_version == "3.8" }}
+      name: Fix wheel (py38)
+      shell: bash -l {0}
+      run: |
+        conda activate hyperarrow
+        conda install -c conda-forge pytest delocate wheel
+        HYPER_WHEEL_LOC=$(ls -d python/dist/*)
+        echo About to delocate $HYPER_WHEEL_LOC
+        delocate-wheel -v $HYPER_WHEEL_LOC --ignore-missing-dependencies
+        # delocate-wheel will copy all required libraries but
+        # the tableauhyperapi also requires the hyperd executable
+        # so we manually copy that into the wheel as a workaround
+        python -m wheel unpack $HYPER_WHEEL_LOC
+        # TODO: Don't hard code version here!!!
+        cp -r deps/tableauhyperapi/lib/hyper hyperarrow-0.0.1.dev0/hyperarrow/.dylibs
+        python -m wheel pack hyperarrow-0.0.1.dev0
+    - if: ${{ matrix.python_version != "3.8" }}
+      name: Fix wheel
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
