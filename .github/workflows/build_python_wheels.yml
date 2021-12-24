@@ -120,7 +120,7 @@ jobs:
     - name: Set up out of core build
       shell: bash -l {0}
       env:
-        TABLEAU_CMAKE_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake"
+        TABLEAU_CMAKE_PATH: "/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake"
       run: |
         conda activate hyperarrow
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
