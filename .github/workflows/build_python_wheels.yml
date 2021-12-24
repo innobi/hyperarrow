@@ -93,6 +93,7 @@ jobs:
         python -c "import hyperarrow; hyperarrow.test()"
 
   build-linux:
+    runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux1_x86_64
     strategy:
       matrix:
