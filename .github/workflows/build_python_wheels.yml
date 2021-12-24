@@ -138,7 +138,7 @@ jobs:
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to auditwheel $HYPER_WHEEL_LOC
         auditwheel show $HYPER_WHEEL_LOC
-        auditwheel repair --plat manylinux_2_24_x86_64 $HYPER_WHEEL_LOC
+        auditwheel repair --plat manylinux_3_4_x86_64 $HYPER_WHEEL_LOC
         # auditwheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
