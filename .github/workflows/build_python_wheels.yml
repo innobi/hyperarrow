@@ -132,7 +132,7 @@ jobs:
         conda install -c conda-forge pytest auditwheel wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to auditwheel $HYPER_WHEEL_LOC
-	auditwheel show $HYPER_WHEEL_LOC
+        auditwheel show $HYPER_WHEEL_LOC
         auditwheel repair $HYPER_WHEEL_LOC
         # auditwheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
