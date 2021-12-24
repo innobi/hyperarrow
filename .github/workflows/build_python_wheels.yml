@@ -9,7 +9,7 @@ jobs:
   build-macos:
 
     runs-on: macos-latest
-    strategy:
+   strategy:
       matrix:
         python-version: [3.8, 3.9, "3.10"]
       fail-fast: false
@@ -93,11 +93,13 @@ jobs:
         python -c "import hyperarrow; hyperarrow.test()"
 
   build-linux:
-    runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux1_x86_64
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.8, 3.9, "3.10"]
+      fail-fast: false
+    env:
+      CTEST_OUTPUT_ON_FAILURE: 1
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
@@ -120,7 +122,7 @@ jobs:
         TABLEAU_CMAKE_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake"
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow compilers
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
         mkdir build
         cd build
         cmake ..
