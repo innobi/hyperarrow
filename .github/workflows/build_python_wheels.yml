@@ -110,16 +110,11 @@ jobs:
         channels: conda-forge
     - name: Download Hyper Library / Headers
       run: |
-        pwd
         mkdir deps
         pushd deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
         unzip tableauhyperapi.zip
         mv tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
-        pwd
-        ls tableauhyperapi
-        ls tableauhyperapi/share
-        ls tableauhyperapi/share/cmake
         popd
     - name: Set up out of core build
       shell: bash -l {0}
@@ -143,7 +138,7 @@ jobs:
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to auditwheel $HYPER_WHEEL_LOC
         auditwheel show $HYPER_WHEEL_LOC
-        auditwheel repair $HYPER_WHEEL_LOC
+        auditwheel repair --plat manylinux_2_24_x86_64 $HYPER_WHEEL_LOC
         # auditwheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
