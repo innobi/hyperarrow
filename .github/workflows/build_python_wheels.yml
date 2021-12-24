@@ -91,3 +91,64 @@ jobs:
         conda activate hyperarrow
         python -m pip install hyperarrow*.whl
         python -c "import hyperarrow; hyperarrow.test()"
+
+  build-linux:
+    image: quay.io/pypa/manylinux1_x86_64
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, "3.10"]
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Download Hyper Library / Headers
+      run: |
+        mkdir deps
+        pushd deps
+        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip tableauhyperapi.zip
+        mv tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
+        popd
+    - name: Set up out of core build
+      shell: bash -l {0}
+      env:
+        TABLEAU_CMAKE_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake"
+      run: |
+        conda activate hyperarrow
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
+        mkdir build
+        cd build
+        cmake ..
+        make
+        make test
+        make python
+        cd ..
+    - name: Fix wheel
+      shell: bash -l {0}
+      run: |
+        conda activate hyperarrow
+        conda install -c conda-forge pytest auditwheel wheel
+        HYPER_WHEEL_LOC=$(ls -d python/dist/*)
+        echo About to auditwheel $HYPER_WHEEL_LOC
+	auditwheel show $HYPER_WHEEL_LOC
+        auditwheel repair $HYPER_WHEEL_LOC
+        # auditwheel will copy all required libraries but
+        # the tableauhyperapi also requires the hyperd executable
+        # so we manually copy that into the wheel as a workaround
+        python -m wheel unpack $HYPER_WHEEL_LOC
+        # TODO: Don't hard code version here!!!
+        cp -r deps/tableauhyperapi/lib/hyper hyperarrow-0.0.1.dev0/hyperarrow/.libs
+        python -m wheel pack hyperarrow-0.0.1.dev0
+    - name: Upload wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: manylinux-${{ matrix.python-version }}
+        path: ./*.whl
+    - name: Test wheel
+      shell: bash -l {0}
+      run: |
+        conda activate hyperarrow
+        python -m pip install hyperarrow*.whl
+        python -c "import hyperarrow; hyperarrow.test()"
