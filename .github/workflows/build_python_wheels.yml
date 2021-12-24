@@ -110,6 +110,7 @@ jobs:
         channels: conda-forge
     - name: Download Hyper Library / Headers
       run: |
+        pwd
         mkdir deps
         pushd deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-linux-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
