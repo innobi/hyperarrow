@@ -47,3 +47,5 @@ COPY ci/scripts/get_tableau_libs.sh hyperarrow/ci/scripts
 RUN /hyperarrow/ci/scripts/get_tableau_libs.sh
 
 RUN python -m pip install wheel pyarrow auditwheel
+COPY ci/scripts/hack_pyarrow_runtime_libs.sh hyperarrow/ci/scripts
+RUN /hyperarrow/ci/scripts/hack_pyarrow_runtime_libs.sh

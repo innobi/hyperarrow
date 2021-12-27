@@ -44,7 +44,7 @@ make python
 popd
 
 pushd /hyperarrow/python
-auditwheel repair -L . dist/hyperrrow-*.whl -w repaired_wheels
+auditwheel repair -L . dist/hyperarrow-*.whl -w repaired_wheels
 popd
 
 
