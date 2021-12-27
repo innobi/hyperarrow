@@ -43,6 +43,7 @@ ENV PYTHON_VERSION=${python}
 # see arrow scripts for reference
 RUN ln -sf $(find /opt/python -name cp${PYTHON_VERSION/./}-*)/bin/python /usr/bin/python
 
-RUN python -m pip install wheel
 COPY ci/scripts/get_tableau_libs.sh hyperarrow/ci/scripts
 RUN /hyperarrow/ci/scripts/get_tableau_libs.sh
+
+RUN python -m pip install wheel pyarrow auditwheel

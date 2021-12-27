@@ -18,15 +18,23 @@ if (NOT DEFINED CMAKE_PREFIX_PATH)
 endif ()
   
 find_package(tableauhyperapi-cxx REQUIRED CONFIG)
-find_package(Boost COMPONENTS system REQUIRED)
 
 add_subdirectory(src)
 
-enable_testing()
-include(CTest)
-add_subdirectory(tests)
+if (HYPERARROW_BUILD_TESTS)
+  find_package(Boost COMPONENTS system REQUIRED)
+  enable_testing()
+  include(CTest)
+  add_subdirectory(tests)
+endif ()
 
-find_package(Python COMPONENTS Interpreter Development)
+# For manylinux wheel building it is easier to pass through the python version as an arg
+# as there are multiple versions on the same docker container
+if (DEFINED CMAKE_PYTHON_VERSION)
+  find_package(Python ${CMAKE_PYTHON_VERSION} EXACT COMPONENTS Interpreter)
+else()
+  find_package(Python COMPONENTS Interpreter)
+endif ()
 
 # https://stackoverflow.com/questions/63804883/including-and-distributing-third-party-libraries-with-a-python-c-extension
 if (Python_FOUND AND WIN32)
