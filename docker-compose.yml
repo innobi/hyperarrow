@@ -1,0 +1,77 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Usage
+# -----
+#
+# The docker compose file is parametrized using environment variables, the
+# defaults are set in .env file.
+#
+# Example:
+# $ ARCH=arm64v8 docker-compose build ubuntu-cpp
+# $ ARCH=arm64v8 docker-compose run ubuntu-cpp
+#
+#
+# Coredumps
+# ---------
+#
+# In order to enable coredumps for the C++ tests run by CTest either with
+# command `make unittest` or `ctest --output-on-failure` the correct coredump
+# patterns must be set.
+# The kernel settings are coming from the host, so while it can be enabled from
+# a running container using --priviled option the change will affect all other
+# containers, so prefer setting it explicitly, directly on the host.
+# WARNING: setting this will affect the host machine.
+#
+# Linux host:
+#   $ sudo sysctl -w kernel.core_pattern=core.%e.%p
+#
+# macOS host running Docker for Mac (won't persist between restarts):
+#   $ screen ~/Library/Containers/com.docker.docker/Data/vms/0/tty
+#   # echo "core.%e.%p" > /proc/sys/kernel/core_pattern
+#
+# The setup attempts to generate coredumps by default, but the correct paths
+# above must be set. In order to disable the coredump generation set
+# ULIMIT_CORE environment variable to 0 before running docker-compose
+# (or by setting it in .env file):
+#
+# ULIMIT_CORE=0 docker-compose run --rm conda-cpp
+#
+# See more in cpp/build-support/run-test.sh::print_coredumps
+
+volumes:
+  python-wheel-manylinux2014:
+    name: python-wheel-manylinux2014
+
+services:
+
+############################ Python wheels ##################################
+
+  # See available versions at:
+  #    https://quay.io/repository/pypa/manylinux2014_x86_64?tab=tags
+  python-wheel-manylinux-2014:
+    image: hyperarrow:x86_64-python-${PYTHON}-wheel-manylinux-2014
+    build:
+      args:
+        base: quay.io/pypa/manylinux2014_x86_64:2021-10-11-14ac00e
+        python: ${PYTHON}
+        manylinux: 2014
+      context: .
+      dockerfile: ci/docker/python-wheel-manylinux-201x.dockerfile
+    volumes:
+      - .:/hyperarrow:delegated
+    command: /hyperarrow/ci/scripts/python_wheel_manylinux_build.sh
