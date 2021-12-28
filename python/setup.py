@@ -33,9 +33,8 @@ if not tableau_dir:
     raise ValueError("Must set HYPER_PATH environment variable for python build")
 
 extra_link_args = []
-# Here is where hyperarrow libs are installed. Should also place tableau lib here
 if sys.platform == "darwin":
-    extra_link_args = ["-rpath", "/usr/local/lib/"]
+    extra_link_args = ["-rpath", f"{tableau_dir}/lib"]
 
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
