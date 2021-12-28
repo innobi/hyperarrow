@@ -32,7 +32,6 @@ jobs:
         # Copy tableau lib to system location
         # Required for subsequent python setup.py to work
         cp tableauhyperapi/lib/libtableauhyperapi.dylib /usr/local/lib
-        ls /usr/local/lib
     - name: Set up out of core build
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
@@ -44,7 +43,7 @@ jobs:
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         make python
-    - name: Fix wheel (py38)
+    - name: Fix wheel
       run: |
         pip install pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
