@@ -30,13 +30,7 @@ if (DEFINED HYPERARROW_TESTING)
   add_subdirectory(tests)
 endif ()
 
-# For manylinux wheel building it is easier to pass through the python version as an arg
-# as there are multiple versions on the same docker container
-if (DEFINED CMAKE_PYTHON_VERSION)
-  find_package(Python ${CMAKE_PYTHON_VERSION} EXACT COMPONENTS Interpreter)
-else()
-  find_package(Python COMPONENTS Interpreter)
-endif ()
+find_package(Python COMPONENTS Interpreter)
 
 # https://stackoverflow.com/questions/63804883/including-and-distributing-third-party-libraries-with-a-python-c-extension
 if (Python_FOUND AND WIN32)

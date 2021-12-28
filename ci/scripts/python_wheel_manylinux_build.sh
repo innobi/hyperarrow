@@ -30,11 +30,9 @@ rm -rf /hyperarrow/python/pyarrow/*.so.*
 mkdir /tmp/hyperarrow-build
 pushd /tmp/hyperarrow-build
 TABLEAU_CMAKE_PATH="/tmp/tableau/tableauhyperapi/share/cmake"
-# TODO: don't hard code the PYTHON VERSION but note that the top
-# level environment variable does not contain the "." we need
+
 cmake \
   -DCMAKE_PREFIX_PATH=${TABLEAU_CMAKE_PATH} \
-  -DCMAKE_PYTHON_VERSION="3.8" \
   /hyperarrow
 make -j"$(nproc)"
 make python
