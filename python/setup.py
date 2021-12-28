@@ -77,7 +77,7 @@ setup(
     package_dir={"": "src"},
     data_files=[("", ["README.md"])],
     python_requires=">=3.8",
-    install_requires=[],
+    install_requires=["pyarrow"],
     extras_require={"dev": ["pytest"]},
     ext_modules=[hyperarrow_module],
 )
