@@ -14,7 +14,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        python-version: "3.8"
+        python-version: "3.9"
         activate-environment: hyperarrow
         channels: conda-forge
     - name: Download Hyper Library / Headers
@@ -45,7 +45,7 @@ jobs:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge pytest "delocate=0.8.2" wheel
+        conda install -c conda-forge pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to delocate $HYPER_WHEEL_LOC
         LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HYPER_PATH}/lib" delocate-wheel -v $HYPER_WHEEL_LOC
