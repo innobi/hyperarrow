@@ -32,6 +32,10 @@ tableau_dir = os.environ["HYPER_PATH"]
 if not tableau_dir:
     raise ValueError("Must set HYPER_PATH environment variable for python build")
 
+extra_link_args = []
+if sys.platform == "darwin":
+    extra_link_args = ["-rpath", "/usr/local/lib"]
+
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
     include_dirs=["../include"],
@@ -40,6 +44,7 @@ hyperarrow_module = Extension(
     # expected build folder location
     libraries=["arrow", "arrow_python", "hyperarrow_writer", "hyperarrow_reader", "tableauhyperapi"],
     library_dirs=[tableau_dir + "/lib"],
+    extra_link_args=extra_link_args,
     sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
     language="c++",
