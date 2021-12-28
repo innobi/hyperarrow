@@ -44,7 +44,6 @@ jobs:
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         HYPER_PATH=${HYPER_PATH} make python
-        cd ..
     - name: Fix wheel (py38)
         pip install pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
