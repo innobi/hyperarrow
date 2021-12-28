@@ -49,8 +49,8 @@ jobs:
         pyenv local "3.8.9"
         python -m pip install pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
-        delocate-listdeps --all $HYPER_WHEEL_LOC
-        delocate-wheel -v $HYPER_WHEEL_LOC
+        python -m delocate.cmd.delocate_listdeps --all $HYPER_WHEEL_LOC
+        python -m delocate.cmd.delocate_wheel -v $HYPER_WHEEL_LOC
         # delocate-wheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
