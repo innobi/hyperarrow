@@ -41,12 +41,14 @@ jobs:
         cd ..
     - name: Fix wheel
       shell: bash -l {0}
+      env:
+        HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
       run: |
         conda activate hyperarrow
         conda install -c conda-forge pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to delocate $HYPER_WHEEL_LOC
-        delocate-wheel -v $HYPER_WHEEL_LOC --ignore-missing-dependencies
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HYPER_PATH}/lib" delocate-wheel -v $HYPER_WHEEL_LOC
         # delocate-wheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
