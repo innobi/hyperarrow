@@ -14,7 +14,7 @@ jobs:
     # The default python action gives us something with too
     # new of a deployment target. Conda is an option but seems
     # to much up the rest of the install, so pyenv it is
-    - uses: gabrielfalcao/pyenv-action@v5
+    - uses: gabrielfalcao/pyenv-action@v7
       with:
         default: 3.8
     - name: Install Arrow Libraries
