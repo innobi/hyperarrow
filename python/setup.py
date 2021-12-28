@@ -34,7 +34,10 @@ if not tableau_dir:
 
 extra_link_args = []
 if sys.platform == "darwin":
-    extra_link_args = ["-rpath", "/usr/local/lib"]
+    lib_location = os.environ["LIB_LOCATION"]
+    if not lib_location:
+        raise ValueError("must set LIB_LOCATION on macos")
+    extra_link_args = ["-rpath", lib_location]
 
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",

@@ -9,6 +9,9 @@ jobs:
   build-macos:
 
     runs-on: macos-latest
+    env:
+      INSTALL_PREFIX: "/Users/runner/work/miniconda3/envs/hyperarrow"
+      LIB_LOCATION: "/Users/runner/work/miniconda3/envs/hyperarrow/lib"
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
@@ -26,7 +29,7 @@ jobs:
         mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         # Copy tableau lib to system location
         # Required for subsequent python setup.py to work
-        cp tableauhyperapi/lib/libtableauhyperapi.dylib /usr/local/lib
+        cp tableauhyperapi/lib/libtableauhyperapi.dylib ${LIB_LOCATION}
     - name: Set up out of core build
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
@@ -37,10 +40,10 @@ jobs:
         conda install -c conda-forge "arrow-cpp>=6.0"
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DCMAKE_MACOX_RPATH=ON -DCMAKE_INSTALL_RPATH=/usr/local/lib ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_MACOX_RPATH=ON -DCMAKE_INSTALL_RPATH=${LIB_LOCATION} ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
-        make python
+        LIB_LOCATION=${LIB_LOCATION} make python
     - name: Fix wheel
       shell: bash -l {0}
       run: |
