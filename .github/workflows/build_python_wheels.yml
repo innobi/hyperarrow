@@ -10,8 +10,8 @@ jobs:
 
     runs-on: macos-latest
     env:
-      INSTALL_PREFIX: "/Users/runner/work/miniconda3/envs/hyperarrow"
-      LIB_LOCATION: "/Users/runner/work/miniconda3/envs/hyperarrow/lib"
+      INSTALL_PREFIX: "/usr/local/miniconda/envs/hyperarrow"
+      LIB_LOCATION: "/usr/local/miniconda/envs/hyperarrow/lib"
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
