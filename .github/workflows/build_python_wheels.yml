@@ -18,7 +18,9 @@ jobs:
         python-version: 3.8
     - name: Print openssl
       run: |
-        ls /usr/local/opt/openssl
+        ls /usr/local/Cellar/
+	ls /usr/local/Cellar/openssl@1.1
+	ls /usr/local/Cellar/openssl@1.1/1.1.1l_1
     - name: Install Arrow Libraries
       run: |
         brew install apache-arrow
@@ -36,7 +38,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_VERSION_NUMBER=1.1.1m ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl@1.1/1.1.1l_1/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1l_1/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1l_1/lib/libssl.dylib ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         make python
