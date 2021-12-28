@@ -14,9 +14,11 @@ jobs:
     # The default python action gives us something with too
     # new of a deployment target. Conda is an option but seems
     # to much up the rest of the install, so pyenv it is
-    - uses: gabrielfalcao/pyenv-action@v7
+    - uses: gabrielfalcao/pyenv-action@v8
       with:
         default: 3.8
+    - name: Check python version
+      run: python -V
     - name: Install Arrow Libraries
       run: |
         brew install apache-arrow
@@ -43,7 +45,7 @@ jobs:
         make python
     - name: Fix wheel
       run: |
-        pip install pytest delocate wheel
+        python -m pip install pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         delocate-listdeps --all $HYPER_WHEEL_LOC
         delocate-wheel -v $HYPER_WHEEL_LOC
