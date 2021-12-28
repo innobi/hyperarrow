@@ -35,11 +35,12 @@ cmake \
   -DCMAKE_PREFIX_PATH=${TABLEAU_CMAKE_PATH} \
   /hyperarrow
 make -j"$(nproc)"
+make install
 make python
 popd
 
 pushd /hyperarrow/python
-auditwheel repair -L . dist/hyperarrow-*.whl -w repaired_wheels
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/tmp/tableau/tableauhyperapi/lib" auditwheel repair -L . dist/hyperarrow-*.whl -w repaired_wheels
 popd
 
 

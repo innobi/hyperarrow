@@ -25,42 +25,21 @@ else:
     if "--debug" in sys.argv:
         extra_compile_args.extend(["-g", "-UNDEBUG", "-O0"])
 
-tableau_include_dir = "../../tableauhyperapi/include"
-
-extra_link_args = []
-package_data = ["lib/*.so", "lib/*.dylib", "lib/*.lib", "./*.dll"]
-if sys.platform == "darwin":
-    extra_link_args.append("-Wl,-rpath,@loader_path/lib/.")
-elif sys.platform == "linux":
-    extra_link_args.append("-Wl,-rpath=$ORIGIN/lib/.")
-elif sys.platform == "win32":
-    extra_link_args.append("/libpath:lib")
-else:
-    raise ValueError("Unsupported platform")
-
-
-# Inspiration for this method taken from:
-# https://stackoverflow.com/a/63837811/621736
-
-def path_to_build_folder():
-    """Returns the name of a distutils build directory"""
-    f = "{dirname}.{platform}-{version[0]}.{version[1]}"
-    dir_name = f.format(dirname='lib',
-                    platform=sysconfig.get_platform(),
-                    version=sys.version_info)
-    return os.path.join('build', dir_name, 'hyperarrow')
+# TODO: on Linux we need to set LD_LIBRARY_PATH for auditwheel to copy
+# this in, so maybe can leverage that instead of repeating here
+# For cross platform, maybe we figure out how to install the tableauhyper lib
+tableau_dir = "/tmp/tableau/tableauhyperapi"
 
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
-    include_dirs=[tableau_include_dir, "../include"],
+    include_dirs=["../include"],
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to
     # expected build folder location
-    libraries=["arrow", "arrow_python", "hyperarrow_writer", "hyperarrow_reader"],
-    library_dirs= [os.path.join(path_to_build_folder(), "lib")],
+    libraries=["arrow", "arrow_python", "hyperarrow_writer", "hyperarrow_reader", "tableauhyperapi"],
+    library_dirs=[tableau_dir + "/lib"],
     sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
-    extra_link_args=extra_link_args,
     language="c++",
     py_limited_api=True,
 )
@@ -86,7 +65,6 @@ setup(
     keywords="tableau tableauhyperapi arrow",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    package_data={"hyperarrow": package_data},
     data_files=[("", ["README.md"])],
     python_requires=">=3.8",
     install_requires=[],
