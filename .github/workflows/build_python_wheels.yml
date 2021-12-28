@@ -11,17 +11,12 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    # The default python action gives us something with too
-    # new of a deployment target. Conda is an option but seems
-    # to much up the rest of the install, so pyenv it is
-    - uses: gabrielfalcao/pyenv-action@v8
+    - uses: conda-incubator/setup-miniconda@v2
       with:
-        default: "3.8.9"
-    - name: Check python version
-      run: pyenv local "3.8.9" && python -V
-    - name: Install Arrow Libraries
-      run: |
-        brew install apache-arrow
+        auto-update-conda: true
+        python-version: 3.8
+        activate-environment: hyperarrow
+        channels: conda-forge
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -36,21 +31,24 @@ jobs:
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
         MACOSX_DEPLOYMENT_TARGET: "10.9"
+      shell: bash -l {0}
       run: |
-        pyenv local "3.8.9"
+        conda activate hyperarrow
+        conda install -c conda-forge "arrow-cpp>=6.0"
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libssl.dylib -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DCMAKE_MACOX_RPATH=ON -DCMAKE_INSTALL_RPATH=/usr/local/lib ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DCMAKE_MACOX_RPATH=ON -DCMAKE_INSTALL_RPATH=/usr/local/lib ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         make python
     - name: Fix wheel
+      shell: bash -l {0}
       run: |
-        pyenv local "3.8.9"
-        python -m pip install pytest delocate wheel
+        conda activate hyperarrow
+        conda install -c conda-forge pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
-        python -m delocate.cmd.delocate_listdeps --all $HYPER_WHEEL_LOC
-        python -m delocate.cmd.delocate_wheel -v $HYPER_WHEEL_LOC
+        delocate-listdeps --all $HYPER_WHEEL_LOC
+        delocate-wheel -v $HYPER_WHEEL_LOC
         # delocate-wheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
@@ -61,10 +59,11 @@ jobs:
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
-        name: macos-${{ matrix.python-version }}
+        name: macos-3.8
         path: ./*.whl
     - name: Test wheel
+      shell: bash -l {0}
       run: |
-        pyenv local "3.8.9"
+        conda activate hyperarrow
         python -m pip install hyperarrow*.whl
         python -c "import hyperarrow; hyperarrow.test()"
