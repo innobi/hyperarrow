@@ -9,19 +9,17 @@ jobs:
   build-macos:
 
     runs-on: macos-latest
+    strategy:
     env:
       CTEST_OUTPUT_ON_FAILURE: 1
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.8
-    - name: Print openssl
-      run: |
-        ls /usr/local/opt/openssl
-    - name: Install Arrow Libraries
-      run: |
-        brew install apache-arrow
+        auto-update-conda: true
+        python-version: "3.8"
+        activate-environment: hyperarrow
+        channels: conda-forge
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -30,22 +28,28 @@ jobs:
         unzip tableauhyperapi.zip
         mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
     - name: Set up out of core build
+      shell: bash -l {0}
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
         MACOSX_DEPLOYMENT_TARGET: "10.9"
       run: |
+        conda activate hyperarrow
+        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/opt ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         make python
-    - name: Fix wheel (py38)
+        cd ..
+    - name: Fix wheel
+      shell: bash -l {0}
       run: |
-        pip install pytest delocate wheel
+        conda activate hyperarrow
+        conda install -c conda-forge pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to delocate $HYPER_WHEEL_LOC
-        delocate-wheel -v $HYPER_WHEEL_LOC
+        delocate-wheel -v $HYPER_WHEEL_LOC --ignore-missing-dependencies
         # delocate-wheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
@@ -59,6 +63,8 @@ jobs:
         name: macos-${{ matrix.python-version }}
         path: ./*.whl
     - name: Test wheel
+      shell: bash -l {0}
       run: |
+        conda activate hyperarrow
         python -m pip install hyperarrow*.whl
         python -c "import hyperarrow; hyperarrow.test()"
