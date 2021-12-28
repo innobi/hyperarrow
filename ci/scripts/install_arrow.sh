@@ -30,12 +30,16 @@ url="https://github.com/apache/arrow/archive/refs/tags/apache-arrow-${version}.t
 
 mkdir /tmp/arrow
 wget -q ${url} -O - | tar -xzf - --directory /tmp/arrow --strip-components=1
+python -m pip install -r /tmp/arrow/python/requirements-build.txt
 
 mkdir /tmp/arrow/cpp/build
 pushd /tmp/arrow/cpp/build
 
-cmake -DARROW_COMPUTE=ON -DCMAKE_INSTALL_PREFIX=${prefix} ..
-make install -j"$(nproc)"
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DARROW_PYTHON=ON \
+      -DARROW_COMPUTE=ON \
+      ..
+make -j$"$(nproc)"
+make install
 popd
 
-rm -rf /tmp/arrow

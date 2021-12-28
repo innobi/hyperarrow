@@ -5,7 +5,6 @@ import sys
 import sysconfig
 from glob import glob
 
-import pyarrow as pa
 from setuptools import Extension, find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -26,8 +25,6 @@ else:
     if "--debug" in sys.argv:
         extra_compile_args.extend(["-g", "-UNDEBUG", "-O0"])
 
-# pyarrow might support this with the right installation. See
-# https://arrow.apache.org/docs/python/extending.html?highlight=import_pyarrow
 tableau_include_dir = "../../tableauhyperapi/include"
 
 extra_link_args = []
@@ -55,12 +52,12 @@ def path_to_build_folder():
 
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
-    include_dirs=[pa.get_include(), tableau_include_dir, "../include"],
+    include_dirs=[tableau_include_dir, "../include"],
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to
     # expected build folder location
-    libraries=pa.get_libraries() + ["hyperarrow_writer", "hyperarrow_reader"],
-    library_dirs=pa.get_library_dirs() + [os.path.join(path_to_build_folder(), "lib")],
+    libraries=["arrow", "arrow_python", "hyperarrow_writer", "hyperarrow_reader"],
+    library_dirs= [os.path.join(path_to_build_folder(), "lib")],
     sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
     extra_link_args=extra_link_args,
@@ -91,7 +88,7 @@ setup(
     package_data={"hyperarrow": package_data},
     data_files=[("", ["README.md"])],
     python_requires=">=3.8",
-    install_requires=["pyarrow", "tableauhyperapi"],
+    install_requires=[],
     extras_require={"dev": ["pytest"]},
     ext_modules=[hyperarrow_module],
 )

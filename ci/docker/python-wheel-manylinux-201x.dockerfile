@@ -19,11 +19,21 @@ ARG base
 FROM ${base}
 
 # Install basic dependencies
-RUN yum install -y git flex curl autoconf zip wget
+RUN yum install -y autoconf \
+    boost-devel \
+    cmake \
+    curl \
+    flex \
+    git \
+    wget \
+    zip
 
-# Try install of other yum dependencies?
-# Arrow does these all from source ???
-RUN yum install -y cmake
+ARG python
+ENV PYTHON_VERSION=${python}
+
+ENV VIRTUAL_ENV=/venv
+RUN $(find /opt/python -name cp${PYTHON_VERSION/./}-*)/bin/python -m venv /venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install arrow
 ARG arrow=6.0.1
@@ -35,17 +45,9 @@ RUN /hyperarrow/ci/scripts/install_arrow.sh ${arrow} /usr/local
 # are pre-compiled on newer platforms than what manylinux
 # allows. python wheel is needed to unpack Tableau's wheel
 # to get their manylinux compiled lib
-ARG python
-ENV PYTHON_VERSION=${python}
-
-# TODO: instead of symlinking better to probably set a profile.d
-# startup script for python and let subsequent processes use that
-# see arrow scripts for reference
-RUN ln -sf $(find /opt/python -name cp${PYTHON_VERSION/./}-*)/bin/python /usr/bin/python
+RUN python -m pip install wheel auditwheel
 
 COPY ci/scripts/get_tableau_libs.sh hyperarrow/ci/scripts
 RUN /hyperarrow/ci/scripts/get_tableau_libs.sh
 
-RUN python -m pip install wheel pyarrow auditwheel
-COPY ci/scripts/hack_pyarrow_runtime_libs.sh hyperarrow/ci/scripts
-RUN /hyperarrow/ci/scripts/hack_pyarrow_runtime_libs.sh
+

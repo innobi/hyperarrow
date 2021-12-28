@@ -22,6 +22,7 @@ pypi_url="https://files.pythonhosted.org/packages/80/9d/d592d3bd06fa725d8a6834ae
 mkdir /tmp/tableau-python
 pushd /tmp/tableau-python
 wget -q ${pypi_url} -O tableauhyperapi-0.0.13980-py3-none-manylinux2014_x86_64.whl
+
 python -m wheel unpack tableauhyperapi-0.0.13980-py3-none-manylinux2014_x86_64.whl
 rm -rf /tmp/tableau/tableauhyperapi/lib/*
 mv tableauhyperapi-0.0.13980/tableauhyperapi/bin/* /tmp/tableau/tableauhyperapi/lib/

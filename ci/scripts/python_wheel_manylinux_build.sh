@@ -19,7 +19,6 @@
 
 set -ex
 
-echo "=== (${PYTHON_VERSION}) Clear output directories and leftovers ==="
 # Clear output directories and leftovers
 rm -rf /tmp/hyperarrow-build
 rm -rf /hyperarrow/python/dist
@@ -27,8 +26,6 @@ rm -rf /hyperarrow/python/build
 rm -rf /hyperarrow/python/repaired_wheels
 rm -rf /hyperarrow/python/pyarrow/*.so
 rm -rf /hyperarrow/python/pyarrow/*.so.*
-
-echo "=== (${PYTHON_VERSION}) Building HyperArrow C++ libraries and Python ==="
 
 mkdir /tmp/hyperarrow-build
 pushd /tmp/hyperarrow-build

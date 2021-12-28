@@ -21,7 +21,9 @@ find_package(tableauhyperapi-cxx REQUIRED CONFIG)
 
 add_subdirectory(src)
 
-if (HYPERARROW_BUILD_TESTS)
+# Boost isn't required for a bare bones installation
+# currently only for test / Python builds
+if (DEFINED HYPERARROW_TESTING)
   find_package(Boost COMPONENTS system REQUIRED)
   enable_testing()
   include(CTest)
