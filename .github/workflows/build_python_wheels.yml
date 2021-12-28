@@ -11,12 +11,12 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
+    # The default python action gives us something with too
+    # new of a deployment target. Conda is an option but seems
+    # to much up the rest of the install, so pyenv it is
+    - uses: gabrielfalcao/pyenv-action@v5
       with:
-        auto-update-conda: true
-        python-version: 3.8
-        activate-environment: hyperarrow
-        channels: conda-forge
+        default: 3.8
     - name: Install Arrow Libraries
       run: |
         brew install apache-arrow
@@ -34,9 +34,7 @@ jobs:
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
         MACOSX_DEPLOYMENT_TARGET: "10.9"
-      shell: bash -l {0}
       run: |
-        conda activate hyperarrow
         mkdir build
         cd build
         cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libssl.dylib -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DCMAKE_MACOX_RPATH=ON -DCMAKE_INSTALL_RPATH=/usr/local/lib ..
@@ -44,9 +42,7 @@ jobs:
         make install
         make python
     - name: Fix wheel
-      shell: bash -l {0}
       run: |
-        conda activate hyperarrow
         pip install pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         delocate-listdeps --all $HYPER_WHEEL_LOC

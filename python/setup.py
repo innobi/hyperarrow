@@ -32,10 +32,6 @@ tableau_dir = os.environ["HYPER_PATH"]
 if not tableau_dir:
     raise ValueError("Must set HYPER_PATH environment variable for python build")
 
-extra_link_args = []
-if sys.platform == "darwin":
-    extra_link_args = ["-rpath", "/usr/local/lib"]
-
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
     include_dirs=["../include"],
