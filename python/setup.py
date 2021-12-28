@@ -34,7 +34,7 @@ if not tableau_dir:
 
 extra_link_args = []
 if sys.platform == "darwin":
-    extra_link_args = ["-rpath", f"/usr/local/lib/:{HYPER_PATH}/lib"]
+    extra_link_args = ["-rpath", f"/usr/local/lib/:{tableau_dir}/lib"]
 
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
