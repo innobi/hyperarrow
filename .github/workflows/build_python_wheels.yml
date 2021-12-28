@@ -19,8 +19,8 @@ jobs:
     - name: Print openssl
       run: |
         ls /usr/local/Cellar/
-	ls /usr/local/Cellar/openssl@1.1
-	ls /usr/local/Cellar/openssl@1.1/1.1.1l_1
+        ls /usr/local/Cellar/openssl@1.1
+        ls /usr/local/Cellar/openssl@1.1/1.1.1l_1
     - name: Install Arrow Libraries
       run: |
         brew install apache-arrow
