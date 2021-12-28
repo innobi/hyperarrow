@@ -18,7 +18,7 @@ jobs:
         python-version: 3.8
     - name: Install Arrow Libraries
       run: |
-        brew install apache-arrow "openssl@1.1"
+        brew install apache-arrow
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
@@ -33,7 +33,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         make python
