@@ -16,9 +16,9 @@ jobs:
     # to much up the rest of the install, so pyenv it is
     - uses: gabrielfalcao/pyenv-action@v8
       with:
-        default: 3.8.12
+        default: "3.8.12"
     - name: Check python version
-      run: pyenv local 3.8.12 && python -V
+      run: pyenv local "3.8.12" && python -V
     - name: Install Arrow Libraries
       run: |
         brew install apache-arrow
@@ -37,7 +37,7 @@ jobs:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
         MACOSX_DEPLOYMENT_TARGET: "10.9"
       run: |
-        pyenv local 3.8.12
+        pyenv local "3.8.12"
         mkdir build
         cd build
         cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libssl.dylib -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DCMAKE_MACOX_RPATH=ON -DCMAKE_INSTALL_RPATH=/usr/local/lib ..
@@ -46,7 +46,7 @@ jobs:
         make python
     - name: Fix wheel
       run: |
-        pyenv local 3.8.12
+        pyenv local "3.8.12"
         python -m pip install pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         delocate-listdeps --all $HYPER_WHEEL_LOC
@@ -65,6 +65,6 @@ jobs:
         path: ./*.whl
     - name: Test wheel
       run: |
-        pyenv local 3.8.12
+        pyenv local "3.8.12"
         python -m pip install hyperarrow*.whl
         python -c "import hyperarrow; hyperarrow.test()"
