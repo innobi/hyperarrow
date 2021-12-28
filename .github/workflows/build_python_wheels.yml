@@ -28,7 +28,7 @@ jobs:
       shell: bash -l {0}
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
-        MACOSX_DEPLOYMENT_TARGET: "10.9"
+        MACOSX_DEPLOYMENT_TARGET: "10.13"
       run: |
         conda activate hyperarrow
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
@@ -45,7 +45,7 @@ jobs:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge pytest delocate wheel
+        conda install -c conda-forge pytest "delocate=0.8.2" wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to delocate $HYPER_WHEEL_LOC
         LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HYPER_PATH}/lib" delocate-wheel -v $HYPER_WHEEL_LOC
