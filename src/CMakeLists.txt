@@ -2,11 +2,11 @@ file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${HyperArrow_SOURCE_DIR}/include/hypera
 
 add_library(hyperarrow_writer SHARED writer.cc types.cc ${HEADER_LIST})
 target_include_directories(hyperarrow_writer PUBLIC ../include)
-target_link_libraries(hyperarrow_writer PUBLIC Tableau::tableauhyperapi-cxx)
+target_link_libraries(hyperarrow_writer PRIVATE Tableau::tableauhyperapi-cxx)
 target_link_libraries(hyperarrow_writer PUBLIC arrow_shared)
 
 add_library(hyperarrow_reader SHARED reader.cc types.cc ${HEADER_LIST})
 target_include_directories(hyperarrow_reader PUBLIC ../include)
-target_link_libraries(hyperarrow_reader PUBLIC Tableau::tableauhyperapi-cxx)
+target_link_libraries(hyperarrow_reader PRIVATE Tableau::tableauhyperapi-cxx)
 target_link_libraries(hyperarrow_reader PUBLIC arrow_shared)
 install(TARGETS hyperarrow_writer hyperarrow_reader PUBLIC_HEADER)
