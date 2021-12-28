@@ -40,7 +40,7 @@ jobs:
         conda install -c conda-forge "arrow-cpp>=6.0"
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_MACOSX_RPATH=ON -DCMAKE_INSTALL_RPATH=${LIB_LOCATION} ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_INSTALL_LIBDIR=${LIB_LOCATION} -DCMAKE_MACOSX_RPATH=ON -DCMAKE_INSTALL_RPATH=${LIB_LOCATION} ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         LIB_LOCATION=${LIB_LOCATION} make python
