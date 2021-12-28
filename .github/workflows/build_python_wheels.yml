@@ -24,7 +24,6 @@ jobs:
         brew install apache-arrow
     - name: Download Hyper Library / Headers
       run: |
-        mkdir /usr/custom-libs
         mkdir deps
         pushd deps
         wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
@@ -32,7 +31,7 @@ jobs:
         mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         # Copy tableau lib to system location
         # Required for subsequent python setup.py to work
-        cp tableauhyperapi/lib/libtableauhyperapi.dylib /usr/custom-libs
+        cp tableauhyperapi/lib/libtableauhyperapi.dylib /usr/local/lib
     - name: Set up out of core build
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
@@ -40,7 +39,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libssl.dylib --DCMAKE_INSTALL_PREFIX:PATH=/usr/custom-libs ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libssl.dylib --DCMAKE_INSTALL_PREFIX:PATH=/usr/local/lib ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         make python
