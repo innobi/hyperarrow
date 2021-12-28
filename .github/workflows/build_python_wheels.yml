@@ -16,16 +16,9 @@ jobs:
     - uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Build Arrow with Python support
+    - name: Install Arrow Libraries
       run: |
-        git clone --branch release-6.0.1 https://github.com/apache/arrow.git
-        python -m pip install -r arrow/python/requirements-build.txt
-        cd arrow/cpp
-        mkdir build
-        cd build
-        cmake -DARROW_COMPUTE=ON -DARROW_PYTHON=ON ..
-        make -j"$(sysctl -n hw.logicalcpu)"
-        make install
+        brew install apache-arrow
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
