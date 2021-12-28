@@ -29,18 +29,18 @@ rm -rf /hyperarrow/python/pyarrow/*.so.*
 
 mkdir /tmp/hyperarrow-build
 pushd /tmp/hyperarrow-build
-TABLEAU_CMAKE_PATH="/tmp/tableau/tableauhyperapi/share/cmake"
+HYPER_PATH="/tmp/tableau/tableauhyperapi"
 
 cmake \
-  -DCMAKE_PREFIX_PATH=${TABLEAU_CMAKE_PATH} \
+  -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \
   /hyperarrow
 make -j"$(nproc)"
 make install
-make python
+HYPER_PATH=${HYPER_PATH} make python
 popd
 
 pushd /hyperarrow/python
-LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/tmp/tableau/tableauhyperapi/lib" auditwheel repair -L . dist/hyperarrow-*.whl -w repaired_wheels
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HYPER_PATH}/lib" auditwheel repair -L . dist/hyperarrow-*.whl -w repaired_wheels
 popd
 
 

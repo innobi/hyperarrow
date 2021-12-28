@@ -28,7 +28,9 @@ else:
 # TODO: on Linux we need to set LD_LIBRARY_PATH for auditwheel to copy
 # this in, so maybe can leverage that instead of repeating here
 # For cross platform, maybe we figure out how to install the tableauhyper lib
-tableau_dir = "/tmp/tableau/tableauhyperapi"
+tableau_dir = os.environ["HYPER_PATH"]
+if not tableau_dir:
+    raise ValueError("Must set HYPER_PATH environment variable for python build")
 
 hyperarrow_module = Extension(
     "hyperarrow.libhyperarrow",
