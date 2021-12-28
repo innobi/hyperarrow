@@ -55,7 +55,7 @@ if (Python_FOUND AND WIN32)
     COMMAND ${CMAKE_COMMAND} -E copy
       $<TARGET_FILE:hyperarrow_reader>
       ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/
-    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel
+    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel --py-limited-api=cp38
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
     DEPENDS hyperarrow_writer hyperarrow_reader
     )
@@ -69,7 +69,7 @@ elseif(Python_FOUND)
     COMMAND ${CMAKE_COMMAND} -E copy
       $<TARGET_FILE:hyperarrow_reader>
       ${CMAKE_SOURCE_DIR}/python/src/hyperarrow/lib/
-    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel
+    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel --py-limited-api=cp38
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
     DEPENDS hyperarrow_writer hyperarrow_reader
   )
