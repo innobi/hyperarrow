@@ -18,7 +18,7 @@ jobs:
         python-version: 3.8
     - name: Install Arrow Libraries
       run: |
-        brew install apache-arrow
+        brew install apache-arrow "openssl@1.1"
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
