@@ -44,6 +44,7 @@ hyperarrow_module = Extension(
     # expected build folder location
     libraries=["arrow", "arrow_python", "hyperarrow_writer", "hyperarrow_reader", "tableauhyperapi"],
     library_dirs=[tableau_dir + "/lib"],
+    extra_link_args=extra_link_args,
     sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
     language="c++",
