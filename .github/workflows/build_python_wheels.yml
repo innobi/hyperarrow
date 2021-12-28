@@ -45,6 +45,7 @@ jobs:
         make install
         make python
     - name: Fix wheel (py38)
+      run: |
         pip install pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
         echo About to delocate $HYPER_WHEEL_LOC
