@@ -38,7 +38,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m ..
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m -DOPENSSL_INCLUDE_DIR=/usr/local/Cellar/openssl@1.1/1.1.1m/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/Cellar/openssl@1.1/1.1.1m/lib/libssl.dylib ..
         make -j"$(sysctl -n hw.logicalcpu)"
         make install
         make python
