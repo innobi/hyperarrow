@@ -26,12 +26,13 @@ jobs:
       run: |
         mkdir deps
         pushd deps
-        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
-        unzip tableauhyperapi.zip
+        wget -q https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip -q tableauhyperapi.zip
         mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
         # Copy tableau lib to system location
         # Required for subsequent python setup.py to work
         cp tableauhyperapi/lib/libtableauhyperapi.dylib /usr/local/lib
+        ls /usr/local/lib
     - name: Set up out of core build
       env:
         HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
