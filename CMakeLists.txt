@@ -24,6 +24,7 @@ add_subdirectory(src)
 # Boost isn't required for a bare bones installation
 # currently only for test / Python builds
 if (DEFINED HYPERARROW_TESTING)
+  unset(HYPERARROW_TESTING)
   find_package(Boost COMPONENTS system REQUIRED)
   enable_testing()
   include(CTest)
