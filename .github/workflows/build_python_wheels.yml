@@ -70,3 +70,26 @@ jobs:
         conda activate hyperarrow
         python -m pip install hyperarrow*.whl
         python -c "import hyperarrow; hyperarrow.test()"
+
+
+jobs:
+  build-linux:
+
+    runs-on: ubuntu-latest
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.8"
+    - name: Build docker compose
+      - run: docker-compose build python-wheel-manylinux-2014
+    - name: Run docker image
+      - run: docker-compose up
+    - name: Upload wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-3.8
+        path: python/repaired_wheels/*.whl
+    - name: Test wheel
+      run: |
+        python -m pip install python/repaired_wheels/*.whl
+        python -c "import hyperarrow; hyperarrow.test()"
