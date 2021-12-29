@@ -41,4 +41,16 @@ popd
 
 pushd /hyperarrow/python
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HYPER_PATH}/lib" auditwheel repair -L . dist/hyperarrow-*.whl -w repaired_wheels
+
+# Tableau's Hyper API bundles an executable which auditwheel won't pick up
+# So instead we unpack wheel and place next to libtableauhyperapi manually
+pushd repaired_wheels
+THE_WHEEL=$(ls)
+python -m wheel unpack ${THE_WHEEL}
+NEW_DIRECTORY=$(ls -d */)
+rm ${THE_WHEEL}
+cp -r "${HYPER_PATH}/lib/hyper" "${NEW_DIRECTORY}hyperarrow./"
+python -m wheel pack ${NEW_DIRECTORY}
+rm -rf ${NEW_DIRECTORY}
+popd
 popd
