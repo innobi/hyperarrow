@@ -80,9 +80,9 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
-            return builder->Append(value);
+            return builder->UnsafeAppend(value);
           }
         });
         builders.push_back(std::move(builder));
@@ -91,9 +91,9 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
-            return builder->Append(value);
+            return builder->UnsafeAppend(value);
           }
         });
 
@@ -103,9 +103,9 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
-            return builder->Append(value);
+            return builder->UnsafeAppend(value);
           }
         });
         builders.push_back(std::move(builder));
@@ -114,9 +114,9 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
-            return builder->Append(value);
+            return builder->UnsafeAppend(value);
           }
         });
         builders.push_back(std::move(builder));
@@ -125,9 +125,9 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
-            return builder->Append(static_cast<bool>(value));
+            return builder->UnsafeAppend(static_cast<bool>(value));
           }
         });
         builders.push_back(std::move(builder));
@@ -136,10 +136,10 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
             std::string stringVal = value.get<std::string>();
-            return builder->Append(stringVal);
+            return builder->UnsafeAppend(stringVal);
           }
         });
         builders.push_back(std::move(builder));
@@ -148,7 +148,7 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
             hyperapi::Date dt = value.get<hyperapi::Date>();
             // Arrow uses Unix epoch
@@ -159,7 +159,7 @@ arrowTableFromHyper(const std::string databasePath,
             auto epoch = chrono_dt.time_since_epoch();
             auto val =
                 std::chrono::duration_cast<arrow_vendored::date::days>(epoch);
-            return builder->Append(val.count());
+            return builder->UnsafeAppend(val.count());
           }
         });
         builders.push_back(std::move(builder));
@@ -173,7 +173,7 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->AppendNull();
+            return builder->UnsafeAppendNull();
           } else {
             auto ts = value.get<hyperapi::Timestamp>();
             auto dt = ts.getDate();
@@ -190,7 +190,7 @@ arrowTableFromHyper(const std::string databasePath,
             auto epoch = chrono_time.time_since_epoch();
             auto val =
                 std::chrono::duration_cast<std::chrono::microseconds>(epoch);
-            return builder->Append(val.count());
+            return builder->UnsafeAppend(val.count());
           }
         });
         builders.push_back(std::move(builder));
