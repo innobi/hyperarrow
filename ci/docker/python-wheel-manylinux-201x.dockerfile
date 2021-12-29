@@ -32,7 +32,7 @@ ARG python
 ENV PYTHON_VERSION=${python}
 
 ENV VIRTUAL_ENV=/venv
-RUN $(find /opt/python -name cp${PYTHON_VERSION/./}-*)/bin/python -m venv /venv
+RUN $(find /opt/python -name cp${PYTHON_VERSION//.}-*)/bin/python -m venv /venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install arrow

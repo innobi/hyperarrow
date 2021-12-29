@@ -41,6 +41,8 @@ popd
 
 pushd /hyperarrow/python
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HYPER_PATH}/lib" auditwheel repair -L . dist/hyperarrow-*.whl -w repaired_wheels
+python -m pip install repaired_wheels/hyper*
+python -c "import hyperarrow; hyperarrow.test()"
 popd
 
 
