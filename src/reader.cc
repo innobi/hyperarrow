@@ -35,6 +35,17 @@ schemaFromHyper(hyperapi::TableDefinition tableDefinition) {
   return schema;
 }
 
+static int64_t getRowCountFromResult(hyperapi::Result &rowCountResult) {
+  int result;
+  for (const hyperapi::Row &row : rowCountResult) {
+    for (const hyperapi::Value &value : row) {
+      return value;
+    }
+  }
+
+  return -1;
+}
+
 arrow::Result<std::shared_ptr<arrow::Table>>
 arrowTableFromHyper(const std::string databasePath,
                     const std::string schemaName, const std::string tableName) {
@@ -54,6 +65,11 @@ arrowTableFromHyper(const std::string databasePath,
     schema = schemaFromHyper(tableDefinition);
     colCount = schema->num_fields();
 
+    hyperapi::Result rowCountResult = connection.executeQuery(
+        "SELECT COUNT(*) FROM " + extractTable.toString());
+    auto rowCount = getRowCountFromResult(rowCountResult);
+    rowCountResult.close();
+
     std::vector<std::function<arrow::Status(const hyperapi::Value &value)>>
         append_funcs;
     for (int i = 0; i < schema->fields().size(); i++) {
@@ -61,6 +77,7 @@ arrowTableFromHyper(const std::string databasePath,
       auto type_id = schema->field(i)->type()->id();
       if (type_id == arrow::Type::INT16) {
         auto builder = std::make_shared<arrow::Int16Builder>();
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
@@ -68,11 +85,10 @@ arrowTableFromHyper(const std::string databasePath,
             return builder->Append(value);
           }
         });
-        // TODO: if we get rowCount up front we can more efficiently append
-        // builder->Reserve(rowCount);
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::INT32) {
         auto builder = std::make_shared<arrow::Int32Builder>();
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
@@ -81,11 +97,10 @@ arrowTableFromHyper(const std::string databasePath,
           }
         });
 
-        // TODO: if we get rowCount up front we can more efficiently append
-        // builder->Reserve(rowCount);
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::INT64) {
         auto builder = std::make_shared<arrow::Int64Builder>();
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
@@ -96,6 +111,7 @@ arrowTableFromHyper(const std::string databasePath,
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::DOUBLE) {
         auto builder = std::make_shared<arrow::DoubleBuilder>();
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
@@ -106,6 +122,7 @@ arrowTableFromHyper(const std::string databasePath,
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::BOOL) {
         auto builder = std::make_shared<arrow::BooleanBuilder>();
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
@@ -116,6 +133,7 @@ arrowTableFromHyper(const std::string databasePath,
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::STRING) {
         auto builder = std::make_shared<arrow::StringBuilder>();
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
@@ -127,6 +145,7 @@ arrowTableFromHyper(const std::string databasePath,
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::DATE32) {
         auto builder = std::make_shared<arrow::Date32Builder>();
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();
@@ -151,6 +170,7 @@ arrowTableFromHyper(const std::string databasePath,
         auto builder = std::make_shared<arrow::TimestampBuilder>(
             arrow::timestamp(arrow::TimeUnit::MICRO),
             arrow::default_memory_pool());
+        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             return builder->AppendNull();

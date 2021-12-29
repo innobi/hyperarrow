@@ -26,7 +26,6 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   arrow::Int16Builder int16builder(pool);
   arrow::Int32Builder int32builder(pool);
   arrow::Int64Builder int64builder(pool);
-  // TODO: space for float impl
   arrow::DoubleBuilder doublebuilder(pool);
   arrow::BooleanBuilder boolbuilder(pool);
   arrow::StringBuilder stringbuilder(pool);
@@ -36,7 +35,6 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   std::shared_ptr<arrow::Array> array_a;
   std::shared_ptr<arrow::Array> array_b;
   std::shared_ptr<arrow::Array> array_c;
-  // TODO: space for float impl
   std::shared_ptr<arrow::Array> array_e;
   std::shared_ptr<arrow::Array> array_f;
   std::shared_ptr<arrow::Array> array_g;
