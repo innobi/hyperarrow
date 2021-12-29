@@ -29,14 +29,10 @@ else:
 # this in, so maybe can leverage that instead of repeating here
 # For cross platform, maybe we figure out how to install the tableauhyper lib
 tableau_dir = os.environ["HYPER_PATH"]
-if not tableau_dir:
-    raise ValueError("Must set HYPER_PATH environment variable for python build")
 
 extra_link_args = []
 if sys.platform == "darwin":
     lib_location = os.environ["LIB_LOCATION"]
-    if not lib_location:
-        raise ValueError("must set LIB_LOCATION on macos")
     extra_link_args = ["-rpath", lib_location]
 
 hyperarrow_module = Extension(
@@ -48,7 +44,7 @@ hyperarrow_module = Extension(
     libraries=["arrow", "arrow_python", "hyperarrow_writer", "hyperarrow_reader", "tableauhyperapi"],
     library_dirs=[tableau_dir + "/lib"],
     extra_link_args=extra_link_args,
-    sources=list(glob("src/hyperarrow/hyperarrow.cpp")),
+    sources=list(glob("hyperarrow/hyperarrow.cpp")),
     extra_compile_args=extra_compile_args,
     language="c++",
     py_limited_api=True,
@@ -73,8 +69,7 @@ setup(
         'Programming Language :: Python :: 3'
     ],
     keywords="tableau tableauhyperapi arrow",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(),
     data_files=[("", ["README.md"])],
     python_requires=">=3.8",
     install_requires=["pyarrow"],
