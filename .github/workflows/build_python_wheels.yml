@@ -9,69 +9,48 @@ jobs:
   build-macos:
 
     runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: [3.8, 3.9, "3.10"]
-      fail-fast: false
     env:
-      CTEST_OUTPUT_ON_FAILURE: 1
+      INSTALL_PREFIX: "/usr/local/miniconda/envs/hyperarrow"
+      LIB_LOCATION: "/usr/local/miniconda/envs/hyperarrow/lib"
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.8
         activate-environment: hyperarrow
         channels: conda-forge
     - name: Download Hyper Library / Headers
       run: |
         mkdir deps
         pushd deps
-        wget https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
-        unzip tableauhyperapi.zip
+        wget -q https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip -O tableauhyperapi.zip
+        unzip -q tableauhyperapi.zip
         mv tableauhyperapi-cxx-macos-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
-        popd
+        # Copy tableau lib to system location
+        # Required for subsequent python setup.py to work
+        cp tableauhyperapi/lib/libtableauhyperapi.dylib ${LIB_LOCATION}
     - name: Set up out of core build
-      shell: bash -l {0}
       env:
-        TABLEAU_CMAKE_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake"
+        HYPER_PATH: "/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi"
         MACOSX_DEPLOYMENT_TARGET: "10.9"
+      shell: bash -l {0}
       run: |
         conda activate hyperarrow
-        conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp pyarrow
+        conda install -c conda-forge "arrow-cpp>=6.0"
         mkdir build
         cd build
-        cmake ..
-        make
-        make test
-        make python
-        cd ..
-    # Py38 gives errors for missing rpath libraries, but seems
-    # like a setuptools or delocate bug instead of actual issue?
-    - if: matrix.python-version == '3.8'
-      name: Fix wheel (py38)
+        cmake -DCMAKE_PREFIX_PATH="${HYPER_PATH}/share/cmake" \ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_INSTALL_LIBDIR=${LIB_LOCATION} -DCMAKE_MACOSX_RPATH=ON -DCMAKE_INSTALL_RPATH=${LIB_LOCATION} ..
+        make -j"$(sysctl -n hw.logicalcpu)"
+        make install
+        LIB_LOCATION=${LIB_LOCATION} make python
+    - name: Fix wheel
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
         conda install -c conda-forge pytest delocate wheel
         HYPER_WHEEL_LOC=$(ls -d python/dist/*)
-        echo About to delocate $HYPER_WHEEL_LOC
-        delocate-wheel -v $HYPER_WHEEL_LOC --ignore-missing-dependencies
-        # delocate-wheel will copy all required libraries but
-        # the tableauhyperapi also requires the hyperd executable
-        # so we manually copy that into the wheel as a workaround
-        python -m wheel unpack $HYPER_WHEEL_LOC
-        # TODO: Don't hard code version here!!!
-        cp -r deps/tableauhyperapi/lib/hyper hyperarrow-0.0.1.dev0/hyperarrow/.dylibs
-        python -m wheel pack hyperarrow-0.0.1.dev0
-    - if: matrix.python-version != '3.8'
-      name: Fix wheel
-      shell: bash -l {0}
-      run: |
-        conda activate hyperarrow
-        conda install -c conda-forge pytest delocate wheel
-        HYPER_WHEEL_LOC=$(ls -d python/dist/*)
-        echo About to delocate $HYPER_WHEEL_LOC
+        delocate-listdeps --all $HYPER_WHEEL_LOC
         delocate-wheel -v $HYPER_WHEEL_LOC
         # delocate-wheel will copy all required libraries but
         # the tableauhyperapi also requires the hyperd executable
@@ -83,11 +62,33 @@ jobs:
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
-        name: macos-${{ matrix.python-version }}
+        name: macos-3.8
         path: ./*.whl
     - name: Test wheel
       shell: bash -l {0}
       run: |
         conda activate hyperarrow
         python -m pip install hyperarrow*.whl
+        python -c "import hyperarrow; hyperarrow.test()"
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Build docker compose
+      run: docker-compose build python-wheel-manylinux-2014
+    - name: Run docker image
+      run: docker-compose up
+    - name: Upload wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-3.8
+        path: python/repaired_wheels/*.whl
+    - name: Test wheel
+      run: |
+        python -m pip install pytest
+        python -m pip install python/repaired_wheels/*.whl
         python -c "import hyperarrow; hyperarrow.test()"

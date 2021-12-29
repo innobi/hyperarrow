@@ -34,7 +34,7 @@ jobs:
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/home/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
-        cmake ..
+        cmake -DHYPERARROW_TESTING=ON ..
         make
         make test
 
@@ -65,7 +65,7 @@ jobs:
         mkdir build
         cd build
         export TABLEAU_CMAKE_PATH=/Users/runner/work/hyperarrow/hyperarrow/deps/tableauhyperapi/share/cmake
-        cmake ..
+        cmake -DHYPERARROW_TESTING=ON ..
         make
         make test
 
@@ -97,5 +97,5 @@ jobs:
         conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp compilers
         mkdir build
         cd build
-        cmake -S ..
+        cmake -S .. -DHYPERARROW_TESTING=ON
         cmake --build .
