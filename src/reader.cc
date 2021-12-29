@@ -137,8 +137,9 @@ arrowTableFromHyper(const std::string databasePath,
           if (value.isNull()) {
             return builder->UnsafeAppendNull();
           } else {
-            std::string stringVal = value.get<std::string>();
-            return builder->UnsafeAppend(stringVal);
+            auto stringVal = value.get<std::string>();
+	    // TODO: UnsafeAppend is not working here???
+            builder->Append(&stringVal);
           }
         });
         builders.push_back(std::move(builder));
