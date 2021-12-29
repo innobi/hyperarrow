@@ -1,3 +1,2 @@
-from .libhyperarrow import *
-
 from ._tester import test
+from .libhyperarrow import *

@@ -1,8 +1,5 @@
-import platform
 import os
-import pkg_resources
 import sys
-import sysconfig
 from glob import glob
 
 from setuptools import Extension, find_packages, setup
@@ -41,7 +38,13 @@ hyperarrow_module = Extension(
     # TODO: need to figure out a better way to distribute hyperarrow
     # include files as well as libraries; for now hard-coded to
     # expected build folder location
-    libraries=["arrow", "arrow_python", "hyperarrow_writer", "hyperarrow_reader", "tableauhyperapi"],
+    libraries=[
+        "arrow",
+        "arrow_python",
+        "hyperarrow_writer",
+        "hyperarrow_reader",
+        "tableauhyperapi",
+    ],
     library_dirs=[tableau_dir + "/lib"],
     extra_link_args=extra_link_args,
     sources=list(glob("hyperarrow/hyperarrow.cpp")),
@@ -55,7 +58,7 @@ setup(
     version="0.0.1.dev0",
     description="Python wrapper to hyperarrow",
     long_description=long_description,
-    long_description_content_type="text/markdown",    
+    long_description_content_type="text/markdown",
     url="https://github.com/innobi/hyperarrow",
     author="Will Ayd",
     author_email="will_ayd@innobi.io",
@@ -63,10 +66,10 @@ setup(
     license_files=("LICENSE", "TABLEAU_LICENSE"),
     classifiers=[
         "Development Status :: 3 - Alpha",
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
-        'License :: OSI Approved :: Apache 2.0 License',
-        'Programming Language :: Python :: 3'
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Build Tools",
+        "License :: OSI Approved :: Apache 2.0 License",
+        "Programming Language :: Python :: 3",
     ],
     keywords="tableau tableauhyperapi arrow",
     packages=find_packages(),
