@@ -70,8 +70,7 @@ arrowTableFromHyper(const std::string databasePath,
     auto rowCount = getRowCountFromResult(rowCountResult);
     rowCountResult.close();
 
-    std::vector<std::function<arrow::Status(const hyperapi::Value &value)>>
-        append_funcs;
+    std::vector<std::function<void(const hyperapi::Value &value)>> append_funcs;
     for (int i = 0; i < schema->fields().size(); i++) {
       const auto &field = schema->fields()[i];
       auto type_id = schema->field(i)->type()->id();
@@ -202,7 +201,7 @@ arrowTableFromHyper(const std::string databasePath,
     for (const hyperapi::Row &row : rowsInTable) {
       std::size_t colNum = 0;
       for (const hyperapi::Value &value : row) {
-        ARROW_RETURN_NOT_OK(append_funcs[colNum](value));
+        append_funcs[colNum](value);
         colNum++;
       }
     }
