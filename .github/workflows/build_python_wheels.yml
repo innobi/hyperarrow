@@ -79,9 +79,9 @@ jobs:
       with:
         python-version: '3.8'
     - name: Build docker compose
-      - run: docker-compose build python-wheel-manylinux-2014
+      run: docker-compose build python-wheel-manylinux-2014
     - name: Run docker image
-      - run: docker-compose up
+      run: docker-compose up
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
