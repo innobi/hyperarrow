@@ -7,19 +7,18 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation to writer Arrow tables into Hyper files
+/// This file contains the implementation to writer Arrow tables into Hyper
+/// files
 ///
 //===----------------------------------------------------------------------===//
 
-
-#include <hyperarrow/writer.h>
 #include "types.h"
 #include <arrow/builder.h>
 #include <arrow/compute/api.h>
 #include <arrow/table.h>
 #include <hyperapi/hyperapi.hpp>
+#include <hyperarrow/writer.h>
 #include <map>
-
 
 namespace hyperarrow {
 static const hyperapi::TableDefinition
@@ -105,46 +104,42 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
     for (auto &field : table->fields()) {
       auto type_id = field->type()->id();
       if (type_id == arrow::Type::INT16) {
-        write_funcs.push_back(
-            [](std::shared_ptr<arrow::Array> anArray,
+        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
                                  int64_t rowNum) {
-              auto array = std::static_pointer_cast<arrow::Int16Array>(anArray);
-              if (array->IsValid(rowNum)) {
-                inserter.add(array->Value(rowNum));
-              } else {
-                inserter.add(hyperapi::optional<int16_t>());
-              }
-            });
+          auto array = std::static_pointer_cast<arrow::Int16Array>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<int16_t>());
+          }
+        });
       } else if (type_id == arrow::Type::INT32) {
-        write_funcs.push_back(
-            [](std::shared_ptr<arrow::Array> anArray,
+        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
                                  int64_t rowNum) {
-              auto array = std::static_pointer_cast<arrow::Int32Array>(anArray);
-              if (array->IsValid(rowNum)) {
-                inserter.add(array->Value(rowNum));
-              } else {
-                inserter.add(hyperapi::optional<int32_t>());
-              }
-            });
+          auto array = std::static_pointer_cast<arrow::Int32Array>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<int32_t>());
+          }
+        });
       } else if (type_id == arrow::Type::INT64) {
-        write_funcs.push_back(
-            [](std::shared_ptr<arrow::Array> anArray,
+        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
                                  int64_t rowNum) {
-              auto array = std::static_pointer_cast<arrow::Int64Array>(anArray);
-              if (array->IsValid(rowNum)) {
-                inserter.add(array->Value(rowNum));
-              } else {
-                inserter.add(hyperapi::optional<int64_t>());
-              }
-            });
+          auto array = std::static_pointer_cast<arrow::Int64Array>(anArray);
+          if (array->IsValid(rowNum)) {
+            inserter.add(array->Value(rowNum));
+          } else {
+            inserter.add(hyperapi::optional<int64_t>());
+          }
+        });
       } else if (type_id == arrow::Type::DOUBLE) {
-        write_funcs.push_back([](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
+        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum,
+                                 int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::DoubleArray>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -153,10 +148,9 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type_id == arrow::Type::BOOL) {
-        write_funcs.push_back([](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
+        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum,
+                                 int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::BooleanArray>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->Value(rowNum));
@@ -222,10 +216,9 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       } else if (type_id == arrow::Type::STRING) {
-        write_funcs.push_back([](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
+        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum,
+                                 int64_t rowNum) {
           auto array = std::static_pointer_cast<arrow::StringArray>(anArray);
           if (array->IsValid(rowNum)) {
             inserter.add(array->GetString(rowNum));
