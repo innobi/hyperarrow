@@ -49,6 +49,7 @@ THE_WHEEL=$(ls)
 python -m wheel unpack ${THE_WHEEL}
 NEW_DIRECTORY=$(ls -d */)
 rm ${THE_WHEEL}
+chmod 755 "${HYPER_PATH}/lib/hyper/hyperd"
 cp -r "${HYPER_PATH}/lib/hyper" "${NEW_DIRECTORY}hyperarrow/.libs/"
 python -m wheel pack ${NEW_DIRECTORY}
 rm -rf ${NEW_DIRECTORY}
