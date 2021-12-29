@@ -77,7 +77,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: "3.8"
+        python-version: '3.8'
     - name: Build docker compose
       - run: docker-compose build python-wheel-manylinux-2014
     - name: Run docker image
