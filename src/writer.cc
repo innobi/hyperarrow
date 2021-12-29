@@ -1,13 +1,25 @@
-#include <hyperarrow/writer.h>
+//===-- writer.cc - writer implementation for hyperarrow --------*- C++ -*-===//
+//
+// Part of the HyperArrow Project, under the Apache License v2.0
+// See https://github.com/innobi/hyperarrow/blob/main/LICENSE
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+///
+/// \file
+/// This file contains the implementation to writer Arrow tables into Hyper files
+///
+//===----------------------------------------------------------------------===//
 
+
+#include <hyperarrow/writer.h>
+#include "types.h"
 #include <arrow/builder.h>
 #include <arrow/compute/api.h>
 #include <arrow/table.h>
-
 #include <hyperapi/hyperapi.hpp>
 #include <map>
 
-#include "types.h"
 
 namespace hyperarrow {
 static const hyperapi::TableDefinition
