@@ -56,7 +56,7 @@ jobs:
         # the tableauhyperapi also requires the hyperd executable
         # so we manually copy that into the wheel as a workaround
         python -m wheel unpack $HYPER_WHEEL_LOC
-	UNPACKED_DIR=$(ls -d hyperarrow*/)
+        UNPACKED_DIR=$(ls -d hyperarrow*/)
         cp -r deps/tableauhyperapi/lib/hyper "${UNPACKED_DIR}/hyperarrow/.dylibs"
         python -m wheel pack hyperarrow-0.0.1.dev0
     - name: Upload wheel
