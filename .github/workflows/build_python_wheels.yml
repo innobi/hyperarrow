@@ -71,10 +71,7 @@ jobs:
         python -m pip install hyperarrow*.whl
         python -c "import hyperarrow; hyperarrow.test()"
 
-
-jobs:
   build-linux:
-
     runs-on: ubuntu-latest
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
