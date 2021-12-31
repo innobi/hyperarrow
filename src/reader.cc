@@ -70,7 +70,7 @@ arrowTableFromHyper(const std::string databasePath,
     auto rowCount = getRowCountFromResult(rowCountResult);
     rowCountResult.close();
 
-    std::vector<std::function<void(const hyperapi::Value &value)>> append_funcs;
+    std::vector<std::function<arrow::Status(const hyperapi::Value &value)>> append_funcs;
     for (int i = 0; i < schema->fields().size(); i++) {
       const auto &field = schema->fields()[i];
       auto type_id = schema->field(i)->type()->id();
@@ -79,10 +79,11 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            builder->UnsafeAppendNull();
           } else {
-            return builder->UnsafeAppend(value);
+            builder->UnsafeAppend(value);
           }
+	  return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::INT32) {
@@ -90,10 +91,11 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            builder->UnsafeAppendNull();
           } else {
-            return builder->UnsafeAppend(value);
+            builder->UnsafeAppend(value);
           }
+	  return arrow::Status::OK();
         });
 
         builders.push_back(std::move(builder));
@@ -102,10 +104,11 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            builder->UnsafeAppendNull();
           } else {
-            return builder->UnsafeAppend(value);
+            builder->UnsafeAppend(value);
           }
+	  return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::DOUBLE) {
@@ -113,10 +116,11 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            builder->UnsafeAppendNull();
           } else {
-            return builder->UnsafeAppend(value);
+            builder->UnsafeAppend(value);
           }
+	  return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::BOOL) {
@@ -124,22 +128,23 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            builder->UnsafeAppendNull();
           } else {
-            return builder->UnsafeAppend(static_cast<bool>(value));
+            builder->UnsafeAppend(static_cast<bool>(value));
           }
+	  return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::STRING) {
         auto builder = std::make_shared<arrow::StringBuilder>();
-        ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            return builder->AppendNull();
           } else {
-            auto stringVal = value.get<std::string>();
-	    // TODO: UnsafeAppend is not working here???
-            builder->Append(&stringVal);
+	    std::string stringVal = value.get<std::string>();
+	    // UnsafeAppend may not work with strings  whose size isn't
+	    // known in advance. See ARROW-15228
+            return builder->Append(stringVal);
           }
         });
         builders.push_back(std::move(builder));
@@ -148,7 +153,7 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            builder->UnsafeAppendNull();
           } else {
             hyperapi::Date dt = value.get<hyperapi::Date>();
             // Arrow uses Unix epoch
@@ -159,8 +164,9 @@ arrowTableFromHyper(const std::string databasePath,
             auto epoch = chrono_dt.time_since_epoch();
             auto val =
                 std::chrono::duration_cast<arrow_vendored::date::days>(epoch);
-            return builder->UnsafeAppend(val.count());
+            builder->UnsafeAppend(val.count());
           }
+	  return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::TIMESTAMP) {
@@ -173,7 +179,7 @@ arrowTableFromHyper(const std::string databasePath,
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
-            return builder->UnsafeAppendNull();
+            builder->UnsafeAppendNull();
           } else {
             auto ts = value.get<hyperapi::Timestamp>();
             auto dt = ts.getDate();
@@ -190,8 +196,9 @@ arrowTableFromHyper(const std::string databasePath,
             auto epoch = chrono_time.time_since_epoch();
             auto val =
                 std::chrono::duration_cast<std::chrono::microseconds>(epoch);
-            return builder->UnsafeAppend(val.count());
+            builder->UnsafeAppend(val.count());
           }
+	  return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       }
@@ -202,7 +209,7 @@ arrowTableFromHyper(const std::string databasePath,
     for (const hyperapi::Row &row : rowsInTable) {
       std::size_t colNum = 0;
       for (const hyperapi::Value &value : row) {
-        append_funcs[colNum](value);
+        ARROW_RETURN_NOT_OK(append_funcs[colNum](value));
         colNum++;
       }
     }
