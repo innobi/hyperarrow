@@ -70,7 +70,8 @@ arrowTableFromHyper(const std::string databasePath,
     auto rowCount = getRowCountFromResult(rowCountResult);
     rowCountResult.close();
 
-    std::vector<std::function<arrow::Status(const hyperapi::Value &value)>> append_funcs;
+    std::vector<std::function<arrow::Status(const hyperapi::Value &value)>>
+        append_funcs;
     for (int i = 0; i < schema->fields().size(); i++) {
       const auto &field = schema->fields()[i];
       auto type_id = schema->field(i)->type()->id();
@@ -83,7 +84,7 @@ arrowTableFromHyper(const std::string databasePath,
           } else {
             builder->UnsafeAppend(value);
           }
-	  return arrow::Status::OK();
+          return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::INT32) {
@@ -95,7 +96,7 @@ arrowTableFromHyper(const std::string databasePath,
           } else {
             builder->UnsafeAppend(value);
           }
-	  return arrow::Status::OK();
+          return arrow::Status::OK();
         });
 
         builders.push_back(std::move(builder));
@@ -108,7 +109,7 @@ arrowTableFromHyper(const std::string databasePath,
           } else {
             builder->UnsafeAppend(value);
           }
-	  return arrow::Status::OK();
+          return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::DOUBLE) {
@@ -120,7 +121,7 @@ arrowTableFromHyper(const std::string databasePath,
           } else {
             builder->UnsafeAppend(value);
           }
-	  return arrow::Status::OK();
+          return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::BOOL) {
@@ -132,7 +133,7 @@ arrowTableFromHyper(const std::string databasePath,
           } else {
             builder->UnsafeAppend(static_cast<bool>(value));
           }
-	  return arrow::Status::OK();
+          return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::STRING) {
@@ -141,9 +142,9 @@ arrowTableFromHyper(const std::string databasePath,
           if (value.isNull()) {
             return builder->AppendNull();
           } else {
-	    std::string stringVal = value.get<std::string>();
-	    // UnsafeAppend may not work with strings  whose size isn't
-	    // known in advance. See ARROW-15228
+            std::string stringVal = value.get<std::string>();
+            // UnsafeAppend may not work with strings  whose size isn't
+            // known in advance. See ARROW-15228
             return builder->Append(stringVal);
           }
         });
@@ -166,7 +167,7 @@ arrowTableFromHyper(const std::string databasePath,
                 std::chrono::duration_cast<arrow_vendored::date::days>(epoch);
             builder->UnsafeAppend(val.count());
           }
-	  return arrow::Status::OK();
+          return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       } else if (type_id == arrow::Type::TIMESTAMP) {
@@ -198,7 +199,7 @@ arrowTableFromHyper(const std::string databasePath,
                 std::chrono::duration_cast<std::chrono::microseconds>(epoch);
             builder->UnsafeAppend(val.count());
           }
-	  return arrow::Status::OK();
+          return arrow::Status::OK();
         });
         builders.push_back(std::move(builder));
       }
