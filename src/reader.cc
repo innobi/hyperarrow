@@ -139,13 +139,14 @@ arrowTableFromHyper(const std::string databasePath,
       } else if (type_id == arrow::Type::STRING) {
         auto builder = std::make_shared<arrow::StringBuilder>();
         ARROW_RETURN_NOT_OK(builder->Reserve(rowCount));
-        ARROW_RETURN_NOT_OK(builder->ReserveData(rowCount));
+	// See ARROW-15228
+        //ARROW_RETURN_NOT_OK(builder->ReserveData(rowCount));
         append_funcs.push_back([builder](const hyperapi::Value &value) {
           if (value.isNull()) {
             builder->UnsafeAppendNull();
           } else {
             std::string stringVal = value.get<std::string>();
-            builder->UnsafeAppend(stringVal);
+            return builder->Append(stringVal);
           }
           return arrow::Status::OK();
         });

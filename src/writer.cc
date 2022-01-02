@@ -235,7 +235,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
       hyperapi::Connection connection(hyper.getEndpoint(), databasePath,
                                       hyperapi::CreateMode::CreateAndReplace);
       const hyperapi::Catalog &catalog = connection.getCatalog();
-      static const hyperapi::TableDefinition extractTable =
+      const hyperapi::TableDefinition extractTable =
           createDefinitionFromSchema(table, schemaName, tableName);
 
       catalog.createSchemaIfNotExists(schemaName);
