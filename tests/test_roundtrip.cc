@@ -1,8 +1,10 @@
 #define BOOST_TEST_MODULE hyperarrow_writer_tests
-#include <arrow/api.h>
-#include <boost/test/included/unit_test.hpp>
+
 #include <hyperarrow/reader.h>
 #include <hyperarrow/writer.h>
+
+#include <arrow/api.h>
+#include <boost/test/included/unit_test.hpp>
 #include <stdio.h>
 
 #define ABORT_ON_FAILURE(expr)                                                 \

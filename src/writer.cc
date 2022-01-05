@@ -13,12 +13,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "types.h"
+#include <hyperarrow/writer.h>
+
 #include <arrow/builder.h>
 #include <arrow/compute/api.h>
 #include <arrow/table.h>
 #include <hyperapi/hyperapi.hpp>
-#include <hyperarrow/writer.h>
-#include <map>
 
 namespace hyperarrow {
 static const hyperapi::TableDefinition
@@ -29,10 +29,6 @@ createDefinitionFromSchema(std::shared_ptr<arrow::Table> table,
   hyperapi::TableDefinition tableDef =
       hyperapi::TableDefinition({schemaName, tableName});
   for (const std::shared_ptr<arrow::Field> field : schema->fields()) {
-    // TODO: without these conversions can easily get an error like
-    // error: no matching function for call to
-    // 'hyperapi::TableDefinition::Column::Column(const string&,
-    // hyperapi::SqlType, bool)'
     hyperapi::Name name = hyperapi::Name{field->name()};
     hyperapi::Nullability nullable = field->nullable()
                                          ? hyperapi::Nullability::Nullable

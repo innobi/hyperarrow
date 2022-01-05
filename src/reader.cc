@@ -11,12 +11,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "hyperarrow/reader.h"
 #include "types.h"
+#include <hyperarrow/reader.h>
+
 #include <arrow/api.h>
 #include <arrow/vendored/datetime.h>
 #include <hyperapi/hyperapi.hpp>
-#include <vector>
 
 namespace hyperarrow {
 static std::shared_ptr<arrow::Schema>
