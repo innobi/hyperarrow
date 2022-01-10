@@ -56,6 +56,8 @@
 volumes:
   python-wheel-manylinux2014:
     name: python-wheel-manylinux2014
+  python-wheel-windows:
+    name: python-wheel-windows
 
 services:
 
@@ -75,3 +77,15 @@ services:
     volumes:
       - .:/hyperarrow:delegated
     command: /hyperarrow/ci/scripts/python_wheel_manylinux_build.sh
+
+  python-wheel-windows:
+    image: hyperarrow:python-38-wheel-windows
+    build:
+      args:
+        base: mcr.microsoft.com/windows/servercore:ltsc2019
+        python: "3.8"
+      context: .
+      dockerfile: ci/docker/python-wheel-windows.dockerfile
+    volumes:
+      - .:/hyperarrow:delegated
+    command: hyperarrow\\ci\\scripts\\python_wheel_windows_build.bat
