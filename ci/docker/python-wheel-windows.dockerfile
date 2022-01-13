@@ -15,14 +15,27 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# based on mcr.microsoft.com/windows/servercore:ltsc2019
-# contains choco and vs2017 preinstalled
-FROM abrarov/msvc-2017:2.11.0
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+
+# Install Visual Studio Build Tools
+RUN curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe ^
+RUN start /w vs_buildtools.exe --quiet --wait --norestart --nocache modify \
+        --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools" \
+        --add Microsoft.VisualStudio.Workload.AzureBuildTools \
+        --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
+        --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 \
+        --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 \
+        --remove Microsoft.VisualStudio.Component.Windows81SDK
+RUN del /q vs_buildtools.exe
+
+
+# Install Chocolatey
+RUN powershell -command Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 # Install CMake and Git
 ARG cmake=3.21.4
 RUN choco install --no-progress -r -y cmake --version=%cmake% --installargs 'ADD_CMAKE_TO_PATH=System' && \
-    choco install --no-progress -r -y gzip wget git
+    choco install --no-progress -r -y git
 
 # Add unix tools to path
 RUN setx path "%path%;C:\Program Files\Git\usr\bin"
@@ -37,27 +50,16 @@ RUN wmic product where "name like 'python%%'" call uninstall /nointeractive && \
 
 ARG python=3.8
 RUN (if "%python%"=="3.7" setx PYTHON_VERSION 3.7.12) & \
-    (if "%python%"=="3.8" setx PYTHON_VERSION 3.8.11) & \
+    (if "%python%"=="3.8" setx PYTHON_VERSION 3.8.10) & \
     (if "%python%"=="3.9" setx PYTHON_VERSION 3.9.9) & \
     (if "%python%"=="3.10" setx PYTHON_VERSION 3.10.1)
 RUN choco install -r -y --no-progress python --version=%PYTHON_VERSION%
 RUN pip install -U pip
 
 # Install arrow via vcpkg
-RUN mkdir /tmp
-RUN pushd /tmp
-RUN git clone https://github.com/Microsoft/vcpkg.git
-RUN cd vcpkg
-RUN ./bootstrap-vcpkg.sh
-RUN ./vcpkg integrate install
-RUN ./vcpkg install arrow
-RUN popd
+COPY ci\\scripts\\install_arrow.bat C:\\hyperarrow\\ci\\scripts\\
+RUN C:\\hyperarrow\\ci\\scripts\\install_arrow.bat
 
 # Get Hyper Libraries
-RUN mkdir /tmp/tableau
-RUN wget -q "https://downloads.tableau.com/tssoftware/tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce.zip" -O tmp.zip
-RUN unzip -q tmp.zip -d /tmp/tableau
-RUN rm tmp.zip
-RUN pushd /tmp/tableau
-RUN mv tableauhyperapi-cxx-windows-x86_64-release-hyperapi_release_26.0.0.13821.r1fbe38ce tableauhyperapi
-RUN popd
+COPY ci\\scripts\\get_tableau_libs.bat C:\\hyperarrow\\ci\\scripts\\
+RUN C:\\hyperarrow\\ci\\scripts\\get_tableau_libs.bat

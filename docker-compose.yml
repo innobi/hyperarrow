@@ -87,5 +87,8 @@ services:
       context: .
       dockerfile: ci/docker/python-wheel-windows.dockerfile
     volumes:
-      - .:/hyperarrow:delegated
+      - "C:/Users/PC/clones/hyperarrow"
+      - type: bind
+        source: .
+        target: "C:/hyperarrow"
     command: hyperarrow\\ci\\scripts\\python_wheel_windows_build.bat
