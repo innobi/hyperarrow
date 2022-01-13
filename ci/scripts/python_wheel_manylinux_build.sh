@@ -24,8 +24,8 @@ rm -rf /tmp/hyperarrow-build
 rm -rf /hyperarrow/python/dist
 rm -rf /hyperarrow/python/build
 rm -rf /hyperarrow/python/repaired_wheels
-rm -rf /hyperarrow/python/pyarrow/*.so
-rm -rf /hyperarrow/python/pyarrow/*.so.*
+rm -rf /hyperarrow/python/hyperarrow/*.so
+rm -rf /hyperarrow/python/hyperarrow/*.so.*
 
 mkdir /tmp/hyperarrow-build
 pushd /tmp/hyperarrow-build

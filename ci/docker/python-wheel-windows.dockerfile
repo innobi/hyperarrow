@@ -15,22 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
-
-# Install Visual Studio Build Tools
-RUN curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe ^
-RUN start /w vs_buildtools.exe --quiet --wait --norestart --nocache modify \
-        --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools" \
-        --add Microsoft.VisualStudio.Workload.AzureBuildTools \
-        --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
-        --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 \
-        --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 \
-        --remove Microsoft.VisualStudio.Component.Windows81SDK
-RUN del /q vs_buildtools.exe
-
-
-# Install Chocolatey
-RUN powershell -command Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+# based on mcr.microsoft.com/windows/servercore:ltsc2019
+# contains choco and vs2017 preinstalled
+FROM abrarov/msvc-2017:2.11.0
 
 # Install CMake and Git
 ARG cmake=3.21.4
