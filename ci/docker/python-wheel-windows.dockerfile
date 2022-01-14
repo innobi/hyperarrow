@@ -44,6 +44,17 @@ RUN choco install -r -y --no-progress python --version=%PYTHON_VERSION%
 RUN pip install -U pip
 
 # Install arrow via vcpkg
+RUN git clone https://github.com/Microsoft/vcpkg.git
+RUN call .\vcpkg\bootstrap-vcpkg.bat
+RUN .\vcpkg\vcpkg integrate install
+RUN git clone https://github.com/apache/arrow.git
+RUN .\vcpkg\vcpkg install \
+  --triplet x64-windows \
+  --x-manifest-root arrow\cpp \
+  --feature-flags=versions \
+  --clean-after-build
+
+RUN python -m pip install numpy
 COPY ci\\scripts\\install_arrow.bat C:\\hyperarrow\\ci\\scripts\\
 RUN C:\\hyperarrow\\ci\\scripts\\install_arrow.bat
 

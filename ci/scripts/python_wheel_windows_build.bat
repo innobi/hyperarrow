@@ -31,12 +31,13 @@ del /s /q C:\hyperarrow\python\hyperarrow\*.so.*
 
 echo "=== (%PYTHON_VERSION%) Building Arrow C++ libraries ==="
 set CMAKE_GENERATOR=Visual Studio 15 2017 Win64
-set HYPER_PATH="C:\tmp\tableau\tableauhyperapi"
+set HYPER_PATH=C:\tmp\tableau\tableauhyperapi
 
+python -m pip install wheel
 mkdir C:\hyperarrow-build
 pushd C:\hyperarrow-build
 cmake ^
-    -DCMAKE_PREFIX_PATH=%HYPER_PATH% ^
+    -DCMAKE_PREFIX_PATH=%HYPER_PATH%\share\cmake ^
     -DCMAKE_TOOLCHAIN_FILE="C:/tmp/vcpkg/scripts/buildsystems/vcpkg.cmake" ^
     -G "%CMAKE_GENERATOR%" ^
     C:\hyperarrow || exit /B 1
@@ -46,5 +47,4 @@ popd
 pushd C:\hyperarrow\python
 @REM bundle the msvc runtime
 cp "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Redist\MSVC\14.16.27012\x64\Microsoft.VC141.CRT\msvcp140.dll" hyperarrow
-python setup.py bdist_wheel || exit /B 1
 popd
