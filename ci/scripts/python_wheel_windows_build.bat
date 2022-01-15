@@ -20,28 +20,22 @@
 echo "Building windows wheel..."
 
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+rm -rf C:\hyperarrow-build
 
-echo "=== (%PYTHON_VERSION%) Clear output directories and leftovers ==="
-del /s /q C:\hyperarrow-build
-del /s /q C:\hyperarrow\python\dist
-del /s /q C:\hyperarrow\python\build
-del /s /q C:\hyperarrow\python\hyperarrow\*.so
-del /s /q C:\hyperarrow\python\hyperarrow\*.so.*
-
-
-echo "=== (%PYTHON_VERSION%) Building Arrow C++ libraries ==="
-set CMAKE_GENERATOR=Visual Studio 15 2017 Win64
+echo "=== (%PYTHON_VERSION%) Building HyperArrow libraries ==="
 set HYPER_PATH=C:\tmp\tableau\tableauhyperapi
 
 python -m pip install wheel
 mkdir C:\hyperarrow-build
 pushd C:\hyperarrow-build
+
 cmake ^
     -DCMAKE_PREFIX_PATH=%HYPER_PATH%\share\cmake ^
-    -DCMAKE_TOOLCHAIN_FILE="C:/tmp/vcpkg/scripts/buildsystems/vcpkg.cmake" ^
-    -G "%CMAKE_GENERATOR%" ^
+    -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake ^
+    -DVCPKG_MANIFEST_DIR=C:\arrow\cpp ^
+    -G "Visual Studio 15 2017" -A x64 ^
     C:\hyperarrow || exit /B 1
-cmake --build . --target python || exit /B 1
+cmake --build . --config Release --target python || exit /B 1
 popd
 
 pushd C:\hyperarrow\python

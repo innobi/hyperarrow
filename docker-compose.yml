@@ -87,7 +87,6 @@ services:
       context: .
       dockerfile: ci/docker/python-wheel-windows.dockerfile
     volumes:
-      - type: bind
-        source: .
-        target: c:\hyperarrow
+      - .:c:\hyperarrow
+    cpu_count: 8
     command: hyperarrow\\ci\\scripts\\python_wheel_windows_build.bat

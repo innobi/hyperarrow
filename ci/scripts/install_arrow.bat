@@ -4,7 +4,7 @@ cd arrow\cpp
 mkdir build
 cd build
 cmake ^
-    - G "Visual Studio 15 2017" -A x64 ^
+    -G "Visual Studio 15 2017" -A x64 ^
     -DARROW_DEPENDENCY_SOURCE=VCPKG ^
     -DARROW_COMPUTE=ON ^
     -DARROW_PYTHON=ON ^
