@@ -21,6 +21,11 @@ echo "Building windows wheel..."
 
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 rm -rf C:\hyperarrow-build
+rm -rf C:\hyperarrow\python\dist
+rm -rf C:\hyperarrow\python\build
+rm -rf C:\hyperarrow\python\repaired_wheels
+rm -rf C:\hyperarrow\python\hyperarrow\*.dll
+rm -rf C:\hyperarrow\python\hyperarrow\*.dll.*
 
 echo "=== (%PYTHON_VERSION%) Building HyperArrow libraries ==="
 set HYPER_PATH=C:\tmp\tableau\tableauhyperapi
@@ -39,6 +44,10 @@ cmake --build . --config Release --target python || exit /B 1
 popd
 
 pushd C:\hyperarrow\python
-@REM bundle the msvc runtime
-cp "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Redist\MSVC\14.16.27012\x64\Microsoft.VC141.CRT\msvcp140.dll" hyperarrow
+
+pip install delvewheel
+@rem TODO - don't hard code dist name
+delvewheel repair --wheel-dir repaired_wheels ^
+    dist\hyperarrow-0.0.1.dev0-cp38-abi3-win_amd64.whl ^
+    --add-path "C:\Program Files\arrow\bin;C:\hyperarrow-build\src\Release;C:\tmp\tableau\tableauhyperapi\bin;C:\vcpkg\packages\re2_x64-windows\bin;C:\vcpkg\packages\utf8proc_x64-windows\bin"
 popd
