@@ -47,7 +47,18 @@ pushd C:\hyperarrow\python
 
 pip install delvewheel
 @rem TODO - don't hard code dist name
-delvewheel repair --wheel-dir repaired_wheels ^
+delvewheel repair --wheel-dir repaired_wheels^
     dist\hyperarrow-0.0.1.dev0-cp38-abi3-win_amd64.whl ^
     --add-path "C:\Program Files\arrow\bin;C:\hyperarrow-build\src\Release;C:\tmp\tableau\tableauhyperapi\bin;C:\vcpkg\packages\re2_x64-windows\bin;C:\vcpkg\packages\utf8proc_x64-windows\bin"
+
+@rem Might be a bug but delvewheel makes hyperarrow.lib
+@rem instead of hyperarrow\.lib
+cd repaired_wheels
+wheel unpack hyperarrow-0.0.1.dev0-cp38-abi3-win_amd64.whl
+cd hyperarrow-0.0.1.dev0
+cp hyperarrow.libs/* hyperarrow
+rm -rf hyperarrow.libs
+@rem also need to place Hyper executable herein
+cp -r %HYPER_PATH%\bin\hyper hyperarrow\
+wheel pack hyperarrow
 popd
