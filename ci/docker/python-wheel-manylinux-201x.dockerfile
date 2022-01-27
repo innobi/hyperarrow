@@ -22,7 +22,6 @@ FROM ${base}
 RUN yum install -y autoconf \
     boost-devel \
     cmake \
-    curl \
     flex \
     git \
     wget \
