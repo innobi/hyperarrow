@@ -1,4 +1,3 @@
-#define Py_LIMITED_API 0x03080000
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 

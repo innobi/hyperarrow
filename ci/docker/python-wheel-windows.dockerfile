@@ -35,12 +35,14 @@ RUN setx path "%path%;C:\Program Files\Git\usr\bin"
 RUN wmic product where "name like 'python%%'" call uninstall /nointeractive && \
     rm -rf Python*
 
-ARG python=3.8
+ARG python
 RUN (if "%python%"=="3.7" setx PYTHON_VERSION 3.7.12) & \
     (if "%python%"=="3.8" setx PYTHON_VERSION 3.8.10) & \
     (if "%python%"=="3.9" setx PYTHON_VERSION 3.9.9) & \
     (if "%python%"=="3.10" setx PYTHON_VERSION 3.10.1)
 RUN choco install -r -y --no-progress python --version=%PYTHON_VERSION%
+# choco doesn't seem to add the Python install to the PATH with 3.9
+RUN (if "%python%"=="3.9" setx PATH "C:\Python39;C:\Python39\Scripts;%PATH%")
 RUN pip install -U pip
 
 # Install arrow via vcpkg

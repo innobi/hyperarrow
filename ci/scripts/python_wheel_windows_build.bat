@@ -20,12 +20,10 @@
 echo "Building windows wheel..."
 
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-rm -rf C:\hyperarrow-build
-rm -rf C:\hyperarrow\python\dist
-rm -rf C:\hyperarrow\python\build
-rm -rf C:\hyperarrow\python\repaired_wheels
-rm -rf C:\hyperarrow\python\hyperarrow\*.dll
-rm -rf C:\hyperarrow\python\hyperarrow\*.dll.*
+rmdir /S /Q C:\hyperarrow-build
+rmdir /S /Q C:\hyperarrow\python\dist
+rmdir /S /Q C:\hyperarrow\python\build
+rmdir /S /Q C:\hyperarrow\python\repaired_wheels
 
 echo "=== (%PYTHON_VERSION%) Building HyperArrow libraries ==="
 set HYPER_PATH=C:\tmp\tableau\tableauhyperapi
@@ -46,19 +44,24 @@ popd
 pushd C:\hyperarrow\python
 
 pip install delvewheel
-@rem TODO - don't hard code dist name
-delvewheel repair --wheel-dir repaired_wheels^
-    dist\hyperarrow-0.0.1.dev0-cp38-abi3-win_amd64.whl ^
+cd dist
+for %%a in (*.whl) do (
+  delvewheel repair --wheel-dir ..\repaired_wheels^
+    %%a ^
     --add-path "C:\Program Files\arrow\bin;C:\hyperarrow-build\src\Release;C:\tmp\tableau\tableauhyperapi\bin;C:\vcpkg\packages\re2_x64-windows\bin;C:\vcpkg\packages\utf8proc_x64-windows\bin"
 
-@rem Might be a bug but delvewheel makes hyperarrow.lib
-@rem instead of hyperarrow\.lib
-cd repaired_wheels
-wheel unpack hyperarrow-0.0.1.dev0-cp38-abi3-win_amd64.whl
-cd hyperarrow-0.0.1.dev0
-cp hyperarrow.libs/* hyperarrow
-rm -rf hyperarrow.libs
-@rem also need to place Hyper executable herein
-cp -r %HYPER_PATH%\bin\hyper hyperarrow\
-wheel pack hyperarrow
+  @rem Might be a bug but delvewheel makes hyperarrow.lib
+  @rem instead of hyperarrow\.lib
+  cd ..\repaired_wheels
+  wheel unpack %%a
+  @REM TODO - don't hard code this path
+  cd hyperarrow-0.0.1.dev0
+  cp hyperarrow.libs/* hyperarrow
+  rmdir /S /Q hyperarrow.libs
+  @rem also need to place Hyper executable herein
+  cp -r %HYPER_PATH%\bin\hyper hyperarrow\
+  cd ..
+  wheel pack hyperarrow-0.0.1.dev0
+  rmdir /S /Q hyperarrow-0.0.1.dev0
+)
 popd

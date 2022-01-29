@@ -7,8 +7,10 @@ on:
 
 jobs:
   build-macos:
-
     runs-on: macos-latest
+    strategy:
+      matrix:
+        python_version: ["3.8", "3.9", "3.10"]    
     env:
       INSTALL_PREFIX: "/usr/local/miniconda/envs/hyperarrow"
       LIB_LOCATION: "/usr/local/miniconda/envs/hyperarrow/lib"
@@ -17,7 +19,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        python-version: 3.8
+        python-version: ${{ matrix.python_version }}
         activate-environment: hyperarrow
         channels: conda-forge
     - name: Download Hyper Library / Headers
@@ -62,7 +64,7 @@ jobs:
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
-        name: macos-3.8
+        name: macos-${{ matrix.python_version }}
         path: ./*.whl
     - name: Test wheel
       shell: bash -l {0}
@@ -73,19 +75,22 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.8", "3.9", "3.10"]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
+        python-version: ${{ matrix.python_version }}
     - name: Build docker compose
-      run: docker-compose build python-wheel-manylinux-2014
+      run: PYTHON=${{ matrix.python_version }} docker-compose build python-wheel-manylinux-2014
     - name: Run docker image
       run: docker-compose up
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
-        name: linux-3.8
+        name: linux-${{ matrix.python_version }}
         path: python/repaired_wheels/*.whl
     - name: Test wheel
       run: |

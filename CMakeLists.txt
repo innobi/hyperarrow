@@ -35,7 +35,7 @@ find_package(Python COMPONENTS Interpreter)
 
 if (Python_FOUND)
   add_custom_target(python
-    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel --py-limited-api=cp38
+    COMMAND ${Python_EXECUTABLE} setup.py bdist_wheel
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
     DEPENDS hyperarrow_writer hyperarrow_reader
     )
