@@ -1,5 +1,5 @@
-HyperArrow Python Binding
-=========================
+Python
+======
 
 Quick Install
 -------------
@@ -14,10 +14,6 @@ Usage Example
 
 Writing to a Hyper file
 ~~~~~~~~~~~~~~~~~~~~~~~
-
-.. note::
-
-   The HyperArrow Library for Python is often be referred to as "hal" on import, so that it can be taken more seriously than "ha"
 
 .. code-block:: python
 

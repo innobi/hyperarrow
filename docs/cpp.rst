@@ -1,5 +1,5 @@
-HyperArrow C++ Core
-===================
+C++ Core
+========
 
 The core language for HyperArrow is C++, matching what is offered upstream by the `Arrow <https://arrow.apache.org/docs/index.html>`_ library.
 
