@@ -86,7 +86,7 @@ jobs:
     - name: Build docker compose
       run: PYTHON=${{ matrix.python_version }} docker-compose build python-wheel-manylinux-2014
     - name: Run docker image
-      run: docker-compose up
+      run: PYTHON=${{ matrix.python_version }} docker-compose up python-wheel-manylinux-2014
     - name: Upload wheel
       uses: actions/upload-artifact@v2
       with:
