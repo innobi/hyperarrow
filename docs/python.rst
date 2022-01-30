@@ -4,9 +4,15 @@ Python
 Quick Install
 -------------
 
-.. code-block::
+.. code-block:: sh
 
    python -m pip install hyperarrow
+
+You may also want to test your installation with pytest
+
+.. code-block:: sh
+
+   python -m pip install pytest
    python -c "import hyperarrow as hal; hal.test()"
 
 Usage Example
