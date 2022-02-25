@@ -5,34 +5,24 @@ This repository is the future home of *HyperArrow* - a library to allow seamless
 	
 ## Local Build
 
-For an easy way to build this package across platforms, you can use conda to first build your development environment.
+The easiest way to get started working with the C++ code is using docker.
 
 ```sh
-conda create -n hyperarrow-dev
-conda activate hyperarrow-dev
-conda install -c conda-forge "arrow-cpp>=6.0" boost-cpp compilers
-
-# Optional step if you would like to build python bindings
-conda install -c conda-forge pyarrow
+docker-compose build hyperarrow-dev
 ```
 
-With that out of the way, you will want to have the Tableau Hyper API available somewhere on your machine. Before the build you will want to set an environment variable pointing to this location (note that the method for setting an environment variable will depend on your platform)
+After building the container you can enter:
 
 ```sh
-export TABLEAU_CMAKE_PATH=<SOME_DIRECTORY_PATH>/tableauhyperapi/share/cmake
+docker-compose run --rm hyperarrow-dev
 ```
 
-With those steps completed you can start the build process. It is recommended to do an out of source compliation with CMake, which would look as follows
+And once within set up an "out of core" build as follows:
 
 ```sh
 mkdir build
-pushd build
-
-cmake -S ..
-cmake --build .
-ctest
-
-# Optionally build python binding wheel in python/dist
-cmake --build . --target python
-popd
+cd build
+cmake -DHYPERARROW_TESTING=ON ..
+make -j
+make test
 ```

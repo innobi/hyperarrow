@@ -63,6 +63,13 @@ services:
 
 ############################ Python wheels ##################################
 
+  hyperarrow-dev:
+    image: hyperarrow-dev
+    build:
+      dockerfile: ci/docker/hyperarrow-dev.dockerfile
+    volumes:
+      - .:/hyperarrow
+
   # See available versions at:
   #    https://quay.io/repository/pypa/manylinux2014_x86_64?tab=tags
   python-wheel-manylinux-2014:
@@ -71,7 +78,6 @@ services:
       args:
         base: quay.io/pypa/manylinux2014_x86_64:2021-10-11-14ac00e
         python: ${PYTHON}
-        manylinux: 2014
       context: .
       dockerfile: ci/docker/python-wheel-manylinux-201x.dockerfile
     volumes:
