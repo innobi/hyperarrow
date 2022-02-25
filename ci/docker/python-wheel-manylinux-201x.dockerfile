@@ -49,4 +49,7 @@ RUN python -m pip install wheel auditwheel
 COPY ci/scripts/get_tableau_libs.sh hyperarrow/ci/scripts
 RUN /hyperarrow/ci/scripts/get_tableau_libs.sh
 
+COPY ci/scripts/get_tableau_python_libs.sh hyperarrow/ci/scripts
+RUN /hyperarrow/ci/scripts/get_tableau_python_libs.sh
+
 
