@@ -5,7 +5,6 @@
 
 #include <arrow/api.h>
 #include <boost/test/included/unit_test.hpp>
-#include <stdio.h>
 
 #define ABORT_ON_FAILURE(expr)                                                 \
   do {                                                                         \
@@ -16,7 +15,7 @@
     }                                                                          \
   } while (0);
 
-BOOST_AUTO_TEST_CASE(test_basic_write) {
+BOOST_AUTO_TEST_CASE(test_basic_roundtrip) {
   auto schema = arrow::schema(
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
        arrow::field("c", arrow::int64()), arrow::field("e", arrow::float64()),
@@ -82,38 +81,6 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
 
   auto table = arrow::Table::Make(schema, {array_a, array_b, array_c, array_e,
                                            array_f, array_g, array_h, array_i});
-
-  const char path[] = "example.hyper";
-  hyperarrow::arrowTableToHyper(table, path, "schema", "table");
-
-  auto result = hyperarrow::arrowTableFromHyper(path, "schema", "table");
-  if (result.ok()) {
-    auto read = result.ValueOrDie();
-    BOOST_TEST(table->Equals(*read));
-  } else {
-    BOOST_ERROR("Could not read file");
-  }
-
-  remove(path);
-  remove("hyperd.log");
-}
-
-BOOST_AUTO_TEST_CASE(test_string_truncation_issue) {
-  auto schema = arrow::schema(
-      {arrow::field("foo", arrow::utf8()), arrow::field("bar", arrow::utf8())});
-
-  arrow::StringBuilder foobuilder;
-  arrow::StringBuilder barbuilder;
-  std::shared_ptr<arrow::Array> array_foo;
-  std::shared_ptr<arrow::Array> array_bar;
-
-  ABORT_ON_FAILURE(foobuilder.Append("a"));
-  ABORT_ON_FAILURE(foobuilder.Finish(&array_foo));
-
-  ABORT_ON_FAILURE(barbuilder.Append(std::string(1000, 'b')));
-  ABORT_ON_FAILURE(barbuilder.Finish(&array_bar));
-
-  auto table = arrow::Table::Make(schema, {array_foo, array_bar});
 
   const char path[] = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");
