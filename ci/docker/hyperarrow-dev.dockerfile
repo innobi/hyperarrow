@@ -4,7 +4,8 @@ RUN apt update
 RUN apt-get install -y \
     build-essential \
     libboost-system-dev \
-    cmake
+    cmake \
+    git
 
 # https://arrow.apache.org/install/
 RUN apt install -y -V ca-certificates lsb-release wget
