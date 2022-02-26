@@ -101,13 +101,13 @@ BOOST_AUTO_TEST_CASE(test_basic_roundtrip) {
 BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
   const int length = 3;
   
-  auto f0 = field("f0", arrow::int8());
+  auto f0 = field("f0", arrow::int16());
   auto f1 = field("f1", arrow::int32());
 
   std::vector<std::shared_ptr<arrow::Field>> fields = {f0, f1};
   auto schema = arrow::schema(fields);
 
-  arrow::Int8Builder b0;
+  arrow::Int16Builder b0;
   arrow::Int32Builder b1;
   std::shared_ptr<arrow::Array> a0, a1;
   ABORT_ON_FAILURE(b0.AppendValues({0, 1, 2}));
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
   ABORT_ON_FAILURE(b1.Finish(&a1));
   auto batch0 = arrow::RecordBatch::Make(schema, length, {a0, a1});
 
-  arrow::Int8Builder b2;
+  arrow::Int16Builder b2;
   arrow::Int32Builder b3;
   std::shared_ptr<arrow::Array> a2, a3;
   ABORT_ON_FAILURE(b2.AppendValues({3, 4, 5}));
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
     BOOST_ERROR("Could not construct table from batches");
   }
 
-  arrow::Int8Builder eb0;
+  arrow::Int16Builder eb0;
   arrow::Int32Builder eb1;
   std::shared_ptr<arrow::Array> ea0, ea1;
   ABORT_ON_FAILURE(eb0.AppendValues({0, 1, 2, 3, 4, 5}));
