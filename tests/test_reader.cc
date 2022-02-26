@@ -47,7 +47,3 @@ BOOST_AUTO_TEST_CASE(test_string_truncation_issue) {
   remove(path);
   remove("hyperd.log");
 }
-
-
-BOOST_AUTO_TEST_CASE(test_read_chunked) {
-}
