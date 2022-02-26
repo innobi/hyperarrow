@@ -3,6 +3,7 @@ FROM debian
 RUN apt update
 RUN apt-get install -y \
     build-essential \
+    clang-format \
     libboost-system-dev \
     cmake \
     git
