@@ -36,6 +36,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install arrow
 ARG arrow=6.0.1
+ARG buildType='Release'
 COPY ci/scripts/install_arrow.sh hyperarrow/ci/scripts/
 RUN /hyperarrow/ci/scripts/install_arrow.sh ${arrow} /usr/local
 
