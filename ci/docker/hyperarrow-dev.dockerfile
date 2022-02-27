@@ -4,8 +4,9 @@ RUN apt update
 RUN apt-get install -y \
     build-essential \
     clang-format \
-    libboost-system-dev \
     cmake \
+    libboost-system-dev \
+    gdb \
     git
 
 # https://arrow.apache.org/install/
