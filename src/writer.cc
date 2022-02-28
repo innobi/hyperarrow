@@ -17,10 +17,32 @@
 
 #include <arrow/builder.h>
 #include <arrow/compute/api.h>
+#include <arrow/io/api.h>
+#include <arrow/ipc/api.h>
 #include <arrow/table.h>
 #include <hyperapi/hyperapi.hpp>
 
 namespace hyperarrow {
+
+class HyperWriterImpl : public arrow::ipc::RecordBatchWriter {
+  static arrow::Result<std::shared_ptr<HyperWriterImpl>>
+  Make(arrow::io::OutputStream *sink, std::shared_ptr<arrow::Schema> schema) {
+    // Do something with populators here
+  }
+
+  arrow::Status WriteTable(const arrow::Table &table) {
+    arrow::TableBatchReader reader(table);
+    std::shared_ptr<arrow::RecordBatch> batch;
+    RETURN_NOT_OK(reader.ReadNext(&batch));
+    while (batch != nullptr) {
+      // stats_.num_record_batches++;
+    }
+
+    return arrow::Status::OK();
+  }
+
+  arrow::Status Close() {}
+};
 static const hyperapi::TableDefinition
 createDefinitionFromSchema(std::shared_ptr<arrow::Table> table,
                            const std::string schemaName,
@@ -238,12 +260,21 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
       catalog.createTable(extractTable);
       {
         hyperapi::Inserter inserter{connection, extractTable};
-        for (int64_t rowNum = 0; rowNum < table->num_rows(); rowNum++) {
-          for (int64_t colNum = 0; colNum < table->num_columns(); colNum++) {
-            auto chunk = table->column(colNum)->chunk(0);
-            write_funcs[colNum](chunk, inserter, colNum, rowNum);
+        arrow::TableBatchReader reader(*table);
+        std::shared_ptr<arrow::RecordBatch> batch;
+        // RETURN_NOT_OK(reader.ReadNext(&batch)));
+        reader.ReadNext(&batch); // TODO: error handling
+        // TODO: this loop doesn't currently work with timezone data
+        // which still reads from the first chunk
+        while (batch != nullptr) {
+          for (int64_t rowNum = 0; rowNum < batch->num_rows(); rowNum++) {
+            for (int64_t colNum = 0; colNum < table->num_columns(); colNum++) {
+              auto chunk = batch->column(colNum);
+              write_funcs[colNum](chunk, inserter, colNum, rowNum);
+            }
+            inserter.endRow();
           }
-          inserter.endRow();
+          reader.ReadNext(&batch);
         }
         inserter.execute();
       }
