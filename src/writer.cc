@@ -158,12 +158,12 @@ public:
           }
         });
       }
-    }    
+    }
 
     write_funcs_ = write_funcs;
 
-    auto writer = std::make_shared<HyperWriterImpl>(
-						    schema, database_path, schema_name, table_name);
+    auto writer = std::make_shared<HyperWriterImpl>(schema, database_path,
+                                                    schema_name, table_name);
 
     return writer;
   }
@@ -174,21 +174,22 @@ public:
     ARROW_RETURN_NOT_OK(reader.ReadNext(&batch));
 
     hyperapi::HyperProcess hyper(
-				 hyperapi::Telemetry::DoNotSendUsageDataToTableau);
+        hyperapi::Telemetry::DoNotSendUsageDataToTableau);
     {
-      hyperapi::Connection connection(hyper.getEndpoint(), database_path_, hyperapi::CreateMode::CreateAndReplace);
+      hyperapi::Connection connection(hyper.getEndpoint(), database_path_,
+                                      hyperapi::CreateMode::CreateAndReplace);
       const auto &catalog = connection.getCatalog();
 
       auto table_definition = this.ConvertSchemaToDefinition();
       catalog.createSchemaIfNotExists(schema_name_);
       auto extract_table = catalog.createTable(table_definition);
       {
-	hyperapi::Inserter inserter{connection, extract_able};
-	inserter_ = inserter;
-	while (batch != nullptr) {
-	  ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch));
-	}
-	inserter_.execute();
+        hyperapi::Inserter inserter{connection, extract_able};
+        inserter_ = inserter;
+        while (batch != nullptr) {
+          ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch));
+        }
+        inserter_.execute();
       }
     }
 
@@ -202,8 +203,7 @@ public:
         schema_name_(schema_name), table_name_(table_name) {}
 
 private:
-  hyperapi::TableDefinition
-  ConvertSchemaToDefinition() {
+  hyperapi::TableDefinition ConvertSchemaToDefinition() {
     auto tableDef = hyperapi::TableDefinition({schema_name_, table_name_});
     for (auto field : schema_->fields()) {
       auto name = hyperapi::Name{field->name()};
@@ -217,42 +217,42 @@ private:
     return tableDef;
   }
 
-   const std::vector<std::shared_ptr<arrow::StructArray>>
-   extractTemporalComponents(const arrow::RecordBatch& batch) {
+  const std::vector<std::shared_ptr<arrow::StructArray>>
+  extractTemporalComponents(const arrow::RecordBatch &batch) {
     std::vector<std::shared_ptr<arrow::StructArray>> results;
     results.reserve(schema_->num_fields());
 
     for (int i = 0; i < schema_->num_fields(); i++) {
       auto type = schema_->field(i)->type()->id();
       if (type == arrow::Type::TIMESTAMP || type == arrow::Type::DATE32) {
-	std::vector<std::shared_ptr<arrow::Array>> result;
-	std::vector<std::string> functions;
-	if (type == arrow::Type::TIMESTAMP) {
-	  auto array = std::static_pointer_cast<arrow::TimestampArray>(
-								       table->column(i)->chunk(0));
+        std::vector<std::shared_ptr<arrow::Array>> result;
+        std::vector<std::string> functions;
+        if (type == arrow::Type::TIMESTAMP) {
+          auto array = std::static_pointer_cast<arrow::TimestampArray>(
+              table->column(i)->chunk(0));
 
-	  functions = {"year",   "month",  "day",        "hour",
-	    "minute", "second", "microsecond"};
-	  for (auto function : functions) {
-	    auto res =
-              arrow::compute::CallFunction(function, {array}).ValueOrDie();
-	    result.push_back(res.make_array());
-	  }
-	} else if (type == arrow::Type::DATE32) {
-	  auto array = std::static_pointer_cast<arrow::Date32Array>(
-								    table->column(i)->chunk(0));
+          functions = {"year",   "month",  "day",        "hour",
+                       "minute", "second", "microsecond"};
+          for (auto function : functions) {
+            auto res =
+                arrow::compute::CallFunction(function, {array}).ValueOrDie();
+            result.push_back(res.make_array());
+          }
+        } else if (type == arrow::Type::DATE32) {
+          auto array = std::static_pointer_cast<arrow::Date32Array>(
+              table->column(i)->chunk(0));
 
-	  functions = {"year", "month", "day"};
-	  for (auto function : functions) {
-	    auto res =
-              arrow::compute::CallFunction(function, {array}).ValueOrDie();
-	    result.push_back(res.make_array());
-	  }
-	}
-	results.push_back(
-			  arrow::StructArray::Make(result, functions).ValueOrDie());
+          functions = {"year", "month", "day"};
+          for (auto function : functions) {
+            auto res =
+                arrow::compute::CallFunction(function, {array}).ValueOrDie();
+            result.push_back(res.make_array());
+          }
+        }
+        results.push_back(
+            arrow::StructArray::Make(result, functions).ValueOrDie());
       } else {
-	results.push_back(NULL);
+        results.push_back(NULL);
       }
     }
 
@@ -292,7 +292,7 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                        const std::string tableName) {
   {
     auto writer = HyperWriterImpl::Make(table->schema(), databasePath,
-					schemaName, tableName);
+                                        schemaName, tableName);
     writer.WriteTable(table);
   }
 }
