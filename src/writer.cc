@@ -17,53 +17,10 @@
 
 #include <arrow/builder.h>
 #include <arrow/compute/api.h>
-#include <arrow/io/api.h>
-#include <arrow/ipc/api.h>
 #include <arrow/table.h>
 #include <hyperapi/hyperapi.hpp>
 
 namespace hyperarrow {
-
-class HyperWriterImpl : public arrow::ipc::RecordBatchWriter {
-  static arrow::Result<std::shared_ptr<HyperWriterImpl>>
-  Make(arrow::io::OutputStream *sink, std::shared_ptr<arrow::Schema> schema) {
-    // Do something with populators here
-  }
-
-  arrow::Status WriteTable(const arrow::Table &table) {
-    arrow::TableBatchReader reader(table);
-    std::shared_ptr<arrow::RecordBatch> batch;
-    RETURN_NOT_OK(reader.ReadNext(&batch));
-    while (batch != nullptr) {
-      // stats_.num_record_batches++;
-    }
-
-    return arrow::Status::OK();
-  }
-
-  arrow::Status Close() {}
-};
-static const hyperapi::TableDefinition
-createDefinitionFromSchema(std::shared_ptr<arrow::Table> table,
-                           const std::string schemaName,
-                           const std::string tableName) {
-  const std::shared_ptr<arrow::Schema> schema = table->schema();
-  hyperapi::TableDefinition tableDef =
-      hyperapi::TableDefinition({schemaName, tableName});
-  for (const std::shared_ptr<arrow::Field> field : schema->fields()) {
-    hyperapi::Name name = hyperapi::Name{field->name()};
-    hyperapi::Nullability nullable = field->nullable()
-                                         ? hyperapi::Nullability::Nullable
-                                         : hyperapi::Nullability::NotNullable;
-    hyperapi::SqlType type = hyperarrow::arrowTypeToSqlType(field->type());
-
-    hyperapi::TableDefinition::Column col =
-        hyperapi::TableDefinition::Column(name, type, nullable);
-    tableDef.addColumn(col);
-  }
-
-  return tableDef;
-}
 
 static const std::vector<std::shared_ptr<arrow::StructArray>>
 extractTemporalComponents(const std::shared_ptr<arrow::Table> table) {
@@ -107,6 +64,79 @@ extractTemporalComponents(const std::shared_ptr<arrow::Table> table) {
 
   return results;
 }
+
+  class HyperWriterImpl {
+  public:
+
+    static arrow::Result<std::shared_ptr<HyperWriterImpl>> Make(
+								std::shared_ptr<arrow::Schema> schema,
+								const std::string databasePath,
+								const std::string schemaName,
+								const std::string tableName) {
+      std::vector<std::unique_ptr<ColumnsPopulator>> populators(schema->num_fields());
+      for (int col = 0; col < schema->num_fields(); col++) {
+	ASSIGN_OR_RAISE(populators[col], MakePopulator(*schema->field(col)));
+      }
+
+      column_populators_ = populators;
+      table_def_ = ConvertSchemaToDefinition(schema, 
+    }
+
+    arrow::Status WriteTable(const arrow::Table& table) {
+      arrow::TableBatchReader reader(table);
+      std::shared_ptr<RecordBatch> batch;
+      RETURN_NOT_OK(reader.ReadNext(&batch));
+      while (batch != nullptr) {
+	RETURN_NOT_OK(this->WriteRecordBatch(*batch));
+      }
+      inserter_.execute();
+    }
+
+    HyperWriterImpl(std::shred_ptr<arrow::Schema> schema, const std::string database_path, const std::string schema_name, const std::string table_name) : schema_(schema), database_path_(database_path), schema_name_(schema_name), table_name_(table_name) {}      
+
+  private:
+
+    hyperapi::TableDefinition ConvertSchemaToDefinition(arrow::Schema schema,
+							const std::string targetSchema,
+							const std::string targetTable) {
+      auto tableDef =
+	hyperapi::TableDefinition({schemaName, tableName});
+      for (auto field : schema->fields()) {
+	auto name = hyperapi::Name{field->name()};
+	auto nullable = field->nullable() ? hyperapi::Nullability::Nullable : hyperapi::Nullability::NotNullable;
+	auto type = hyperarrow::arrowTypeToSqlType(field->type());
+	auto col = hyperapi::TableDefinition::Column(name, type, nullable);
+	tableDef.addColumn(col);
+      }
+      
+      return tableDef;
+    }
+    
+    arrow::Status WriteRecordBatch(const arrow::RecordBatch& batch) {
+      if (batch.num_rows() == 0) {
+	return Status::OK();
+      }
+
+      for (int rowNum = 0; i < batch.num_rows(); rowNum++) {
+	for (int colNum = 0; i < column_populators_.size(); colNum++) {
+	  auto array = batch->column(colNum);
+	  write_funcs_[colNum](array, inserter_, colNum, rowNum);
+	}
+	inserter_.endRow();
+      }
+    }
+
+    const std::shared_ptr<arrow::Schema> schema_;
+    const std::string database_path_;
+    const std::string schema_name_;
+    const std::string database_name_;
+    std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
+                                   hyperapi::Inserter & inserter,
+                                   int64_t colNum, int64_t rowNum)>>
+        write_funcs_;
+    const hyperapi::Inserter& inserter_;
+    
+  }
 
 void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
                        const std::string databasePath,
@@ -260,21 +290,12 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
       catalog.createTable(extractTable);
       {
         hyperapi::Inserter inserter{connection, extractTable};
-        arrow::TableBatchReader reader(*table);
-        std::shared_ptr<arrow::RecordBatch> batch;
-        // RETURN_NOT_OK(reader.ReadNext(&batch)));
-        reader.ReadNext(&batch); // TODO: error handling
-        // TODO: this loop doesn't currently work with timezone data
-        // which still reads from the first chunk
-        while (batch != nullptr) {
-          for (int64_t rowNum = 0; rowNum < batch->num_rows(); rowNum++) {
-            for (int64_t colNum = 0; colNum < table->num_columns(); colNum++) {
-              auto chunk = batch->column(colNum);
-              write_funcs[colNum](chunk, inserter, colNum, rowNum);
-            }
-            inserter.endRow();
+        for (int64_t rowNum = 0; rowNum < table->num_rows(); rowNum++) {
+          for (int64_t colNum = 0; colNum < table->num_columns(); colNum++) {
+            auto chunk = table->column(colNum)->chunk(0);
+            write_funcs[colNum](chunk, inserter, colNum, rowNum);
           }
-          reader.ReadNext(&batch);
+          inserter.endRow();
         }
         inserter.execute();
       }
