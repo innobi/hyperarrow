@@ -27,12 +27,19 @@ public:
   static arrow::Result<std::shared_ptr<HyperWriterImpl>>
   Make(std::shared_ptr<arrow::Schema> schema, const std::string database_path,
        const std::string schema_name, const std::string table_name) {
+    auto writer = std::make_shared<HyperWriterImpl>(schema, database_path,
+                                                    schema_name, table_name);
 
+    return writer;
+  }
+
+  arrow::Status WriteTable(const std::shared_ptr<arrow::Table> table) {
     std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
                                    hyperapi::Inserter & inserter,
                                    int64_t colNum, int64_t rowNum)>>
         write_funcs;
-    for (auto &field : table->fields()) {
+    auto schema = table->schema();
+    for (auto &field : schema->fields()) {
       auto type_id = field->type()->id();
       if (type_id == arrow::Type::INT16) {
         write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
@@ -89,63 +96,6 @@ public:
             inserter.add(hyperapi::optional<bool>());
           }
         });
-      } else if (type_id == arrow::Type::DATE32) {
-        write_funcs.push_back([temporalComponents](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
-          auto array = temporalComponents[colNum];
-          auto flattened = array->Flatten().ValueOrDie();
-          auto yearArr =
-              std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
-          if (yearArr->IsValid(rowNum)) {
-            auto year = yearArr->Value(rowNum);
-            auto month =
-                std::static_pointer_cast<arrow::Int64Array>(flattened[1])
-                    ->Value(rowNum);
-            auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])
-                           ->Value(rowNum);
-            auto date = hyperapi::Date(year, month, day);
-            inserter.add(date);
-          } else {
-            inserter.add(hyperapi::optional<hyperapi::Date>());
-          }
-        });
-      } else if (type_id == arrow::Type::TIMESTAMP) {
-        write_funcs.push_back([temporalComponents](
-                                  std::shared_ptr<arrow::Array> anArray,
-                                  hyperapi::Inserter &inserter, int64_t colNum,
-                                  int64_t rowNum) {
-          auto array = temporalComponents[colNum];
-          auto flattened = array->Flatten().ValueOrDie();
-          auto yearArr =
-              std::static_pointer_cast<arrow::Int64Array>(flattened[0]);
-          if (yearArr->IsValid(rowNum)) {
-            auto year = yearArr->Value(rowNum);
-            auto month =
-                std::static_pointer_cast<arrow::Int64Array>(flattened[1])
-                    ->Value(rowNum);
-            auto day = std::static_pointer_cast<arrow::Int64Array>(flattened[2])
-                           ->Value(rowNum);
-            auto hour =
-                std::static_pointer_cast<arrow::Int64Array>(flattened[3])
-                    ->Value(rowNum);
-            auto minute =
-                std::static_pointer_cast<arrow::Int64Array>(flattened[4])
-                    ->Value(rowNum);
-            auto second =
-                std::static_pointer_cast<arrow::Int64Array>(flattened[5])
-                    ->Value(rowNum);
-            auto microsecond =
-                std::static_pointer_cast<arrow::Int64Array>(flattened[6])
-                    ->Value(rowNum);
-            auto time = hyperapi::Time(hour, minute, second, microsecond);
-            auto date = hyperapi::Date(year, month, day);
-            inserter.add(hyperapi::Timestamp(date, time));
-          } else {
-            inserter.add(hyperapi::optional<hyperapi::Timestamp>());
-          }
-        });
       } else if (type_id == arrow::Type::STRING) {
         write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
@@ -159,18 +109,9 @@ public:
         });
       }
     }
-
     write_funcs_ = write_funcs;
-
-    auto writer = std::make_shared<HyperWriterImpl>(schema, database_path,
-                                                    schema_name, table_name);
-
-    return writer;
-  }
-
-  arrow::Status WriteTable(const arrow::Table &table) {
-    arrow::TableBatchReader reader(table);
-    std::shared_ptr<RecordBatch> batch;
+    arrow::TableBatchReader reader(*table);
+    std::shared_ptr<arrow::RecordBatch> batch;
     ARROW_RETURN_NOT_OK(reader.ReadNext(&batch));
 
     hyperapi::HyperProcess hyper(
@@ -180,12 +121,12 @@ public:
                                       hyperapi::CreateMode::CreateAndReplace);
       const auto &catalog = connection.getCatalog();
 
-      auto table_definition = this.ConvertSchemaToDefinition();
+      auto extract_table = ConvertSchemaToDefinition();
       catalog.createSchemaIfNotExists(schema_name_);
-      auto extract_table = catalog.createTable(table_definition);
+      catalog.createTable(extract_table);
       {
-        hyperapi::Inserter inserter{connection, extract_able};
-        inserter_ = inserter;
+        hyperapi::Inserter inserter{connection, extract_table};
+        inserter_ = std::move(inserter);
         while (batch != nullptr) {
           ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch));
         }
@@ -196,7 +137,7 @@ public:
     return arrow::Status::OK();
   }
 
-  HyperWriterImpl(std::shred_ptr<arrow::Schema> schema,
+  HyperWriterImpl(std::shared_ptr<arrow::Schema> schema,
                   const std::string database_path,
                   const std::string schema_name, const std::string table_name)
       : schema_(schema), database_path_(database_path),
@@ -217,57 +158,14 @@ private:
     return tableDef;
   }
 
-  const std::vector<std::shared_ptr<arrow::StructArray>>
-  extractTemporalComponents(const arrow::RecordBatch &batch) {
-    std::vector<std::shared_ptr<arrow::StructArray>> results;
-    results.reserve(schema_->num_fields());
-
-    for (int i = 0; i < schema_->num_fields(); i++) {
-      auto type = schema_->field(i)->type()->id();
-      if (type == arrow::Type::TIMESTAMP || type == arrow::Type::DATE32) {
-        std::vector<std::shared_ptr<arrow::Array>> result;
-        std::vector<std::string> functions;
-        if (type == arrow::Type::TIMESTAMP) {
-          auto array = std::static_pointer_cast<arrow::TimestampArray>(
-              table->column(i)->chunk(0));
-
-          functions = {"year",   "month",  "day",        "hour",
-                       "minute", "second", "microsecond"};
-          for (auto function : functions) {
-            auto res =
-                arrow::compute::CallFunction(function, {array}).ValueOrDie();
-            result.push_back(res.make_array());
-          }
-        } else if (type == arrow::Type::DATE32) {
-          auto array = std::static_pointer_cast<arrow::Date32Array>(
-              table->column(i)->chunk(0));
-
-          functions = {"year", "month", "day"};
-          for (auto function : functions) {
-            auto res =
-                arrow::compute::CallFunction(function, {array}).ValueOrDie();
-            result.push_back(res.make_array());
-          }
-        }
-        results.push_back(
-            arrow::StructArray::Make(result, functions).ValueOrDie());
-      } else {
-        results.push_back(NULL);
-      }
-    }
-
-    return results;
-  }
-
   arrow::Status WriteRecordBatch(const arrow::RecordBatch &batch) {
     if (batch.num_rows() == 0) {
-      return Status::OK();
+      return arrow::Status::OK();
     }
 
-    auto time_components = extractTemporalComponents(batch);
-    for (int rowNum = 0; i < batch.num_rows(); rowNum++) {
-      for (int colNum = 0; i < column_populators_.size(); colNum++) {
-        auto array = batch->column(colNum);
+    for (int rowNum = 0; rowNum < batch.num_rows(); rowNum++) {
+      for (int colNum = 0; colNum < batch.num_columns(); colNum++) {
+        auto array = batch.column(colNum);
         write_funcs_[colNum](array, inserter_, colNum, rowNum);
       }
       inserter_.endRow();
@@ -278,22 +176,23 @@ private:
   const std::shared_ptr<arrow::Schema> schema_;
   const std::string database_path_;
   const std::string schema_name_;
-  const std::string database_name_;
+  const std::string table_name_;
   std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
                                  hyperapi::Inserter &inserter, int64_t colNum,
                                  int64_t rowNum)>>
       write_funcs_;
-  const hyperapi::Inserter &inserter_;
-}
+  hyperapi::Inserter inserter_;
+};
 
-void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
-                       const std::string databasePath,
-                       const std::string schemaName,
-                       const std::string tableName) {
+arrow::Status arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
+                                const std::string databasePath,
+                                const std::string schemaName,
+                                const std::string tableName) {
   {
-    auto writer = HyperWriterImpl::Make(table->schema(), databasePath,
-                                        schemaName, tableName);
-    writer.WriteTable(table);
+    ARROW_ASSIGN_OR_RAISE(auto writer,
+                          HyperWriterImpl::Make(table->schema(), databasePath,
+                                                schemaName, tableName));
+    return writer->WriteTable(table);
   }
 }
 } // namespace hyperarrow
