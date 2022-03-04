@@ -22,130 +22,11 @@
 
 namespace hyperarrow {
 
-static const std::vector<std::shared_ptr<arrow::StructArray>>
-extractTemporalComponents(const std::shared_ptr<arrow::Table> table) {
-  const std::shared_ptr<arrow::Schema> schema = table->schema();
-  std::vector<std::shared_ptr<arrow::StructArray>> results;
-  results.reserve(schema->num_fields());
-
-  for (int i = 0; i < schema->num_fields(); i++) {
-    auto type = schema->field(i)->type()->id();
-    if (type == arrow::Type::TIMESTAMP || type == arrow::Type::DATE32) {
-      std::vector<std::shared_ptr<arrow::Array>> result;
-      std::vector<std::string> functions;
-      if (type == arrow::Type::TIMESTAMP) {
-        auto array = std::static_pointer_cast<arrow::TimestampArray>(
-            table->column(i)->chunk(0));
-
-        functions = {"year",   "month",  "day",        "hour",
-                     "minute", "second", "microsecond"};
-        for (auto function : functions) {
-          auto res =
-              arrow::compute::CallFunction(function, {array}).ValueOrDie();
-          result.push_back(res.make_array());
-        }
-      } else if (type == arrow::Type::DATE32) {
-        auto array = std::static_pointer_cast<arrow::Date32Array>(
-            table->column(i)->chunk(0));
-
-        functions = {"year", "month", "day"};
-        for (auto function : functions) {
-          auto res =
-              arrow::compute::CallFunction(function, {array}).ValueOrDie();
-          result.push_back(res.make_array());
-        }
-      }
-      results.push_back(
-          arrow::StructArray::Make(result, functions).ValueOrDie());
-    } else {
-      results.push_back(NULL);
-    }
-  }
-
-  return results;
-}
-
 class HyperWriterImpl {
 public:
   static arrow::Result<std::shared_ptr<HyperWriterImpl>>
-  Make(std::shared_ptr<arrow::Schema> schema, const std::string databasePath,
-       const std::string schemaName, const std::string tableName) {
-    std::vector<std::unique_ptr<ColumnsPopulator>> populators(
-        schema->num_fields());
-    for (int col = 0; col < schema->num_fields(); col++) {
-      ASSIGN_OR_RAISE(populators[col], MakePopulator(*schema->field(col)));
-    }
-
-    column_populators_ = populators;
-      table_def_ = ConvertSchemaToDefinition(schema,
-  }
-
-  arrow::Status WriteTable(const arrow::Table &table) {
-    arrow::TableBatchReader reader(table);
-    std::shared_ptr<RecordBatch> batch;
-    RETURN_NOT_OK(reader.ReadNext(&batch));
-    while (batch != nullptr) {
-      RETURN_NOT_OK(this->WriteRecordBatch(*batch));
-    }
-    inserter_.execute();
-  }
-
-  HyperWriterImpl(std::shred_ptr<arrow::Schema> schema,
-                  const std::string database_path,
-                  const std::string schema_name, const std::string table_name)
-      : schema_(schema), database_path_(database_path),
-        schema_name_(schema_name), table_name_(table_name) {}
-
-private:
-  hyperapi::TableDefinition
-  ConvertSchemaToDefinition(arrow::Schema schema,
-                            const std::string targetSchema,
-                            const std::string targetTable) {
-    auto tableDef = hyperapi::TableDefinition({schemaName, tableName});
-    for (auto field : schema->fields()) {
-      auto name = hyperapi::Name{field->name()};
-      auto nullable = field->nullable() ? hyperapi::Nullability::Nullable
-                                        : hyperapi::Nullability::NotNullable;
-      auto type = hyperarrow::arrowTypeToSqlType(field->type());
-      auto col = hyperapi::TableDefinition::Column(name, type, nullable);
-      tableDef.addColumn(col);
-    }
-
-    return tableDef;
-  }
-
-  arrow::Status WriteRecordBatch(const arrow::RecordBatch &batch) {
-    if (batch.num_rows() == 0) {
-      return Status::OK();
-    }
-
-    for (int rowNum = 0; i < batch.num_rows(); rowNum++) {
-      for (int colNum = 0; i < column_populators_.size(); colNum++) {
-        auto array = batch->column(colNum);
-        write_funcs_[colNum](array, inserter_, colNum, rowNum);
-      }
-      inserter_.endRow();
-    }
-  }
-
-  const std::shared_ptr<arrow::Schema> schema_;
-  const std::string database_path_;
-  const std::string schema_name_;
-  const std::string database_name_;
-  std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum,
-                                 int64_t rowNum)>>
-      write_funcs_;
-  const hyperapi::Inserter &inserter_;
-
-}
-
-void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
-                       const std::string databasePath,
-                       const std::string schemaName,
-                       const std::string tableName) {
-  {
-    auto temporalComponents = extractTemporalComponents(table);
+  Make(std::shared_ptr<arrow::Schema> schema, const std::string database_path,
+       const std::string schema_name, const std::string table_name) {
 
     std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
                                    hyperapi::Inserter & inserter,
@@ -277,31 +158,142 @@ void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
           }
         });
       }
-    }
+    }    
+
+    write_funcs_ = write_funcs;
+
+    auto writer = std::make_shared<HyperWriterImpl>(
+						    schema, database_path, schema_name, table_name);
+
+    return writer;
+  }
+
+  arrow::Status WriteTable(const arrow::Table &table) {
+    arrow::TableBatchReader reader(table);
+    std::shared_ptr<RecordBatch> batch;
+    ARROW_RETURN_NOT_OK(reader.ReadNext(&batch));
 
     hyperapi::HyperProcess hyper(
-        hyperapi::Telemetry::DoNotSendUsageDataToTableau);
+				 hyperapi::Telemetry::DoNotSendUsageDataToTableau);
     {
-      hyperapi::Connection connection(hyper.getEndpoint(), databasePath,
-                                      hyperapi::CreateMode::CreateAndReplace);
-      const hyperapi::Catalog &catalog = connection.getCatalog();
-      const hyperapi::TableDefinition extractTable =
-          createDefinitionFromSchema(table, schemaName, tableName);
+      hyperapi::Connection connection(hyper.getEndpoint(), database_path_, hyperapi::CreateMode::CreateAndReplace);
+      const auto &catalog = connection.getCatalog();
 
-      catalog.createSchemaIfNotExists(schemaName);
-      catalog.createTable(extractTable);
+      auto table_definition = this.ConvertSchemaToDefinition();
+      catalog.createSchemaIfNotExists(schema_name_);
+      auto extract_table = catalog.createTable(table_definition);
       {
-        hyperapi::Inserter inserter{connection, extractTable};
-        for (int64_t rowNum = 0; rowNum < table->num_rows(); rowNum++) {
-          for (int64_t colNum = 0; colNum < table->num_columns(); colNum++) {
-            auto chunk = table->column(colNum)->chunk(0);
-            write_funcs[colNum](chunk, inserter, colNum, rowNum);
-          }
-          inserter.endRow();
-        }
-        inserter.execute();
+	hyperapi::Inserter inserter{connection, extract_able};
+	inserter_ = inserter;
+	while (batch != nullptr) {
+	  ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch));
+	}
+	inserter_.execute();
       }
     }
+
+    return arrow::Status::OK();
+  }
+
+  HyperWriterImpl(std::shred_ptr<arrow::Schema> schema,
+                  const std::string database_path,
+                  const std::string schema_name, const std::string table_name)
+      : schema_(schema), database_path_(database_path),
+        schema_name_(schema_name), table_name_(table_name) {}
+
+private:
+  hyperapi::TableDefinition
+  ConvertSchemaToDefinition() {
+    auto tableDef = hyperapi::TableDefinition({schema_name_, table_name_});
+    for (auto field : schema_->fields()) {
+      auto name = hyperapi::Name{field->name()};
+      auto nullable = field->nullable() ? hyperapi::Nullability::Nullable
+                                        : hyperapi::Nullability::NotNullable;
+      auto type = hyperarrow::arrowTypeToSqlType(field->type());
+      auto col = hyperapi::TableDefinition::Column(name, type, nullable);
+      tableDef.addColumn(col);
+    }
+
+    return tableDef;
+  }
+
+   const std::vector<std::shared_ptr<arrow::StructArray>>
+   extractTemporalComponents(const arrow::RecordBatch& batch) {
+    std::vector<std::shared_ptr<arrow::StructArray>> results;
+    results.reserve(schema_->num_fields());
+
+    for (int i = 0; i < schema_->num_fields(); i++) {
+      auto type = schema_->field(i)->type()->id();
+      if (type == arrow::Type::TIMESTAMP || type == arrow::Type::DATE32) {
+	std::vector<std::shared_ptr<arrow::Array>> result;
+	std::vector<std::string> functions;
+	if (type == arrow::Type::TIMESTAMP) {
+	  auto array = std::static_pointer_cast<arrow::TimestampArray>(
+								       table->column(i)->chunk(0));
+
+	  functions = {"year",   "month",  "day",        "hour",
+	    "minute", "second", "microsecond"};
+	  for (auto function : functions) {
+	    auto res =
+              arrow::compute::CallFunction(function, {array}).ValueOrDie();
+	    result.push_back(res.make_array());
+	  }
+	} else if (type == arrow::Type::DATE32) {
+	  auto array = std::static_pointer_cast<arrow::Date32Array>(
+								    table->column(i)->chunk(0));
+
+	  functions = {"year", "month", "day"};
+	  for (auto function : functions) {
+	    auto res =
+              arrow::compute::CallFunction(function, {array}).ValueOrDie();
+	    result.push_back(res.make_array());
+	  }
+	}
+	results.push_back(
+			  arrow::StructArray::Make(result, functions).ValueOrDie());
+      } else {
+	results.push_back(NULL);
+      }
+    }
+
+    return results;
+  }
+
+  arrow::Status WriteRecordBatch(const arrow::RecordBatch &batch) {
+    if (batch.num_rows() == 0) {
+      return Status::OK();
+    }
+
+    auto time_components = extractTemporalComponents(batch);
+    for (int rowNum = 0; i < batch.num_rows(); rowNum++) {
+      for (int colNum = 0; i < column_populators_.size(); colNum++) {
+        auto array = batch->column(colNum);
+        write_funcs_[colNum](array, inserter_, colNum, rowNum);
+      }
+      inserter_.endRow();
+    }
+    return arrow::Status::OK();
+  }
+
+  const std::shared_ptr<arrow::Schema> schema_;
+  const std::string database_path_;
+  const std::string schema_name_;
+  const std::string database_name_;
+  std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
+                                 hyperapi::Inserter &inserter, int64_t colNum,
+                                 int64_t rowNum)>>
+      write_funcs_;
+  const hyperapi::Inserter &inserter_;
+}
+
+void arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
+                       const std::string databasePath,
+                       const std::string schemaName,
+                       const std::string tableName) {
+  {
+    auto writer = HyperWriterImpl::Make(table->schema(), databasePath,
+					schemaName, tableName);
+    writer.WriteTable(table);
   }
 }
 } // namespace hyperarrow
