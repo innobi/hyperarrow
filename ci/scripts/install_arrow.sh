@@ -38,9 +38,8 @@ pushd /tmp/arrow/cpp/build
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=${buildType} \
-      -DARROW_COMPUTE=ON \
-      -DARROW_IPC=ON \
       -DARROW_PYTHON=ON \
+      -DARROW_COMPUTE=ON \
       ..
 make -j$"$(nproc)"
 make install
