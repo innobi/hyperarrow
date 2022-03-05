@@ -128,6 +128,7 @@ public:
         hyperapi::Inserter inserter{connection, extract_table};
         while (batch != nullptr) {
           ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch, inserter));
+	  reader.ReadNext(&batch);
         }
         inserter.execute();
       }
