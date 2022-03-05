@@ -126,11 +126,10 @@ public:
       catalog.createTable(extract_table);
       {
         hyperapi::Inserter inserter{connection, extract_table};
-        inserter_ = std::move(inserter);
         while (batch != nullptr) {
-          ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch));
+          ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch, inserter));
         }
-        inserter_.execute();
+        inserter.execute();
       }
     }
 
@@ -158,7 +157,8 @@ private:
     return tableDef;
   }
 
-  arrow::Status WriteRecordBatch(const arrow::RecordBatch &batch) {
+  arrow::Status WriteRecordBatch(const arrow::RecordBatch &batch,
+                                 hyperapi::Inserter &inserter) {
     if (batch.num_rows() == 0) {
       return arrow::Status::OK();
     }
@@ -166,9 +166,9 @@ private:
     for (int rowNum = 0; rowNum < batch.num_rows(); rowNum++) {
       for (int colNum = 0; colNum < batch.num_columns(); colNum++) {
         auto array = batch.column(colNum);
-        write_funcs_[colNum](array, inserter_, colNum, rowNum);
+        write_funcs_[colNum](array, inserter, colNum, rowNum);
       }
-      inserter_.endRow();
+      inserter.endRow();
     }
     return arrow::Status::OK();
   }
@@ -181,7 +181,6 @@ private:
                                  hyperapi::Inserter &inserter, int64_t colNum,
                                  int64_t rowNum)>>
       write_funcs_;
-  hyperapi::Inserter inserter_;
 };
 
 arrow::Status arrowTableToHyper(const std::shared_ptr<arrow::Table> table,
