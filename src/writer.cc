@@ -22,6 +22,129 @@
 
 namespace hyperarrow {
 
+  class BasePopulator {
+    virtual void Insert(hyperapi::Inserter &inserter);
+
+  protected:
+    size_t rowNumber_ = 0;
+  };
+
+  class Int16Populator : BasePopulator {
+
+    Int16Populator(std::shared_ptr<arrow::Array> array) {
+      array_ = std::static_pointer_cast<arrow::Int16Array>(array);
+    }
+
+    void Insert(hyperapi::Inserter &inserter) override {
+      if (array_->IsValid(rowNumber_)) {
+	inserter.add(array_->Value(rowNumber_));
+      } else {
+	inserter.add(hyperapi::optional<int16_t>());
+      }
+
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::Int16Array> array_;
+  };
+
+  class Int32Populator : BasePopulator {
+
+    Int32Populator(std::shared_ptr<arrow::Array> array) {
+      array_ = std::static_pointer_cast<arrow::Int32Array>(array);
+    }
+
+    void Insert(hyperapi::Inserter &inserter) override {
+      if (array_->IsValid(rowNumber_)) {
+	inserter.add(array_->Value(rowNumber_));
+      } else {
+	inserter.add(hyperapi::optional<int32_t>());
+      }
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::Int32Array> array_;
+  };
+
+  class Int64Populator : BasePopulator {
+
+    Int64Populator(std::shared_ptr<arrow::Array> array) {
+      array_ = std::static_pointer_cast<arrow::Int64Array>(array);
+    }
+
+    void Insert(hyperapi::Inserter &inserter) override {
+      if (array_->IsValid(rowNumber_)) {
+	inserter.add(array_->Value(rowNumber_));
+      } else {
+	inserter.add(hyperapi::optional<int64_t>());
+      }
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::Int64Array> array_;
+  };
+
+  class DoublePopulator : BasePopulator {
+
+    DoublePopulator(std::shared_ptr<arrow::Array> array) {
+      array_ = std::static_pointer_cast<arrow::DoubleArray>(array);
+    }
+
+    void Insert(hyperapi::Inserter &inserter) {
+      if (array_->IsValid(rowNumber_)) {
+	inserter.add(array_->Value(rowNumber_));
+      } else {
+	inserter.add(hyperapi::optional<double_t>());
+      }
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::DoubleArray> array_;
+  };
+
+  class BooleanPopulator : BasePopulator {
+
+    BooleanPopulator(std::shared_ptr<arrow::Array> array) {
+      array_ = std::static_pointer_cast<arrow::BooleanArray>(array);
+    }
+
+    void Insert(hyperapi::Inserter &inserter) {
+      if (array_->IsValid(rowNumber_)) {
+	inserter.add(array_->Value(rowNumber_));
+      } else {
+	inserter.add(hyperapi::optional<bool>());
+      }
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::BooleanArray> array_;
+  };
+
+  class StringPopulator : BasePopulator {
+
+    StringPopulator(std::shared_ptr<arrow::Array> array) {
+      array_ = std::static_pointer_cast<arrow::StringArray>(array);
+    }
+
+    void Insert(hyperapi::Inserter &inserter) {
+      if (array_->IsValid(rowNumber_)) {
+	inserter.add(array_->GetString(rowNumber_));
+      } else {
+	inserter.add(hyperapi::optional<std::string>());
+      }
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::StringArray> array_;
+  };  
+  
+
 class HyperWriterImpl {
 public:
   static arrow::Result<std::shared_ptr<HyperWriterImpl>>
@@ -34,82 +157,6 @@ public:
   }
 
   arrow::Status WriteTable(const std::shared_ptr<arrow::Table> table) {
-    std::vector<std::function<void(std::shared_ptr<arrow::Array> anArray,
-                                   hyperapi::Inserter & inserter,
-                                   int64_t colNum, int64_t rowNum)>>
-        write_funcs;
-    auto schema = table->schema();
-    for (auto &field : schema->fields()) {
-      auto type_id = field->type()->id();
-      if (type_id == arrow::Type::INT16) {
-        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum,
-                                 int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::Int16Array>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<int16_t>());
-          }
-        });
-      } else if (type_id == arrow::Type::INT32) {
-        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum,
-                                 int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::Int32Array>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<int32_t>());
-          }
-        });
-      } else if (type_id == arrow::Type::INT64) {
-        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum,
-                                 int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::Int64Array>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<int64_t>());
-          }
-        });
-      } else if (type_id == arrow::Type::DOUBLE) {
-        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum,
-                                 int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::DoubleArray>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<double_t>());
-          }
-        });
-      } else if (type_id == arrow::Type::BOOL) {
-        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum,
-                                 int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::BooleanArray>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->Value(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<bool>());
-          }
-        });
-      } else if (type_id == arrow::Type::STRING) {
-        write_funcs.push_back([](std::shared_ptr<arrow::Array> anArray,
-                                 hyperapi::Inserter &inserter, int64_t colNum,
-                                 int64_t rowNum) {
-          auto array = std::static_pointer_cast<arrow::StringArray>(anArray);
-          if (array->IsValid(rowNum)) {
-            inserter.add(array->GetString(rowNum));
-          } else {
-            inserter.add(hyperapi::optional<std::string>());
-          }
-        });
-      }
-    }
-    write_funcs_ = write_funcs;
     arrow::TableBatchReader reader(*table);
     std::shared_ptr<arrow::RecordBatch> batch;
     ARROW_RETURN_NOT_OK(reader.ReadNext(&batch));
@@ -164,10 +211,30 @@ private:
       return arrow::Status::OK();
     }
 
+    std::vector<BasePopulator> populators;
+    auto schema = batch.schema();
+    for (int colNum = 0; colNum < batch.num_columns(); colNum++) {
+      auto field = batch.schema()->field(colNum);
+      auto type_id = field->type()->id();
+      auto array = batch.column(colNum);
+      if (type_id == arrow::Type::INT16) {
+	populators.push_back(Int16Populator(array));
+      } else if (type_id == arrow::Type::INT32) {
+	populators.push_back(Int32Populator(array));
+      } else if (type_id == arrow::Type::INT64) {
+	populators.push_back(Int64Populator(array));	
+      } else if (type_id == arrow::Type::DOUBLE) {
+	populators.push_back(DoublePopulator(array));
+      } else if (type_id == arrow::Type::BOOL) {
+	populators.push_back(BooleanPopulator(array));
+      } else if (type_id == arrow::Type::STRING) {
+	populators.push_back(StringPopulator(array));
+      }
+    }
+    
     for (int rowNum = 0; rowNum < batch.num_rows(); rowNum++) {
-      for (int colNum = 0; colNum < batch.num_columns(); colNum++) {
-        auto array = batch.column(colNum);
-        write_funcs_[colNum](array, inserter, colNum, rowNum);
+      for (auto &populator : populators) {
+	populator.Insert(inserter);
       }
       inserter.endRow();
     }
