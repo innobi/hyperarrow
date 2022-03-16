@@ -143,6 +143,44 @@ namespace hyperarrow {
 
   private:
     std::shared_ptr<arrow::StringArray> array_;
+  };
+
+  class Date32Populator : public BasePopulator {
+  public:
+    Date32Populator(std::shared_ptr<arrow::Array> array) {
+      auto result = arrow::compute::CallFunction("year_month_day", {array});
+      arrow::Datum datum;
+      if (result.ok()) {
+	datum = result.ValueOrDie();
+      } else {
+	// TODO: error handler
+      }
+      
+      array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
+      years_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("year"));
+      months_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("month"));
+      days_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("day"));
+    }
+
+    void Insert(hyperapi::Inserter &inserter) override {
+      if (array_->IsValid(rowNumber_)) {
+	auto year = years_->Value(rowNumber_);
+	auto month = months_->Value(rowNumber_);
+	auto day = days_->Value(rowNumber_);
+	auto date = hyperapi::Date(year, month, day);
+	inserter.add(date);
+      } else {
+	inserter.add(hyperapi::optional<hyperapi::Date>());
+      }
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::StructArray> array_;
+    std::shared_ptr<arrow::Int64Array> years_;
+    std::shared_ptr<arrow::Int64Array> months_;
+    std::shared_ptr<arrow::Int64Array> days_;
+
   };  
   
 
