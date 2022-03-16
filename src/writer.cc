@@ -23,14 +23,15 @@
 namespace hyperarrow {
 
   class BasePopulator {
-    virtual void Insert(hyperapi::Inserter &inserter);
+  public:
+    virtual void Insert(hyperapi::Inserter &inserter) {};
 
   protected:
     size_t rowNumber_ = 0;
   };
 
-  class Int16Populator : BasePopulator {
-
+  class Int16Populator : public BasePopulator {
+  public:
     Int16Populator(std::shared_ptr<arrow::Array> array) {
       array_ = std::static_pointer_cast<arrow::Int16Array>(array);
     }
@@ -49,8 +50,8 @@ namespace hyperarrow {
     std::shared_ptr<arrow::Int16Array> array_;
   };
 
-  class Int32Populator : BasePopulator {
-
+  class Int32Populator : public BasePopulator {
+  public:
     Int32Populator(std::shared_ptr<arrow::Array> array) {
       array_ = std::static_pointer_cast<arrow::Int32Array>(array);
     }
@@ -68,8 +69,8 @@ namespace hyperarrow {
     std::shared_ptr<arrow::Int32Array> array_;
   };
 
-  class Int64Populator : BasePopulator {
-
+  class Int64Populator : public BasePopulator {
+  public:
     Int64Populator(std::shared_ptr<arrow::Array> array) {
       array_ = std::static_pointer_cast<arrow::Int64Array>(array);
     }
@@ -87,13 +88,13 @@ namespace hyperarrow {
     std::shared_ptr<arrow::Int64Array> array_;
   };
 
-  class DoublePopulator : BasePopulator {
-
+  class DoublePopulator : public BasePopulator {
+  public:
     DoublePopulator(std::shared_ptr<arrow::Array> array) {
       array_ = std::static_pointer_cast<arrow::DoubleArray>(array);
     }
 
-    void Insert(hyperapi::Inserter &inserter) {
+    void Insert(hyperapi::Inserter &inserter) override {
       if (array_->IsValid(rowNumber_)) {
 	inserter.add(array_->Value(rowNumber_));
       } else {
@@ -106,13 +107,13 @@ namespace hyperarrow {
     std::shared_ptr<arrow::DoubleArray> array_;
   };
 
-  class BooleanPopulator : BasePopulator {
-
+  class BooleanPopulator : public BasePopulator {
+  public:
     BooleanPopulator(std::shared_ptr<arrow::Array> array) {
       array_ = std::static_pointer_cast<arrow::BooleanArray>(array);
     }
 
-    void Insert(hyperapi::Inserter &inserter) {
+    void Insert(hyperapi::Inserter &inserter) override {
       if (array_->IsValid(rowNumber_)) {
 	inserter.add(array_->Value(rowNumber_));
       } else {
@@ -125,13 +126,13 @@ namespace hyperarrow {
     std::shared_ptr<arrow::BooleanArray> array_;
   };
 
-  class StringPopulator : BasePopulator {
-
+  class StringPopulator : public BasePopulator {
+  public:
     StringPopulator(std::shared_ptr<arrow::Array> array) {
       array_ = std::static_pointer_cast<arrow::StringArray>(array);
     }
 
-    void Insert(hyperapi::Inserter &inserter) {
+    void Insert(hyperapi::Inserter &inserter) override {
       if (array_->IsValid(rowNumber_)) {
 	inserter.add(array_->GetString(rowNumber_));
       } else {
@@ -211,30 +212,30 @@ private:
       return arrow::Status::OK();
     }
 
-    std::vector<BasePopulator> populators;
+    std::vector<std::shared_ptr<BasePopulator>> populators;
     auto schema = batch.schema();
     for (int colNum = 0; colNum < batch.num_columns(); colNum++) {
       auto field = batch.schema()->field(colNum);
       auto type_id = field->type()->id();
       auto array = batch.column(colNum);
       if (type_id == arrow::Type::INT16) {
-	populators.push_back(Int16Populator(array));
+	populators.push_back(std::make_shared<Int16Populator>(array));
       } else if (type_id == arrow::Type::INT32) {
-	populators.push_back(Int32Populator(array));
+	populators.push_back(std::make_shared<Int32Populator>(array));
       } else if (type_id == arrow::Type::INT64) {
-	populators.push_back(Int64Populator(array));	
+	populators.push_back(std::make_shared<Int64Populator>(array));	
       } else if (type_id == arrow::Type::DOUBLE) {
-	populators.push_back(DoublePopulator(array));
+	populators.push_back(std::make_shared<DoublePopulator>(array));
       } else if (type_id == arrow::Type::BOOL) {
-	populators.push_back(BooleanPopulator(array));
+	populators.push_back(std::make_shared<BooleanPopulator>(array));
       } else if (type_id == arrow::Type::STRING) {
-	populators.push_back(StringPopulator(array));
+	populators.push_back(std::make_shared<StringPopulator>(array));
       }
     }
     
     for (int rowNum = 0; rowNum < batch.num_rows(); rowNum++) {
       for (auto &populator : populators) {
-	populator.Insert(inserter);
+	populator->Insert(inserter);
       }
       inserter.endRow();
     }
