@@ -181,7 +181,92 @@ namespace hyperarrow {
     std::shared_ptr<arrow::Int64Array> months_;
     std::shared_ptr<arrow::Int64Array> days_;
 
+  };
+
+  class TimestampPopulator : public BasePopulator {
+  public:
+    TimestampPopulator(std::shared_ptr<arrow::Array> array) {
+      auto result = arrow::compute::CallFunction("year_month_day", {array});
+      arrow::Datum datum;
+      if (result.ok()) {
+	datum = result.ValueOrDie();
+      } else {
+	// TODO: error handler
+      }
+
+      array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
+      years_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("year"));
+      months_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("month"));
+      days_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("day"));
+
+
+      auto hourResult = arrow::compute::CallFunction("hour", {array});
+      if (hourResult.ok()) {
+	datum = hourResult.ValueOrDie();
+      } else {
+	// TODO: error handler
+      }
+      hours_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
+
+      auto minuteResult = arrow::compute::CallFunction("minute", {array});
+      if (minuteResult.ok()) {
+	datum = minuteResult.ValueOrDie();
+      } else {
+	// TODO: error handler
+      }
+      minutes_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
+
+      auto secondResult = arrow::compute::CallFunction("second", {array});
+      if (secondResult.ok()) {
+	datum = secondResult.ValueOrDie();
+      } else {
+	// TODO: error handler
+      }
+      seconds_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
+
+      auto microsecondResult = arrow::compute::CallFunction("microsecond", {array});
+      if (microsecondResult.ok()) {
+	datum = microsecondResult.ValueOrDie();
+      } else {
+	// TODO: error handler
+      }
+      microseconds_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());      
+            
+    }
+
+    void Insert(hyperapi::Inserter &inserter) override {
+      if (array_->IsValid(rowNumber_)) {
+	auto year = years_->Value(rowNumber_);
+	auto month = months_->Value(rowNumber_);
+	auto day = days_->Value(rowNumber_);
+	auto date = hyperapi::Date(year, month, day);
+
+	auto hour = hours_->Value(rowNumber_);
+	auto minute = minutes_->Value(rowNumber_);
+	auto second = seconds_->Value(rowNumber_);
+	auto microsecond = microseconds_->Value(rowNumber_);
+	auto time = hyperapi::Time(hour, minute, second, microsecond);
+
+	auto timestamp = hyperapi::Timestamp(date, time);
+	inserter.add(timestamp);
+      } else {
+	inserter.add(hyperapi::optional<hyperapi::Timestamp>());
+      }
+      rowNumber_++;
+    }
+
+  private:
+    std::shared_ptr<arrow::StructArray> array_;
+    std::shared_ptr<arrow::Int64Array> years_;
+    std::shared_ptr<arrow::Int64Array> months_;
+    std::shared_ptr<arrow::Int64Array> days_;
+    std::shared_ptr<arrow::Int64Array> hours_;
+    std::shared_ptr<arrow::Int64Array> minutes_;
+    std::shared_ptr<arrow::Int64Array> seconds_;
+    std::shared_ptr<arrow::Int64Array> microseconds_;
+
   };  
+  
   
 
 class HyperWriterImpl {
@@ -268,6 +353,10 @@ private:
 	populators.push_back(std::make_shared<BooleanPopulator>(array));
       } else if (type_id == arrow::Type::STRING) {
 	populators.push_back(std::make_shared<StringPopulator>(array));
+      } else if (type_id == arrow::Type::DATE32) {
+	populators.push_back(std::make_shared<Date32Populator>(array));
+      } else if (type_id == arrow::Type::TIMESTAMP) {
+	populators.push_back(std::make_shared<TimestampPopulator>(array));
       }
     }
     
