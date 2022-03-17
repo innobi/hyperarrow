@@ -5,7 +5,6 @@
 
 #include <arrow/api.h>
 #include <boost/test/included/unit_test.hpp>
-#include <stdio.h>
 
 #define ABORT_ON_FAILURE(expr)                                                 \
   do {                                                                         \
@@ -16,7 +15,7 @@
     }                                                                          \
   } while (0);
 
-BOOST_AUTO_TEST_CASE(test_basic_write) {
+BOOST_AUTO_TEST_CASE(test_basic_roundtrip) {
   auto schema = arrow::schema(
       {arrow::field("a", arrow::int16()), arrow::field("b", arrow::int32()),
        arrow::field("c", arrow::int64()), arrow::field("e", arrow::float64()),
@@ -98,22 +97,71 @@ BOOST_AUTO_TEST_CASE(test_basic_write) {
   remove("hyperd.log");
 }
 
-BOOST_AUTO_TEST_CASE(test_string_truncation_issue) {
-  auto schema = arrow::schema(
-      {arrow::field("foo", arrow::utf8()), arrow::field("bar", arrow::utf8())});
+BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
+  const int length = 3;
 
-  arrow::StringBuilder foobuilder;
-  arrow::StringBuilder barbuilder;
-  std::shared_ptr<arrow::Array> array_foo;
-  std::shared_ptr<arrow::Array> array_bar;
+  auto f0 = field("f0", arrow::int16());
+  auto f1 = field("f1", arrow::int32());
+  auto f2 = field("f2", arrow::date32());
+  auto f3 = field("f3", arrow::timestamp(arrow::TimeUnit::MICRO));
 
-  ABORT_ON_FAILURE(foobuilder.Append("a"));
-  ABORT_ON_FAILURE(foobuilder.Finish(&array_foo));
+  std::vector<std::shared_ptr<arrow::Field>> fields = {f0, f1, f2, f3};
+  auto schema = arrow::schema(fields);
 
-  ABORT_ON_FAILURE(barbuilder.Append(std::string(1000, 'b')));
-  ABORT_ON_FAILURE(barbuilder.Finish(&array_bar));
+  arrow::MemoryPool *pool = arrow::default_memory_pool();
+  arrow::Int16Builder b0(pool);
+  arrow::Int32Builder b1(pool);
+  arrow::Date32Builder b2(pool);
+  arrow::TimestampBuilder b3(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
+  std::shared_ptr<arrow::Array> a0, a1, a2, a3;
+  ABORT_ON_FAILURE(b0.AppendValues({0, 1, 2}));
+  ABORT_ON_FAILURE(b0.Finish(&a0));
+  ABORT_ON_FAILURE(b1.AppendValues({100, 101, 102}));
+  ABORT_ON_FAILURE(b1.Finish(&a1));
+  ABORT_ON_FAILURE(b2.AppendValues({0, 1, 2}));
+  ABORT_ON_FAILURE(b2.Finish(&a2));
+  ABORT_ON_FAILURE(b3.AppendValues({0, 1, 2}));
+  ABORT_ON_FAILURE(b3.Finish(&a3));
 
-  auto table = arrow::Table::Make(schema, {array_foo, array_bar});
+  auto batch0 = arrow::RecordBatch::Make(schema, length, {a0, a1, a2, a3});
+
+  arrow::Int16Builder b4(pool);
+  arrow::Int32Builder b5(pool);
+  arrow::Date32Builder b6(pool);
+  arrow::TimestampBuilder b7(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
+  std::shared_ptr<arrow::Array> a4, a5, a6, a7;
+  ABORT_ON_FAILURE(b4.AppendValues({3, 4, 5}));
+  ABORT_ON_FAILURE(b4.Finish(&a4));
+  ABORT_ON_FAILURE(b5.AppendValues({103, 104, 105}));
+  ABORT_ON_FAILURE(b5.Finish(&a5));
+  ABORT_ON_FAILURE(b6.AppendValues({3, 4, 5}));
+  ABORT_ON_FAILURE(b6.Finish(&a6));
+  ABORT_ON_FAILURE(b7.AppendValues({3, 4, 5}));
+  ABORT_ON_FAILURE(b7.Finish(&a7));
+  auto batch1 = arrow::RecordBatch::Make(schema, length, {a4, a5, a6, a7});
+
+  std::shared_ptr<arrow::Table> table;
+  auto res = arrow::Table::FromRecordBatches({batch0, batch1});
+  if (res.ok()) {
+    table = res.ValueOrDie();
+  } else {
+    BOOST_ERROR("Could not construct table from batches");
+  }
+
+  arrow::Int16Builder eb0(pool);
+  arrow::Int32Builder eb1(pool);
+  arrow::Date32Builder eb2(pool);
+  arrow::TimestampBuilder eb3(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
+  std::shared_ptr<arrow::Array> ea0, ea1, ea2, ea3;
+  ABORT_ON_FAILURE(eb0.AppendValues({0, 1, 2, 3, 4, 5}));
+  ABORT_ON_FAILURE(eb0.Finish(&ea0));
+  ABORT_ON_FAILURE(eb1.AppendValues({100, 101, 102, 103, 104, 105}));
+  ABORT_ON_FAILURE(eb1.Finish(&ea1));
+  ABORT_ON_FAILURE(eb2.AppendValues({0, 1, 2, 3, 4, 5}));
+  ABORT_ON_FAILURE(eb2.Finish(&ea2));
+  ABORT_ON_FAILURE(eb3.AppendValues({0, 1, 2, 3, 4, 5}));
+  ABORT_ON_FAILURE(eb3.Finish(&ea3));
+  auto expected = arrow::Table::Make(schema, {ea0, ea1, ea2, ea3});
 
   const char path[] = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");
@@ -121,7 +169,7 @@ BOOST_AUTO_TEST_CASE(test_string_truncation_issue) {
   auto result = hyperarrow::arrowTableFromHyper(path, "schema", "table");
   if (result.ok()) {
     auto read = result.ValueOrDie();
-    BOOST_TEST(table->Equals(*read));
+    BOOST_TEST(expected->Equals(*read));
   } else {
     BOOST_ERROR("Could not read file");
   }

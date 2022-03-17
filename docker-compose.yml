@@ -66,6 +66,7 @@ services:
   hyperarrow-dev:
     image: hyperarrow-dev
     build:
+      context: .
       dockerfile: ci/docker/hyperarrow-dev.dockerfile
     volumes:
       - .:/hyperarrow
