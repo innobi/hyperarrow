@@ -19,6 +19,7 @@
 #include <arrow/compute/api.h>
 #include <arrow/table.h>
 #include <hyperapi/hyperapi.hpp>
+#include <stdexcept>
 
 namespace hyperarrow {
 
@@ -148,12 +149,13 @@ namespace hyperarrow {
   class Date32Populator : public BasePopulator {
   public:
     Date32Populator(std::shared_ptr<arrow::Array> array) {
-      auto result = arrow::compute::CallFunction("year_month_day", {array});
+      auto tempArray = std::static_pointer_cast<arrow::Date32Array>(array);
+      auto result = arrow::compute::CallFunction("year_month_day", {tempArray});
       arrow::Datum datum;
       if (result.ok()) {
 	datum = result.ValueOrDie();
       } else {
-	// TODO: error handler
+	throw std::runtime_error("year_month_day call failed");
       }
       
       array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
@@ -186,12 +188,13 @@ namespace hyperarrow {
   class TimestampPopulator : public BasePopulator {
   public:
     TimestampPopulator(std::shared_ptr<arrow::Array> array) {
-      auto result = arrow::compute::CallFunction("year_month_day", {array});
+      auto tempArray = std::static_pointer_cast<arrow::TimestampArray>(array);
+      auto result = arrow::compute::CallFunction("year_month_day", {tempArray});
       arrow::Datum datum;
       if (result.ok()) {
 	datum = result.ValueOrDie();
       } else {
-	// TODO: error handler
+	throw std::runtime_error("year_month_day call failed");
       }
 
       array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
@@ -200,35 +203,35 @@ namespace hyperarrow {
       days_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("day"));
 
 
-      auto hourResult = arrow::compute::CallFunction("hour", {array});
+      auto hourResult = arrow::compute::CallFunction("hour", {tempArray});
       if (hourResult.ok()) {
 	datum = hourResult.ValueOrDie();
       } else {
-	// TODO: error handler
+	throw std::runtime_error("hour call failed");
       }
       hours_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
 
-      auto minuteResult = arrow::compute::CallFunction("minute", {array});
+      auto minuteResult = arrow::compute::CallFunction("minute", {tempArray});
       if (minuteResult.ok()) {
 	datum = minuteResult.ValueOrDie();
       } else {
-	// TODO: error handler
+	throw std::runtime_error("minute call failed");
       }
       minutes_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
 
-      auto secondResult = arrow::compute::CallFunction("second", {array});
+      auto secondResult = arrow::compute::CallFunction("second", {tempArray});
       if (secondResult.ok()) {
 	datum = secondResult.ValueOrDie();
       } else {
-	// TODO: error handler
+        throw std::runtime_error("second call failed");
       }
       seconds_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
 
-      auto microsecondResult = arrow::compute::CallFunction("microsecond", {array});
+      auto microsecondResult = arrow::compute::CallFunction("microsecond", {tempArray});
       if (microsecondResult.ok()) {
 	datum = microsecondResult.ValueOrDie();
       } else {
-	// TODO: error handler
+	throw std::runtime_error("microsecond call failed");
       }
       microseconds_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());      
             

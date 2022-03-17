@@ -13,7 +13,7 @@ RUN apt-get install -y \
     python3-pip \
     wget
 
-ARG arrow=6.0.1
+ARG arrow=7.0.0
 ARG buildType='Debug'
 COPY ci/scripts/install_arrow.sh /hyperarrow/ci/scripts/
 RUN /hyperarrow/ci/scripts/install_arrow.sh ${arrow} ${buildType} /usr/local

@@ -35,7 +35,7 @@ RUN $(find /opt/python -name cp${PYTHON_VERSION//.}-*)/bin/python -m venv /venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install arrow
-ARG arrow=6.0.1
+ARG arrow=7.0.0
 ARG buildType='Release'
 COPY ci/scripts/install_arrow.sh hyperarrow/ci/scripts/
 RUN /hyperarrow/ci/scripts/install_arrow.sh ${arrow} /usr/local
