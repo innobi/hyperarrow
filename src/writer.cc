@@ -23,254 +23,256 @@
 
 namespace hyperarrow {
 
-  class BasePopulator {
-  public:
-    virtual void Insert(hyperapi::Inserter &inserter) {};
+class BasePopulator {
+public:
+  virtual void Insert(hyperapi::Inserter &inserter){};
 
-  protected:
-    size_t rowNumber_ = 0;
-  };
+protected:
+  size_t rowNumber_ = 0;
+};
 
-  class Int16Populator : public BasePopulator {
-  public:
-    Int16Populator(std::shared_ptr<arrow::Array> array) {
-      array_ = std::static_pointer_cast<arrow::Int16Array>(array);
+class Int16Populator : public BasePopulator {
+public:
+  Int16Populator(std::shared_ptr<arrow::Array> array) {
+    array_ = std::static_pointer_cast<arrow::Int16Array>(array);
+  }
+
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      inserter.add(array_->Value(rowNumber_));
+    } else {
+      inserter.add(hyperapi::optional<int16_t>());
     }
 
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	inserter.add(array_->Value(rowNumber_));
-      } else {
-	inserter.add(hyperapi::optional<int16_t>());
-      }
+    rowNumber_++;
+  }
 
-      rowNumber_++;
+private:
+  std::shared_ptr<arrow::Int16Array> array_;
+};
+
+class Int32Populator : public BasePopulator {
+public:
+  Int32Populator(std::shared_ptr<arrow::Array> array) {
+    array_ = std::static_pointer_cast<arrow::Int32Array>(array);
+  }
+
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      inserter.add(array_->Value(rowNumber_));
+    } else {
+      inserter.add(hyperapi::optional<int32_t>());
+    }
+    rowNumber_++;
+  }
+
+private:
+  std::shared_ptr<arrow::Int32Array> array_;
+};
+
+class Int64Populator : public BasePopulator {
+public:
+  Int64Populator(std::shared_ptr<arrow::Array> array) {
+    array_ = std::static_pointer_cast<arrow::Int64Array>(array);
+  }
+
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      inserter.add(array_->Value(rowNumber_));
+    } else {
+      inserter.add(hyperapi::optional<int64_t>());
+    }
+    rowNumber_++;
+  }
+
+private:
+  std::shared_ptr<arrow::Int64Array> array_;
+};
+
+class DoublePopulator : public BasePopulator {
+public:
+  DoublePopulator(std::shared_ptr<arrow::Array> array) {
+    array_ = std::static_pointer_cast<arrow::DoubleArray>(array);
+  }
+
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      inserter.add(array_->Value(rowNumber_));
+    } else {
+      inserter.add(hyperapi::optional<double_t>());
+    }
+    rowNumber_++;
+  }
+
+private:
+  std::shared_ptr<arrow::DoubleArray> array_;
+};
+
+class BooleanPopulator : public BasePopulator {
+public:
+  BooleanPopulator(std::shared_ptr<arrow::Array> array) {
+    array_ = std::static_pointer_cast<arrow::BooleanArray>(array);
+  }
+
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      inserter.add(array_->Value(rowNumber_));
+    } else {
+      inserter.add(hyperapi::optional<bool>());
+    }
+    rowNumber_++;
+  }
+
+private:
+  std::shared_ptr<arrow::BooleanArray> array_;
+};
+
+class StringPopulator : public BasePopulator {
+public:
+  StringPopulator(std::shared_ptr<arrow::Array> array) {
+    array_ = std::static_pointer_cast<arrow::StringArray>(array);
+  }
+
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      inserter.add(array_->GetString(rowNumber_));
+    } else {
+      inserter.add(hyperapi::optional<std::string>());
+    }
+    rowNumber_++;
+  }
+
+private:
+  std::shared_ptr<arrow::StringArray> array_;
+};
+
+class Date32Populator : public BasePopulator {
+public:
+  Date32Populator(std::shared_ptr<arrow::Array> array) {
+    auto tempArray = std::static_pointer_cast<arrow::Date32Array>(array);
+    auto result = arrow::compute::CallFunction("year_month_day", {tempArray});
+    arrow::Datum datum;
+    if (result.ok()) {
+      datum = result.ValueOrDie();
+    } else {
+      throw std::runtime_error("year_month_day call failed");
     }
 
-  private:
-    std::shared_ptr<arrow::Int16Array> array_;
-  };
+    array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
+    years_ = std::static_pointer_cast<arrow::Int64Array>(
+        array_->GetFieldByName("year"));
+    months_ = std::static_pointer_cast<arrow::Int64Array>(
+        array_->GetFieldByName("month"));
+    days_ = std::static_pointer_cast<arrow::Int64Array>(
+        array_->GetFieldByName("day"));
+  }
 
-  class Int32Populator : public BasePopulator {
-  public:
-    Int32Populator(std::shared_ptr<arrow::Array> array) {
-      array_ = std::static_pointer_cast<arrow::Int32Array>(array);
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      auto year = years_->Value(rowNumber_);
+      auto month = months_->Value(rowNumber_);
+      auto day = days_->Value(rowNumber_);
+      auto date = hyperapi::Date(year, month, day);
+      inserter.add(date);
+    } else {
+      inserter.add(hyperapi::optional<hyperapi::Date>());
+    }
+    rowNumber_++;
+  }
+
+private:
+  std::shared_ptr<arrow::StructArray> array_;
+  std::shared_ptr<arrow::Int64Array> years_;
+  std::shared_ptr<arrow::Int64Array> months_;
+  std::shared_ptr<arrow::Int64Array> days_;
+};
+
+class TimestampPopulator : public BasePopulator {
+public:
+  TimestampPopulator(std::shared_ptr<arrow::Array> array) {
+    auto tempArray = std::static_pointer_cast<arrow::TimestampArray>(array);
+    auto result = arrow::compute::CallFunction("year_month_day", {tempArray});
+    arrow::Datum datum;
+    if (result.ok()) {
+      datum = result.ValueOrDie();
+    } else {
+      throw std::runtime_error("year_month_day call failed");
     }
 
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	inserter.add(array_->Value(rowNumber_));
-      } else {
-	inserter.add(hyperapi::optional<int32_t>());
-      }
-      rowNumber_++;
+    array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
+    years_ = std::static_pointer_cast<arrow::Int64Array>(
+        array_->GetFieldByName("year"));
+    months_ = std::static_pointer_cast<arrow::Int64Array>(
+        array_->GetFieldByName("month"));
+    days_ = std::static_pointer_cast<arrow::Int64Array>(
+        array_->GetFieldByName("day"));
+
+    auto hourResult = arrow::compute::CallFunction("hour", {tempArray});
+    if (hourResult.ok()) {
+      datum = hourResult.ValueOrDie();
+    } else {
+      throw std::runtime_error("hour call failed");
     }
+    hours_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
 
-  private:
-    std::shared_ptr<arrow::Int32Array> array_;
-  };
-
-  class Int64Populator : public BasePopulator {
-  public:
-    Int64Populator(std::shared_ptr<arrow::Array> array) {
-      array_ = std::static_pointer_cast<arrow::Int64Array>(array);
+    auto minuteResult = arrow::compute::CallFunction("minute", {tempArray});
+    if (minuteResult.ok()) {
+      datum = minuteResult.ValueOrDie();
+    } else {
+      throw std::runtime_error("minute call failed");
     }
+    minutes_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
 
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	inserter.add(array_->Value(rowNumber_));
-      } else {
-	inserter.add(hyperapi::optional<int64_t>());
-      }
-      rowNumber_++;
+    auto secondResult = arrow::compute::CallFunction("second", {tempArray});
+    if (secondResult.ok()) {
+      datum = secondResult.ValueOrDie();
+    } else {
+      throw std::runtime_error("second call failed");
     }
+    seconds_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
 
-  private:
-    std::shared_ptr<arrow::Int64Array> array_;
-  };
-
-  class DoublePopulator : public BasePopulator {
-  public:
-    DoublePopulator(std::shared_ptr<arrow::Array> array) {
-      array_ = std::static_pointer_cast<arrow::DoubleArray>(array);
+    auto microsecondResult =
+        arrow::compute::CallFunction("microsecond", {tempArray});
+    if (microsecondResult.ok()) {
+      datum = microsecondResult.ValueOrDie();
+    } else {
+      throw std::runtime_error("microsecond call failed");
     }
+    microseconds_ =
+        std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
+  }
 
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	inserter.add(array_->Value(rowNumber_));
-      } else {
-	inserter.add(hyperapi::optional<double_t>());
-      }
-      rowNumber_++;
+  void Insert(hyperapi::Inserter &inserter) override {
+    if (array_->IsValid(rowNumber_)) {
+      auto year = years_->Value(rowNumber_);
+      auto month = months_->Value(rowNumber_);
+      auto day = days_->Value(rowNumber_);
+      auto date = hyperapi::Date(year, month, day);
+
+      auto hour = hours_->Value(rowNumber_);
+      auto minute = minutes_->Value(rowNumber_);
+      auto second = seconds_->Value(rowNumber_);
+      auto microsecond = microseconds_->Value(rowNumber_);
+      auto time = hyperapi::Time(hour, minute, second, microsecond);
+
+      auto timestamp = hyperapi::Timestamp(date, time);
+      inserter.add(timestamp);
+    } else {
+      inserter.add(hyperapi::optional<hyperapi::Timestamp>());
     }
+    rowNumber_++;
+  }
 
-  private:
-    std::shared_ptr<arrow::DoubleArray> array_;
-  };
-
-  class BooleanPopulator : public BasePopulator {
-  public:
-    BooleanPopulator(std::shared_ptr<arrow::Array> array) {
-      array_ = std::static_pointer_cast<arrow::BooleanArray>(array);
-    }
-
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	inserter.add(array_->Value(rowNumber_));
-      } else {
-	inserter.add(hyperapi::optional<bool>());
-      }
-      rowNumber_++;
-    }
-
-  private:
-    std::shared_ptr<arrow::BooleanArray> array_;
-  };
-
-  class StringPopulator : public BasePopulator {
-  public:
-    StringPopulator(std::shared_ptr<arrow::Array> array) {
-      array_ = std::static_pointer_cast<arrow::StringArray>(array);
-    }
-
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	inserter.add(array_->GetString(rowNumber_));
-      } else {
-	inserter.add(hyperapi::optional<std::string>());
-      }
-      rowNumber_++;
-    }
-
-  private:
-    std::shared_ptr<arrow::StringArray> array_;
-  };
-
-  class Date32Populator : public BasePopulator {
-  public:
-    Date32Populator(std::shared_ptr<arrow::Array> array) {
-      auto tempArray = std::static_pointer_cast<arrow::Date32Array>(array);
-      auto result = arrow::compute::CallFunction("year_month_day", {tempArray});
-      arrow::Datum datum;
-      if (result.ok()) {
-	datum = result.ValueOrDie();
-      } else {
-	throw std::runtime_error("year_month_day call failed");
-      }
-      
-      array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
-      years_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("year"));
-      months_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("month"));
-      days_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("day"));
-    }
-
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	auto year = years_->Value(rowNumber_);
-	auto month = months_->Value(rowNumber_);
-	auto day = days_->Value(rowNumber_);
-	auto date = hyperapi::Date(year, month, day);
-	inserter.add(date);
-      } else {
-	inserter.add(hyperapi::optional<hyperapi::Date>());
-      }
-      rowNumber_++;
-    }
-
-  private:
-    std::shared_ptr<arrow::StructArray> array_;
-    std::shared_ptr<arrow::Int64Array> years_;
-    std::shared_ptr<arrow::Int64Array> months_;
-    std::shared_ptr<arrow::Int64Array> days_;
-
-  };
-
-  class TimestampPopulator : public BasePopulator {
-  public:
-    TimestampPopulator(std::shared_ptr<arrow::Array> array) {
-      auto tempArray = std::static_pointer_cast<arrow::TimestampArray>(array);
-      auto result = arrow::compute::CallFunction("year_month_day", {tempArray});
-      arrow::Datum datum;
-      if (result.ok()) {
-	datum = result.ValueOrDie();
-      } else {
-	throw std::runtime_error("year_month_day call failed");
-      }
-
-      array_ = std::static_pointer_cast<arrow::StructArray>(datum.make_array());
-      years_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("year"));
-      months_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("month"));
-      days_ = std::static_pointer_cast<arrow::Int64Array>(array_->GetFieldByName("day"));
-
-
-      auto hourResult = arrow::compute::CallFunction("hour", {tempArray});
-      if (hourResult.ok()) {
-	datum = hourResult.ValueOrDie();
-      } else {
-	throw std::runtime_error("hour call failed");
-      }
-      hours_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
-
-      auto minuteResult = arrow::compute::CallFunction("minute", {tempArray});
-      if (minuteResult.ok()) {
-	datum = minuteResult.ValueOrDie();
-      } else {
-	throw std::runtime_error("minute call failed");
-      }
-      minutes_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
-
-      auto secondResult = arrow::compute::CallFunction("second", {tempArray});
-      if (secondResult.ok()) {
-	datum = secondResult.ValueOrDie();
-      } else {
-        throw std::runtime_error("second call failed");
-      }
-      seconds_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());
-
-      auto microsecondResult = arrow::compute::CallFunction("microsecond", {tempArray});
-      if (microsecondResult.ok()) {
-	datum = microsecondResult.ValueOrDie();
-      } else {
-	throw std::runtime_error("microsecond call failed");
-      }
-      microseconds_ = std::static_pointer_cast<arrow::Int64Array>(datum.make_array());      
-            
-    }
-
-    void Insert(hyperapi::Inserter &inserter) override {
-      if (array_->IsValid(rowNumber_)) {
-	auto year = years_->Value(rowNumber_);
-	auto month = months_->Value(rowNumber_);
-	auto day = days_->Value(rowNumber_);
-	auto date = hyperapi::Date(year, month, day);
-
-	auto hour = hours_->Value(rowNumber_);
-	auto minute = minutes_->Value(rowNumber_);
-	auto second = seconds_->Value(rowNumber_);
-	auto microsecond = microseconds_->Value(rowNumber_);
-	auto time = hyperapi::Time(hour, minute, second, microsecond);
-
-	auto timestamp = hyperapi::Timestamp(date, time);
-	inserter.add(timestamp);
-      } else {
-	inserter.add(hyperapi::optional<hyperapi::Timestamp>());
-      }
-      rowNumber_++;
-    }
-
-  private:
-    std::shared_ptr<arrow::StructArray> array_;
-    std::shared_ptr<arrow::Int64Array> years_;
-    std::shared_ptr<arrow::Int64Array> months_;
-    std::shared_ptr<arrow::Int64Array> days_;
-    std::shared_ptr<arrow::Int64Array> hours_;
-    std::shared_ptr<arrow::Int64Array> minutes_;
-    std::shared_ptr<arrow::Int64Array> seconds_;
-    std::shared_ptr<arrow::Int64Array> microseconds_;
-
-  };  
-  
-  
+private:
+  std::shared_ptr<arrow::StructArray> array_;
+  std::shared_ptr<arrow::Int64Array> years_;
+  std::shared_ptr<arrow::Int64Array> months_;
+  std::shared_ptr<arrow::Int64Array> days_;
+  std::shared_ptr<arrow::Int64Array> hours_;
+  std::shared_ptr<arrow::Int64Array> minutes_;
+  std::shared_ptr<arrow::Int64Array> seconds_;
+  std::shared_ptr<arrow::Int64Array> microseconds_;
+};
 
 class HyperWriterImpl {
 public:
@@ -302,7 +304,7 @@ public:
         hyperapi::Inserter inserter{connection, extract_table};
         while (batch != nullptr) {
           ARROW_RETURN_NOT_OK(this->WriteRecordBatch(*batch, inserter));
-	  reader.ReadNext(&batch);
+          reader.ReadNext(&batch);
         }
         inserter.execute();
       }
@@ -345,27 +347,27 @@ private:
       auto type_id = field->type()->id();
       auto array = batch.column(colNum);
       if (type_id == arrow::Type::INT16) {
-	populators.push_back(std::make_shared<Int16Populator>(array));
+        populators.push_back(std::make_shared<Int16Populator>(array));
       } else if (type_id == arrow::Type::INT32) {
-	populators.push_back(std::make_shared<Int32Populator>(array));
+        populators.push_back(std::make_shared<Int32Populator>(array));
       } else if (type_id == arrow::Type::INT64) {
-	populators.push_back(std::make_shared<Int64Populator>(array));	
+        populators.push_back(std::make_shared<Int64Populator>(array));
       } else if (type_id == arrow::Type::DOUBLE) {
-	populators.push_back(std::make_shared<DoublePopulator>(array));
+        populators.push_back(std::make_shared<DoublePopulator>(array));
       } else if (type_id == arrow::Type::BOOL) {
-	populators.push_back(std::make_shared<BooleanPopulator>(array));
+        populators.push_back(std::make_shared<BooleanPopulator>(array));
       } else if (type_id == arrow::Type::STRING) {
-	populators.push_back(std::make_shared<StringPopulator>(array));
+        populators.push_back(std::make_shared<StringPopulator>(array));
       } else if (type_id == arrow::Type::DATE32) {
-	populators.push_back(std::make_shared<Date32Populator>(array));
+        populators.push_back(std::make_shared<Date32Populator>(array));
       } else if (type_id == arrow::Type::TIMESTAMP) {
-	populators.push_back(std::make_shared<TimestampPopulator>(array));
+        populators.push_back(std::make_shared<TimestampPopulator>(array));
       }
     }
-    
+
     for (int rowNum = 0; rowNum < batch.num_rows(); rowNum++) {
       for (auto &populator : populators) {
-	populator->Insert(inserter);
+        populator->Insert(inserter);
       }
       inserter.endRow();
     }

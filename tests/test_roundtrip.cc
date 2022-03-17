@@ -97,7 +97,6 @@ BOOST_AUTO_TEST_CASE(test_basic_roundtrip) {
   remove("hyperd.log");
 }
 
-
 BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
   const int length = 3;
 
@@ -109,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
   std::vector<std::shared_ptr<arrow::Field>> fields = {f0, f1, f2, f3};
   auto schema = arrow::schema(fields);
 
-  arrow::MemoryPool *pool = arrow::default_memory_pool();  
+  arrow::MemoryPool *pool = arrow::default_memory_pool();
   arrow::Int16Builder b0(pool);
   arrow::Int32Builder b1(pool);
   arrow::Date32Builder b2(pool);
@@ -161,7 +160,7 @@ BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
   ABORT_ON_FAILURE(eb2.AppendValues({0, 1, 2, 3, 4, 5}));
   ABORT_ON_FAILURE(eb2.Finish(&ea2));
   ABORT_ON_FAILURE(eb3.AppendValues({0, 1, 2, 3, 4, 5}));
-  ABORT_ON_FAILURE(eb3.Finish(&ea3));  
+  ABORT_ON_FAILURE(eb3.Finish(&ea3));
   auto expected = arrow::Table::Make(schema, {ea0, ea1, ea2, ea3});
 
   const char path[] = "example.hyper";
@@ -177,5 +176,4 @@ BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
 
   remove(path);
   remove("hyperd.log");
-  
 }

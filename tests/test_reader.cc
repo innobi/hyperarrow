@@ -15,7 +15,6 @@
     }                                                                          \
   } while (0);
 
-
 BOOST_AUTO_TEST_CASE(test_string_truncation_issue) {
   auto schema = arrow::schema(
       {arrow::field("foo", arrow::utf8()), arrow::field("bar", arrow::utf8())});
