@@ -100,30 +100,46 @@ BOOST_AUTO_TEST_CASE(test_basic_roundtrip) {
 
 BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
   const int length = 3;
-  
+
   auto f0 = field("f0", arrow::int16());
   auto f1 = field("f1", arrow::int32());
+  auto f2 = field("f2", arrow::date32());
+  auto f3 = field("f3", arrow::timestamp(arrow::TimeUnit::MICRO));
 
-  std::vector<std::shared_ptr<arrow::Field>> fields = {f0, f1};
+  std::vector<std::shared_ptr<arrow::Field>> fields = {f0, f1, f2, f3};
   auto schema = arrow::schema(fields);
 
-  arrow::Int16Builder b0;
-  arrow::Int32Builder b1;
-  std::shared_ptr<arrow::Array> a0, a1;
+  arrow::MemoryPool *pool = arrow::default_memory_pool();  
+  arrow::Int16Builder b0(pool);
+  arrow::Int32Builder b1(pool);
+  arrow::Date32Builder b2(pool);
+  arrow::TimestampBuilder b3(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
+  std::shared_ptr<arrow::Array> a0, a1, a2, a3;
   ABORT_ON_FAILURE(b0.AppendValues({0, 1, 2}));
   ABORT_ON_FAILURE(b0.Finish(&a0));
   ABORT_ON_FAILURE(b1.AppendValues({100, 101, 102}));
   ABORT_ON_FAILURE(b1.Finish(&a1));
-  auto batch0 = arrow::RecordBatch::Make(schema, length, {a0, a1});
-
-  arrow::Int16Builder b2;
-  arrow::Int32Builder b3;
-  std::shared_ptr<arrow::Array> a2, a3;
-  ABORT_ON_FAILURE(b2.AppendValues({3, 4, 5}));
+  ABORT_ON_FAILURE(b2.AppendValues({0, 1, 2}));
   ABORT_ON_FAILURE(b2.Finish(&a2));
-  ABORT_ON_FAILURE(b3.AppendValues({103, 104, 105}));
+  ABORT_ON_FAILURE(b3.AppendValues({0, 1, 2}));
   ABORT_ON_FAILURE(b3.Finish(&a3));
-  auto batch1 = arrow::RecordBatch::Make(schema, length, {a2, a3});
+
+  auto batch0 = arrow::RecordBatch::Make(schema, length, {a0, a1, a2, a3});
+
+  arrow::Int16Builder b4(pool);
+  arrow::Int32Builder b5(pool);
+  arrow::Date32Builder b6(pool);
+  arrow::TimestampBuilder b7(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
+  std::shared_ptr<arrow::Array> a4, a5, a6, a7;
+  ABORT_ON_FAILURE(b4.AppendValues({3, 4, 5}));
+  ABORT_ON_FAILURE(b4.Finish(&a4));
+  ABORT_ON_FAILURE(b5.AppendValues({103, 104, 105}));
+  ABORT_ON_FAILURE(b5.Finish(&a5));
+  ABORT_ON_FAILURE(b6.AppendValues({3, 4, 5}));
+  ABORT_ON_FAILURE(b6.Finish(&a6));
+  ABORT_ON_FAILURE(b7.AppendValues({3, 4, 5}));
+  ABORT_ON_FAILURE(b7.Finish(&a7));
+  auto batch1 = arrow::RecordBatch::Make(schema, length, {a4, a5, a6, a7});
 
   std::shared_ptr<arrow::Table> table;
   auto res = arrow::Table::FromRecordBatches({batch0, batch1});
@@ -133,14 +149,20 @@ BOOST_AUTO_TEST_CASE(test_roundtrip_batches) {
     BOOST_ERROR("Could not construct table from batches");
   }
 
-  arrow::Int16Builder eb0;
-  arrow::Int32Builder eb1;
-  std::shared_ptr<arrow::Array> ea0, ea1;
+  arrow::Int16Builder eb0(pool);
+  arrow::Int32Builder eb1(pool);
+  arrow::Date32Builder eb2(pool);
+  arrow::TimestampBuilder eb3(arrow::timestamp(arrow::TimeUnit::MICRO), pool);
+  std::shared_ptr<arrow::Array> ea0, ea1, ea2, ea3;
   ABORT_ON_FAILURE(eb0.AppendValues({0, 1, 2, 3, 4, 5}));
   ABORT_ON_FAILURE(eb0.Finish(&ea0));
   ABORT_ON_FAILURE(eb1.AppendValues({100, 101, 102, 103, 104, 105}));
   ABORT_ON_FAILURE(eb1.Finish(&ea1));
-  auto expected = arrow::Table::Make(schema, {ea0, ea1});
+  ABORT_ON_FAILURE(eb2.AppendValues({0, 1, 2, 3, 4, 5}));
+  ABORT_ON_FAILURE(eb2.Finish(&ea2));
+  ABORT_ON_FAILURE(eb3.AppendValues({0, 1, 2, 3, 4, 5}));
+  ABORT_ON_FAILURE(eb3.Finish(&ea3));  
+  auto expected = arrow::Table::Make(schema, {ea0, ea1, ea2, ea3});
 
   const char path[] = "example.hyper";
   hyperarrow::arrowTableToHyper(table, path, "schema", "table");
